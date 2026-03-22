@@ -1,4 +1,3 @@
-import Formula from '../components/Formula'
 import CodeBlock from '../components/CodeBlock'
 import InfoBlock from '../components/InfoBlock'
 import TaskBlock from '../components/TaskBlock'
