@@ -292,6 +292,7 @@ function makeTheme(seed: ThemeSeed): Theme {
 
   return {
     ...seed,
+    order: 0,
     lossFunctions: seed.lossFunctions ?? [],
     activationFunctions: seed.activationFunctions ?? [],
     themeCheatsheet,
@@ -884,6 +885,7 @@ export const courseBlocks: Block[] = blockSeeds.map((block) => ({
   ...block,
   subblocks: block.subblocks.map((subblock) => ({
     ...subblock,
+    themes: subblock.themes.map((theme, themeIndex) => ({ ...theme, order: themeIndex + 1 })),
     cheatsheet: collectCheatsheet(subblock.themes.map((theme) => theme.themeCheatsheet)),
   })),
   cheatsheet: collectCheatsheet(block.subblocks.flatMap((subblock) => subblock.themes.map((theme) => theme.themeCheatsheet))),
