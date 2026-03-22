@@ -4,6 +4,8 @@ import { getTopicById, getSectionForTopic } from '../data/topics'
 import Breadcrumbs from '../components/Breadcrumbs'
 import ProgressButton from '../components/ProgressButton'
 import GenericTopicTheory from '../content/genericTopicTheory'
+import StepNavigator from '../components/StepNavigator'
+import { subTopicsMap } from '../data/steps'
 
 const contentMap: Record<string, React.LazyExoticComponent<() => React.ReactElement>> = {
   'gini-impurity': lazy(() => import('../content/giniImpurity')),
@@ -33,6 +35,8 @@ export default function TopicDetailPage() {
   const topic = topicId ? getTopicById(topicId) : null
   const section = topicId ? getSectionForTopic(topicId) : null
   const ContentComponent = topicId ? contentMap[topicId] : null
+  const subTopics = topicId ? (subTopicsMap[topicId] ?? []) : []
+  const hasSteps = subTopics.length > 0
 
   if (!topic || !section) {
     return (
@@ -86,7 +90,18 @@ export default function TopicDetailPage() {
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-        {ContentComponent ? (
+        {hasSteps ? (
+          <div className="space-y-6">
+            {subTopics.map(st => (
+              <div key={st.id}>
+                {subTopics.length > 1 && (
+                  <h2 className="text-lg font-bold text-gray-800 mb-4">{st.title}</h2>
+                )}
+                <StepNavigator subTopic={st} />
+              </div>
+            ))}
+          </div>
+        ) : ContentComponent ? (
           <Suspense
             fallback={
               <div className="py-20 text-center text-gray-500">
