@@ -1,8 +1,13 @@
-export type QuizQuestionType = 'single' | 'multiple' | 'truefalse' | 'numeric' | 'fillblank'
+export type QuizQuestionType = 'single' | 'multiple' | 'truefalse' | 'numeric' | 'fillblank' | 'matching' | 'ordering' | 'formula'
 
 export interface QuizOption {
   id: string
   text: string
+}
+
+export interface MatchingPair {
+  left: string
+  right: string
 }
 
 export interface QuizQuestion {
@@ -16,6 +21,10 @@ export interface QuizQuestion {
   explanation: string
   tolerance?: number
   difficulty: 'easy' | 'medium' | 'hard'
+  pairs?: MatchingPair[]        // for matching type
+  items?: string[]              // for ordering type
+  correctOrder?: number[]       // for ordering type (0-based indices for correct order)
+  formulaAnswer?: string        // for formula type (normalized answer)
 }
 
 export interface Quiz {
@@ -852,6 +861,242 @@ export const quizzes: Quiz[] = [
         question: 'Использование sklearn Pipeline гарантирует, что все трансформации fit только на обучающих данных при кросс-валидации.',
         correctAnswer: 'true',
         explanation: 'Pipeline с cross_val_score: на каждом fold выполняется pipeline.fit(X_train_fold, y_train_fold) → трансформации обучаются только на train fold. Затем pipeline.transform(X_val_fold) применяет обученные трансформации к val. Это предотвращает leakage от scaler, imputer, и других препроцессоров.',
+      },
+    ],
+  },
+  {
+    id: 'quiz-new-types',
+    title: 'Сопоставление, порядок и формулы',
+    description: 'Задания на сопоставление понятий, расстановку в правильном порядке и ввод формул.',
+    sectionId: 'block-6',
+    questions: [
+      // MATCHING questions (5)
+      {
+        id: 'nt-m01',
+        topicId: 'precision-recall-f1',
+        sectionId: 'block-6',
+        type: 'matching' as const,
+        difficulty: 'medium' as const,
+        question: 'Сопоставьте метрики с их формулами:',
+        pairs: [
+          { left: 'Precision', right: 'TP / (TP + FP)' },
+          { left: 'Recall', right: 'TP / (TP + FN)' },
+          { left: 'F1-Score', right: '2·P·R / (P + R)' },
+          { left: 'Accuracy', right: '(TP + TN) / (TP + TN + FP + FN)' },
+        ],
+        correctAnswer: 'matched',
+        explanation: 'Precision — точность предсказаний позитивного класса. Recall — полнота поиска позитивного класса. F1 — гармоническое среднее. Accuracy — общая доля верных ответов.',
+      },
+      {
+        id: 'nt-m02',
+        topicId: 'roc-auc',
+        sectionId: 'block-6',
+        type: 'matching' as const,
+        difficulty: 'medium' as const,
+        question: 'Сопоставьте оптимизаторы с их ключевыми характеристиками:',
+        pairs: [
+          { left: 'SGD', right: 'Фиксированный learning rate для всех параметров' },
+          { left: 'Adam', right: 'Адаптивный LR + bias correction (β₁, β₂)' },
+          { left: 'RMSprop', right: 'Адаптивный LR, без bias correction' },
+          { left: 'Adagrad', right: 'LR убывает по накопленным квадратам градиентов' },
+        ],
+        correctAnswer: 'matched',
+        explanation: 'SGD прост и эффективен с momentum. Adam сочетает RMSprop и momentum с коррекцией. RMSprop стабилизирует обучение делением на EWMA квадратов. Adagrad накапливает все квадраты — LR убывает монотонно.',
+      },
+      {
+        id: 'nt-m03',
+        topicId: 'gini-impurity',
+        sectionId: 'block-8',
+        type: 'matching' as const,
+        difficulty: 'easy' as const,
+        question: 'Сопоставьте ансамблевые методы с их базовыми алгоритмами:',
+        pairs: [
+          { left: 'Random Forest', right: 'Глубокие деревья на бутстрап-выборках' },
+          { left: 'AdaBoost', right: 'Пни решений с адаптивными весами объектов' },
+          { left: 'Gradient Boosting', right: 'Деревья, обученные на псевдо-остатках' },
+          { left: 'Stacking', right: 'Мета-модель на предсказаниях базовых алгоритмов' },
+        ],
+        correctAnswer: 'matched',
+        explanation: 'Random Forest усредняет независимые деревья. AdaBoost перевешивает ошибочные объекты. Gradient Boosting минимизирует остатки. Stacking использует meta-learner.',
+      },
+      {
+        id: 'nt-m04',
+        topicId: 'lstm-rnn',
+        sectionId: 'block-11',
+        type: 'matching' as const,
+        difficulty: 'hard' as const,
+        question: 'Сопоставьте ворота LSTM с их функциями:',
+        pairs: [
+          { left: 'Forget Gate', right: 'Решает, что забыть из предыдущей памяти' },
+          { left: 'Input Gate', right: 'Решает, какую новую информацию записать' },
+          { left: 'Output Gate', right: 'Определяет, что войдёт в hidden state' },
+          { left: 'Cell State', right: 'Долговременная память, проходящая через время' },
+        ],
+        correctAnswer: 'matched',
+        explanation: 'Forget Gate (f_t) обнуляет часть прошлой памяти. Input Gate (i_t) управляет записью. Output Gate (o_t) фильтрует исходящий hidden state. Cell State — «конвейер» долгосрочной памяти.',
+      },
+      {
+        id: 'nt-m05',
+        topicId: 'regularization',
+        sectionId: 'block-9',
+        type: 'matching' as const,
+        difficulty: 'medium' as const,
+        question: 'Сопоставьте типы регуляризации с их байесовскими интерпретациями:',
+        pairs: [
+          { left: 'L1 (Lasso)', right: 'Лапласовский априорный p(w) ∝ exp(-λ|w|)' },
+          { left: 'L2 (Ridge)', right: 'Гауссовский априорный p(w) ∝ exp(-λw²)' },
+          { left: 'Dropout', right: 'Приближённый байесовский вывод (Bayesian NN)' },
+          { left: 'Early Stopping', right: 'Неявная L2-регуляризация через ограничение шагов' },
+        ],
+        correctAnswer: 'matched',
+        explanation: 'L1 соответствует Лапласовскому априору (острая пика → спарсивность). L2 — Гауссовскому (широкая пика → малые но ненулевые веса). Dropout ≈ variational inference. Early stopping ≈ L2 по траектории оптимизации.',
+      },
+
+      // ORDERING questions (5)
+      {
+        id: 'nt-o01',
+        topicId: 'ml-workflow',
+        sectionId: 'block-0',
+        type: 'ordering' as const,
+        difficulty: 'easy' as const,
+        question: 'Расставьте этапы типичного ML-проекта в правильном порядке:',
+        items: [
+          'Деплой модели в production',
+          'Сбор и изучение данных (EDA)',
+          'Постановка задачи и выбор метрики',
+          'Предобработка и feature engineering',
+          'Обучение и валидация модели',
+        ],
+        correctOrder: [2, 1, 3, 4, 0],
+        correctAnswer: 'ordered',
+        explanation: 'Правильный порядок: (1) постановка задачи, (2) сбор данных и EDA, (3) предобработка, (4) обучение и валидация, (5) деплой. Итеративно возвращаемся к предыдущим шагам при необходимости.',
+      },
+      {
+        id: 'nt-o02',
+        topicId: 'vanishing-gradient',
+        sectionId: 'block-11',
+        type: 'ordering' as const,
+        difficulty: 'medium' as const,
+        question: 'Расположите шаги обратного распространения ошибки (backprop) в правильном порядке:',
+        items: [
+          'Обновление весов через оптимизатор',
+          'Прямой проход: вычисление предсказания',
+          'Вычисление функции потерь',
+          'Обратный проход: вычисление градиентов',
+          'Обнуление градиентов (zero_grad)',
+        ],
+        correctOrder: [4, 1, 2, 3, 0],
+        correctAnswer: 'ordered',
+        explanation: 'Правильный порядок PyTorch: (1) zero_grad(), (2) forward pass, (3) loss.compute(), (4) loss.backward(), (5) optimizer.step(). Обнуление градиентов критически важно перед каждым шагом.',
+      },
+      {
+        id: 'nt-o03',
+        topicId: 'data-leakage',
+        sectionId: 'block-5',
+        type: 'ordering' as const,
+        difficulty: 'medium' as const,
+        question: 'Расставьте шаги кросс-валидации в правильном порядке:',
+        items: [
+          'Усреднение метрик по всем фолдам',
+          'Разбить данные на K фолдов',
+          'Применить обученный трансформер к val фолду',
+          'Обучить Pipeline на K-1 обучающих фолдах',
+          'Вычислить метрику на val фолде',
+        ],
+        correctOrder: [1, 3, 2, 4, 0],
+        correctAnswer: 'ordered',
+        explanation: 'Правильный порядок: (1) разбиение на K фолдов, (2) обучение на K-1 фолдах, (3) трансформация val фолда, (4) вычисление метрики, (5) усреднение. Важно: трансформер обучается только на train фолде.',
+      },
+      {
+        id: 'nt-o04',
+        topicId: 'gradient-descent',
+        sectionId: 'block-9',
+        type: 'ordering' as const,
+        difficulty: 'hard' as const,
+        question: 'Расположите следующие оптимизаторы от наименее к наиболее адаптивных по learning rate:',
+        items: [
+          'Adam (с bias correction)',
+          'SGD (без momentum)',
+          'Adagrad',
+          'RMSprop',
+        ],
+        correctOrder: [1, 2, 3, 0],
+        correctAnswer: 'ordered',
+        explanation: 'От наименее к наиболее адаптивным: SGD (фиксированный LR) → Adagrad (монотонно убывающий LR) → RMSprop (EWMA квадратов, без bias correction) → Adam (EWMA первого и второго моментов с bias correction).',
+      },
+      {
+        id: 'nt-o05',
+        topicId: 'boosting-comparison',
+        sectionId: 'block-8',
+        type: 'ordering' as const,
+        difficulty: 'medium' as const,
+        question: 'Расположите шаги обучения одной итерации Gradient Boosting в правильном порядке:',
+        items: [
+          'Добавить новое дерево к ансамблю',
+          'Вычислить предсказание текущего ансамбля',
+          'Обучить дерево на псевдо-остатках',
+          'Вычислить псевдо-остатки (отрицательный градиент потерь)',
+        ],
+        correctOrder: [1, 3, 2, 0],
+        correctAnswer: 'ordered',
+        explanation: 'Шаги итерации GB: (1) предсказание ансамбля, (2) вычисление псевдо-остатков как -∂L/∂ŷ, (3) обучение дерева на остатках, (4) добавление дерева с learning rate.',
+      },
+
+      // FORMULA questions (5)
+      {
+        id: 'nt-f01',
+        topicId: 'precision-recall-f1',
+        sectionId: 'block-6',
+        type: 'formula' as const,
+        difficulty: 'easy' as const,
+        question: 'Запишите формулу F1-score через Precision (P) и Recall (R). Пример формата: "2*P*R/(P+R)"',
+        formulaAnswer: '2*p*r/(p+r)',
+        correctAnswer: '2*p*r/(p+r)',
+        explanation: 'F1 = 2·P·R / (P + R) — гармоническое среднее Precision и Recall. Учитывает оба компонента равномерно.',
+      },
+      {
+        id: 'nt-f02',
+        topicId: 'gini-impurity',
+        sectionId: 'block-8',
+        type: 'formula' as const,
+        difficulty: 'medium' as const,
+        question: 'Узел содержит долю p₁ объектов класса 1 и (1-p₁) объектов класса 2. Запишите формулу Gini Impurity через p₁. Пример формата: "2*p1*(1-p1)"',
+        formulaAnswer: '2*p1*(1-p1)',
+        correctAnswer: '2*p1*(1-p1)',
+        explanation: 'Для бинарного случая: Gini = 1 - p₁² - (1-p₁)² = 2·p₁·(1-p₁). При p₁=0.5 максимум = 0.5, при p₁=0 или p₁=1 минимум = 0.',
+      },
+      {
+        id: 'nt-f03',
+        topicId: 'svm-margin',
+        sectionId: 'block-8',
+        type: 'formula' as const,
+        difficulty: 'medium' as const,
+        question: 'Ширина зазора (margin) в SVM через вектор весов w. Пример формата: "2/||w||"',
+        formulaAnswer: '2/||w||',
+        correctAnswer: '2/||w||',
+        explanation: 'Margin = 2/‖w‖. Две параллельные гиперплоскости w·x+b=+1 и w·x+b=-1 разделяют классы. Расстояние между ними = 2/‖w‖. SVM максимизирует этот зазор, минимизируя ‖w‖.',
+      },
+      {
+        id: 'nt-f04',
+        topicId: 'gradient-descent',
+        sectionId: 'block-9',
+        type: 'formula' as const,
+        difficulty: 'easy' as const,
+        question: 'Шаг градиентного спуска: новые параметры θ через старые, learning rate η и градиент ∇L. Формат: "theta - eta*grad_L"',
+        formulaAnswer: 'theta-eta*grad_l',
+        correctAnswer: 'theta-eta*grad_l',
+        explanation: 'θ_{t+1} = θ_t - η·∇_θ L(θ_t). Параметры обновляются в направлении, противоположном градиенту. η (learning rate) контролирует размер шага.',
+      },
+      {
+        id: 'nt-f05',
+        topicId: 'naive-bayes',
+        sectionId: 'block-8',
+        type: 'formula' as const,
+        difficulty: 'hard' as const,
+        question: 'Правило Байеса: запишите P(y|x) через P(x|y), P(y), P(x). Формат: "P(x|y)*P(y)/P(x)"',
+        formulaAnswer: 'p(x|y)*p(y)/p(x)',
+        correctAnswer: 'p(x|y)*p(y)/p(x)',
+        explanation: 'P(y|x) = P(x|y)·P(y) / P(x). P(y|x) — апостериорная. P(x|y) — правдоподобие. P(y) — априорная. P(x) — нормировочная константа (evidence).',
       },
     ],
   },
