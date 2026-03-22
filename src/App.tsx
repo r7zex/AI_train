@@ -8,6 +8,8 @@ import CheatsheetPage from './pages/CheatsheetPage'
 import MistakesPage from './pages/MistakesPage'
 import GlossaryPage from './pages/GlossaryPage'
 import ComparisonPage from './pages/ComparisonPage'
+import QuizPage from './pages/QuizPage'
+import QuizDetailPage from './pages/QuizDetailPage'
 
 export default function App() {
   return (
@@ -21,6 +23,8 @@ export default function App() {
         <Route path="mistakes" element={<MistakesPage />} />
         <Route path="glossary" element={<GlossaryPage />} />
         <Route path="comparisons" element={<ComparisonPage />} />
+        <Route path="quiz" element={<QuizPage />} />
+        <Route path="quiz/:quizId" element={<QuizDetailPage />} />
       </Route>
     </Routes>
   )
