@@ -334,7 +334,7 @@ const codeTasks: CodeTask[] = [
       const hasImport = /import\s+numpy/.test(c)
       const hasPred = /y_pred\s*=\s*x\s*@\s*w|y_pred\s*=\s*np\.dot\s*\(\s*x/.test(c)
       const hasError = /error\s*=\s*y_pred\s*-\s*y/.test(c)
-      const hasGrad = /\(2\s*\/\s*n\s*\)\s*\*\s*x\s*\.\s*t\s*@\s*error|np\.dot\s*\(\s*x\s*\.\s*t/.test(c)
+      const hasGrad = /\(2\s*\/\s*n\s*\)\s*\*\s*x\s*\.\s*t[\s@]|np\.dot\s*\(\s*x\s*\.\s*t|x\.transpose\s*\(\s*\)/.test(c)
       const hasUpdate = /w_new\s*=\s*w\s*-\s*lr\s*\*\s*grad/.test(c)
       const hasReturn = /return\s+w_new/.test(c)
 
@@ -407,8 +407,14 @@ const codeTasks: CodeTask[] = [
     checker: (code: string): CheckResult => {
       const c = code.toLowerCase()
       const fixedAxis = /np\.mean\s*\(.*axis\s*=\s*0/.test(c)
-      const fixedDiv = !/normalized\s*=\s*\(x\s*-\s*mean\)\s*\/\s*mean/.test(c) && /normalized\s*=\s*\(x\s*-\s*mean\)\s*\/\s*std/.test(c)
-      const fixedReturn = !/\.tolist\s*\(\)/.test(c) && /return\s+normalized/.test(c)
+      const divByMean = /normalized\s*=\s*\(x\s*-\s*mean\)\s*\/\s*mean/.test(c)
+      const divByStd = /normalized\s*=\s*\(x\s*-\s*mean\)\s*\/\s*std/.test(c)
+      // Bug is fixed when dividing by std (not mean) is present
+      const fixedDiv = !divByMean && divByStd
+      const hasToList = /\.tolist\s*\(\)/.test(c)
+      const hasReturnNormalized = /return\s+normalized/.test(c)
+      // Bug is fixed when return statement exists without .tolist()
+      const fixedReturn = !hasToList && hasReturnNormalized
 
       const sampleResults: TestResult[] = [
         {
@@ -604,7 +610,7 @@ function TaskPanel({ task }: TaskPanelProps) {
         {/* Left: code editor */}
         <div>
           <div className="px-4 py-2 bg-gray-800 text-xs text-gray-400 font-mono flex items-center gap-2">
-            <span>🐍</span> Python 3
+            <span aria-hidden="true">🐍</span> Python 3
             <span className="ml-auto text-gray-500">pattern-based checker</span>
           </div>
           <Editor
