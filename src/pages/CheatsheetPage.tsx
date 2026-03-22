@@ -51,6 +51,21 @@ const categories: Category[] = [
         math: '\\hat{y} = \\sigma(\\mathbf{w}^\\top \\mathbf{x} + b) = \\frac{1}{1 + e^{-(\\mathbf{w}^\\top \\mathbf{x} + b)}}',
         explanation: 'Sigmoid-функция сжимает линейную комбинацию признаков в вероятность [0, 1].',
       },
+      {
+        name: 'K-Nearest Neighbors (KNN)',
+        math: '\\hat{y} = \\text{majority}\\{y_j : x_j \\in N_k(x)\\}',
+        explanation: 'N_k(x) — k ближайших соседей точки x по выбранной метрике (Евклид, Манхэттен). KNN не имеет этапа обучения (lazy learner), вся работа — при предсказании.',
+      },
+      {
+        name: 'Decision Tree: Information Entropy',
+        math: 'H(S) = -\\sum_{k=1}^{K} p_k \\log_2 p_k',
+        explanation: 'Энтропия Шеннона для множества S. p_k — доля объектов класса k. H=0 для чистого узла, максимальна при равном распределении классов.',
+      },
+      {
+        name: 'Bayes Theorem',
+        math: 'P(A \\mid B) = \\frac{P(B \\mid A)\\,P(A)}{P(B)}',
+        explanation: 'Основа байесовской статистики. P(A|B) — апостериорная вероятность; P(B|A) — правдоподобие; P(A) — априорная вероятность; P(B) — нормировочная константа.',
+      },
     ],
   },
   {
@@ -94,6 +109,21 @@ const categories: Category[] = [
         math: 'R^2 = 1 - \\frac{\\sum(y_i - \\hat{y}_i)^2}{\\sum(y_i - \\bar{y})^2}',
         explanation: 'Доля дисперсии, объяснённая моделью. R²=1 — идеальная подгонка; R²=0 — модель не лучше среднего.',
       },
+      {
+        name: 'PR-AUC (Average Precision)',
+        math: '\\text{AP} = \\sum_n (R_n - R_{n-1}) P_n',
+        explanation: 'Площадь под Precision-Recall кривой. Информативнее ROC-AUC при сильном дисбалансе классов — не учитывает TN, которых много в несбалансированных задачах.',
+      },
+      {
+        name: 'Cohen\'s Kappa',
+        math: '\\kappa = \\frac{p_o - p_e}{1 - p_e}',
+        explanation: 'p_o — наблюдаемая доля совпадений, p_e — ожидаемая случайная доля. κ=1: полное согласие; κ=0: случайное; κ<0: хуже случайного. Учитывает дисбаланс классов лучше Accuracy.',
+      },
+      {
+        name: 'Log Loss (Cross-Entropy для классификатора)',
+        math: '\\text{LogLoss} = -\\frac{1}{n}\\sum_{i=1}^{n}\\sum_{k=1}^{K} y_{ik}\\log(\\hat{p}_{ik})',
+        explanation: 'Штрафует за уверенные ошибочные предсказания экспоненциально. При бинарной классификации: -[y log(p) + (1-y) log(1-p)].',
+      },
     ],
   },
   {
@@ -136,6 +166,21 @@ const categories: Category[] = [
         name: 'Elastic Net',
         math: 'L_{\\text{total}} = L + \\lambda_1 \\|\\mathbf{w}\\|_1 + \\lambda_2 \\|\\mathbf{w}\\|_2^2',
         explanation: 'Комбинация L1 и L2. Даёт разрежённость (как L1) и устойчивость при коррелированных признаках (как L2).',
+      },
+      {
+        name: 'RMSprop Update',
+        math: 'v_t = \\rho v_{t-1} + (1-\\rho)g_t^2,\\quad \\theta_{t+1} = \\theta_t - \\frac{\\eta}{\\sqrt{v_t}+\\varepsilon}g_t',
+        explanation: 'Адаптивный метод: делит learning rate на корень скользящего среднего квадрата градиентов. ρ ≈ 0.9. Хорошо работает для RNN и нестационарных задач.',
+      },
+      {
+        name: 'Learning Rate Schedule: Cosine Annealing',
+        math: '\\eta_t = \\eta_{\\min} + \\frac{1}{2}(\\eta_{\\max} - \\eta_{\\min})\\left(1 + \\cos\\frac{\\pi t}{T}\\right)',
+        explanation: 'Плавное убывание learning rate от max до min по косинусному закону. T — период (число итераций). Позволяет «найти» плоское минимум, избегая sharp minima.',
+      },
+      {
+        name: 'Weight Decay (L2 Regularization в оптимизаторе)',
+        math: '\\theta_{t+1} = (1 - \\lambda\\eta)\\theta_t - \\eta\\nabla L(\\theta_t)',
+        explanation: 'Эквивалент L2-регуляризации в виде умножения весов на (1 - λη) на каждом шаге. В AdamW weight decay применяется независимо от адаптивного LR.',
       },
     ],
   },
@@ -184,6 +229,26 @@ const categories: Category[] = [
         name: 'Dropout',
         math: 'y_i = \\frac{x_i \\cdot \\text{Bernoulli}(p)}{p}',
         explanation: 'Случайно обнуляет нейроны с вероятностью (1-p) во время обучения. Деление на p сохраняет ожидаемый масштаб активаций (inverted dropout).',
+      },
+      {
+        name: 'Layer Normalization',
+        math: '\\hat{x}_i = \\frac{x_i - \\mu_L}{\\sqrt{\\sigma_L^2 + \\varepsilon}},\\quad y_i = \\gamma \\hat{x}_i + \\beta',
+        explanation: 'Нормализует по всем признакам одного примера (не по батчу). μ_L, σ_L² вычисляются по каналам/признакам конкретного объекта. Независима от размера батча — идеальна для Transformer.',
+      },
+      {
+        name: 'Pooling Output Size',
+        math: 'H_{out} = \\left\\lfloor \\frac{H_{in} - k + 2p}{s} \\right\\rfloor + 1',
+        explanation: 'H_in — размер входа, k — kernel size, p — padding, s — stride. Та же формула для свёрточных слоёв. Для Global Average Pooling: H_out = W_out = 1.',
+      },
+      {
+        name: 'Residual Connection (Skip Connection)',
+        math: 'y = F(x, \\{W_i\\}) + x',
+        explanation: 'Добавляет вход x к выходу блока F(x). Позволяет градиентам протекать напрямую (highway path). Ключевой элемент ResNet, Transformer. Решает проблему деградации при большой глубине.',
+      },
+      {
+        name: 'GRU: Update Gate',
+        math: 'z_t = \\sigma(W_z[h_{t-1}, x_t] + b_z)',
+        explanation: 'z_t контролирует, насколько обновляется hidden state: h_t = (1-z_t)⊙h_{t-1} + z_t⊙h̃_t. При z≈0 сохраняется прошлое состояние; при z≈1 — принимается новое. Аналог forget+input gate в LSTM.',
       },
     ],
   },
