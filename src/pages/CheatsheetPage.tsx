@@ -175,7 +175,7 @@ const categories: Category[] = [
       {
         name: 'Learning Rate Schedule: Cosine Annealing',
         math: '\\eta_t = \\eta_{\\min} + \\frac{1}{2}(\\eta_{\\max} - \\eta_{\\min})\\left(1 + \\cos\\frac{\\pi t}{T}\\right)',
-        explanation: 'Плавное убывание learning rate от max до min по косинусному закону. T — период (число итераций). Позволяет «найти» плоское минимум, избегая sharp minima.',
+        explanation: 'Плавное убывание learning rate от max до min по косинусному закону. T — период (число итераций). Позволяет «найти» плоский минимум, избегая sharp minima.',
       },
       {
         name: 'Weight Decay (L2 Regularization в оптимизаторе)',
