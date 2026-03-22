@@ -49,15 +49,15 @@ export default function LstmRnnContent() {
         </p>
 
         <div className="space-y-3">
-          {[
-            { label: 'Вентиль забывания (forget gate)', color: 'red', formula: 'f_t = \\sigma(W_f [h_{t-1}, x_t] + b_f)', desc: 'Какую часть старого состояния ячейки забыть. 0 = забыть всё, 1 = сохранить всё.' },
-            { label: 'Входной вентиль (input gate)', color: 'green', formula: 'i_t = \\sigma(W_i [h_{t-1}, x_t] + b_i)', desc: 'Какие новые значения записать в состояние ячейки.' },
-            { label: 'Кандидат состояния', color: 'blue', formula: '\\tilde{c}_t = \\tanh(W_c [h_{t-1}, x_t] + b_c)', desc: 'Новые кандидаты для обновления состояния ячейки.' },
-            { label: 'Обновление состояния ячейки', color: 'purple', formula: 'c_t = f_t \\odot c_{t-1} + i_t \\odot \\tilde{c}_t', desc: 'Ключевая формула: часть старого + часть нового. Поток градиента почти не затухает.' },
-            { label: 'Выходной вентиль (output gate)', color: 'orange', formula: 'o_t = \\sigma(W_o [h_{t-1}, x_t] + b_o)', desc: 'Какую часть состояния ячейки выдать как скрытое состояние.' },
-            { label: 'Скрытое состояние', color: 'gray', formula: 'h_t = o_t \\odot \\tanh(c_t)', desc: 'Выход LSTM на шаге t. Используется как предсказание и передаётся на следующий шаг.' },
-          ].map(({ label, color, formula, desc }) => (
-            <div key={label} className={`border border-${color}-200 bg-${color}-50 rounded-lg p-4`}>
+          {([
+            { label: 'Вентиль забывания (forget gate)', cls: 'border-red-200 bg-red-50', formula: 'f_t = \\sigma(W_f [h_{t-1}, x_t] + b_f)', desc: 'Какую часть старого состояния ячейки забыть. 0 = забыть всё, 1 = сохранить всё.' },
+            { label: 'Входной вентиль (input gate)', cls: 'border-green-200 bg-green-50', formula: 'i_t = \\sigma(W_i [h_{t-1}, x_t] + b_i)', desc: 'Какие новые значения записать в состояние ячейки.' },
+            { label: 'Кандидат состояния', cls: 'border-blue-200 bg-blue-50', formula: '\\tilde{c}_t = \\tanh(W_c [h_{t-1}, x_t] + b_c)', desc: 'Новые кандидаты для обновления состояния ячейки.' },
+            { label: 'Обновление состояния ячейки', cls: 'border-purple-200 bg-purple-50', formula: 'c_t = f_t \\odot c_{t-1} + i_t \\odot \\tilde{c}_t', desc: 'Ключевая формула: часть старого + часть нового. Поток градиента почти не затухает.' },
+            { label: 'Выходной вентиль (output gate)', cls: 'border-orange-200 bg-orange-50', formula: 'o_t = \\sigma(W_o [h_{t-1}, x_t] + b_o)', desc: 'Какую часть состояния ячейки выдать как скрытое состояние.' },
+            { label: 'Скрытое состояние', cls: 'border-gray-300 bg-gray-100', formula: 'h_t = o_t \\odot \\tanh(c_t)', desc: 'Выход LSTM на шаге t. Используется как предсказание и передаётся на следующий шаг.' },
+          ] as const).map(({ label, cls, formula, desc }) => (
+            <div key={label} className={`border ${cls} rounded-lg p-4`}>
               <div className="flex items-start gap-3">
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm text-gray-800 mb-1">{label}</h4>
