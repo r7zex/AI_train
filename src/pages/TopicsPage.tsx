@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { sections } from '../data/topics'
+import type { Section } from '../data/topics'
 import { useProgress } from '../hooks/useProgress'
 
 const colorMap: Record<string, string> = {
@@ -25,6 +26,29 @@ const colorMap: Record<string, string> = {
   stone: 'text-stone-600 bg-stone-50 border-stone-200',
 }
 
+const courseBlocks = [
+  {
+    id: 'python-base',
+    title: 'Блок: Python и инструменты',
+    sectionIds: ['block-1', 'block-2', 'block-3'],
+  },
+  {
+    id: 'ml-core',
+    title: 'Блок: Классический ML',
+    sectionIds: ['block-0', 'block-4', 'block-5', 'block-6', 'block-7', 'block-8', 'block-9', 'block-10', 'block-11', 'block-12'],
+  },
+  {
+    id: 'dl-core',
+    title: 'Блок: Deep Learning',
+    sectionIds: ['block-13', 'block-14', 'block-15', 'block-16', 'block-17', 'block-18'],
+  },
+  {
+    id: 'interview',
+    title: 'Блок: Подготовка к собеседованию',
+    sectionIds: ['block-19', 'block-20', 'block-21'],
+  },
+]
+
 export default function TopicsPage() {
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState('')
@@ -45,6 +69,16 @@ export default function TopicsPage() {
       }))
       .filter(s => s.topics.length > 0)
   }, [query, filterSection])
+
+  const groupedBlocks = useMemo(() => {
+    const map = new Map(filteredSections.map((s) => [s.id, s]))
+    return courseBlocks
+      .map((block) => ({
+        ...block,
+        sections: block.sectionIds.map((id) => map.get(id)).filter((s): s is Section => Boolean(s)),
+      }))
+      .filter((b) => b.sections.length > 0)
+  }, [filteredSections])
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -69,35 +103,42 @@ export default function TopicsPage() {
         </div>
       </div>
 
-      {filteredSections.length === 0 ? (
+      {groupedBlocks.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
           <div className="text-4xl mb-3">🔍</div>
           <p>Ничего не найдено по запросу «{query}»</p>
         </div>
       ) : (
-        <div className="space-y-10">
-          {filteredSections.map(section => (
-            <div key={section.id}>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl">{section.icon}</span>
-                <h2 className="text-xl font-bold text-gray-800">{section.title}</h2>
-                <span className="text-sm text-gray-400">({section.topics.length} тем)</span>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {section.topics.map(topic => (
-                  <Link key={topic.id} to={`/topics/${topic.id}`}
-                    className={`border rounded-xl p-4 flex items-start gap-3 hover:shadow-md transition-all ${colorMap[section.color] ?? 'text-gray-600 bg-gray-50 border-gray-200'} hover:scale-[1.01]`}>
-                    <div className="flex-shrink-0 mt-0.5">
-                      {isCompleted(topic.id) ? <span className="text-green-500 text-lg">✅</span> : <span className="text-gray-300 text-lg">⬜</span>}
+        <div className="space-y-8">
+          {groupedBlocks.map(block => (
+            <section key={block.id} className="bg-white border border-gray-200 rounded-xl p-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">{block.title}</h2>
+              <div className="space-y-6">
+                {block.sections.map((section) => (
+                  <div key={section.id}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-xl">{section.icon}</span>
+                      <h3 className="text-base font-semibold text-gray-800">Подблок: {section.title}</h3>
+                      <span className="text-xs text-gray-400">({section.topics.length} тем)</span>
                     </div>
-                    <div>
-                      <div className="font-semibold text-sm mb-1">{topic.title}</div>
-                      <div className="text-xs opacity-70 leading-relaxed">{topic.shortDescription}</div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {section.topics.map(topic => (
+                        <Link key={topic.id} to={`/topics/${topic.id}`}
+                          className={`border rounded-xl p-4 flex items-start gap-3 hover:shadow-sm transition-all ${colorMap[section.color] ?? 'text-gray-600 bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-shrink-0 mt-0.5">
+                            {isCompleted(topic.id) ? <span className="text-green-500 text-lg">✅</span> : <span className="text-gray-300 text-lg">⬜</span>}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-sm mb-1">Тема: {topic.title}</div>
+                            <div className="text-xs opacity-70 leading-relaxed">{topic.shortDescription}</div>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       )}

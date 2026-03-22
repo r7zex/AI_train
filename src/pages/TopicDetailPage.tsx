@@ -5,7 +5,9 @@ import Breadcrumbs from '../components/Breadcrumbs'
 import ProgressButton from '../components/ProgressButton'
 import GenericTopicTheory from '../content/genericTopicTheory'
 import StepNavigator from '../components/StepNavigator'
-import { subTopicsMap } from '../data/steps'
+import type { SubTopic } from '../data/steps'
+import { subTopicsMap, topicCheatsheets } from '../data/steps'
+import { quizzes } from '../data/quizzes'
 
 const contentMap: Record<string, React.LazyExoticComponent<() => React.ReactElement>> = {
   'gini-impurity': lazy(() => import('../content/giniImpurity')),
@@ -35,7 +37,63 @@ export default function TopicDetailPage() {
   const topic = topicId ? getTopicById(topicId) : null
   const section = topicId ? getSectionForTopic(topicId) : null
   const ContentComponent = topicId ? contentMap[topicId] : null
-  const subTopics = topicId ? (subTopicsMap[topicId] ?? []) : []
+  const fallbackQuizId =
+    section?.id
+      ? (quizzes.find((q) => q.topicId === topicId)?.id ??
+        quizzes.find((q) => q.sectionId === section.id && q.questions.length >= 5)?.id ??
+        quizzes.find((q) => q.questions.length >= 5)?.id)
+      : undefined
+
+  const defaultSubTopic: SubTopic | null =
+    topic && fallbackQuizId
+      ? {
+          id: `${topic.id}-default-subtopic`,
+          title: topic.title,
+          steps: [
+            {
+              id: `${topic.id}-theory`,
+              type: 'theory',
+              title: 'Теория: базовая рамка',
+              content: `1) Терминология\n${topic.title} — ключевая тема текущего блока.\n\n2) Простыми словами\n${topic.shortDescription}\n\n3) Где и зачем используется\nПрименяется в практических ML-задачах и часто обсуждается на собеседованиях.\n\n4) Пример из жизни\nРассматривайте тему через влияние на качество продукта и бизнес-метрики.\n\n5) Пример кода\n# Примерный каркас\n# 1) получить входные данные\n# 2) применить метод\n# 3) оценить результат\n\n6) Интерпретация кода\nКаждая строка кода отражает отдельный шаг алгоритма: подготовка, вычисление, проверка результата.`,
+            },
+            {
+              id: `${topic.id}-pitfalls`,
+              type: 'pitfalls',
+              title: 'Распространённые ошибки и решения',
+              content:
+                '• Ошибка: использовать трансформации до train/test split.\nРешение: fit только на train.\n\n• Ошибка: не проверять крайние случаи.\nРешение: добавить guard-условия и hidden-тесты.\n\n• Ошибка: делать выводы по одной метрике.\nРешение: проверять набор метрик и бизнес-контекст.',
+            },
+            {
+              id: `${topic.id}-interview`,
+              type: 'interview',
+              title: 'Вопросы/ответы для собеседования',
+              content:
+                `Q: Что это и зачем нужно?\nA: ${topic.shortDescription}\n\nQ: Какие формулы/метрики ключевые?\nA: Назовите базовые формулы темы и ограничения их применения.\n\nQ: Какие частые ошибки?\nA: Leakage, отсутствие baseline, отсутствие edge-case проверок.\n\nQ: Как проверить корректность решения?\nA: Сравнить с baseline, прогнать тесты и разобрать ошибки.`,
+            },
+            {
+              id: `${topic.id}-quiz`,
+              type: 'quiz',
+              title: 'Квиз (5+ вопросов)',
+              quizId: fallbackQuizId,
+            },
+            { id: `${topic.id}-code-1`, type: 'code', title: 'Практика stdin→stdout #1', codeTaskId: 'sum-pairs' },
+            { id: `${topic.id}-code-2`, type: 'code', title: 'Практика stdin→stdout #2', codeTaskId: 'stdin-feature-stats' },
+            { id: `${topic.id}-code-3`, type: 'code', title: 'Практика stdin→stdout #3', codeTaskId: 'stdin-minmax-scale' },
+            { id: `${topic.id}-code-4`, type: 'code', title: 'Практика stdin→stdout #4', codeTaskId: 'stdin-threshold-metrics' },
+            { id: `${topic.id}-code-5`, type: 'code', title: 'Практика stdin→stdout #5', codeTaskId: 'stdin-batch-loss' },
+            {
+              id: `${topic.id}-recap`,
+              type: 'recap',
+              title: 'Шпаргалка подтемы',
+              content: (topicCheatsheets[topic.id] ?? ['Ключевые определения и формулы добавлены в общий справочник.'])
+                .map((item) => `• ${item}`)
+                .join('\n'),
+            },
+          ],
+        }
+      : null
+
+  const subTopics = topicId ? (subTopicsMap[topicId] ?? (defaultSubTopic ? [defaultSubTopic] : [])) : []
   const hasSteps = subTopics.length > 0
 
   if (!topic || !section) {
@@ -71,24 +129,6 @@ export default function TopicDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-8">
-        {[
-          { to: '/practice', label: 'Практика' },
-          { to: '/quiz', label: 'Квизы' },
-          { to: '/code-practice', label: 'Код-задачи' },
-          { to: '/pytorch-lab', label: 'PyTorch Lab' },
-          { to: '/progress', label: 'Прогресс' },
-        ].map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className="text-center text-xs sm:text-sm font-medium bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-700 hover:border-blue-300 hover:text-blue-700 hover:shadow-sm transition-all"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
-
       <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
         {hasSteps ? (
           <div className="space-y-6">
@@ -119,6 +159,15 @@ export default function TopicDetailPage() {
             sectionTitle={section.title}
           />
         )}
+      </div>
+
+      <div className="mt-6 bg-white border border-gray-200 rounded-xl p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Шпаргалка темы</h2>
+        <ul className="text-sm text-gray-700 space-y-1">
+          {(topicCheatsheets[topic.id] ?? ['См. страницу «Термины и функции» для полного списка формул и определений.']).map((line) => (
+            <li key={line}>• {line}</li>
+          ))}
+        </ul>
       </div>
 
       <div className="mt-8 flex justify-between">

@@ -1,23 +1,18 @@
 export type StepType =
   | 'theory'
-  | 'formula'
-  | 'intuition'
-  | 'manual-solution'
   | 'quiz'
   | 'code'
-  | 'fill-in-code'
-  | 'debugging'
   | 'recap'
   | 'pitfalls'
-  | 'sources'
+  | 'interview'
 
 export interface Step {
   id: string
   type: StepType
   title: string
-  content?: string   // plain text/markdown-like content for theory/recap/pitfalls
-  quizId?: string    // for quiz steps
-  codeTaskId?: string // for code steps
+  content?: string
+  quizId?: string
+  codeTaskId?: string
 }
 
 export interface SubTopic {
@@ -27,174 +22,185 @@ export interface SubTopic {
 }
 
 export const stepTypeConfig: Record<StepType, { icon: string; label: string; color: string }> = {
-  theory:          { icon: '📖', label: 'Теория',       color: 'bg-blue-100 text-blue-700 border-blue-300' },
-  formula:         { icon: '📐', label: 'Формула',      color: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
-  intuition:       { icon: '💡', label: 'Интуиция',     color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
-  'manual-solution': { icon: '✏️', label: 'Ручной расчёт', color: 'bg-orange-100 text-orange-700 border-orange-300' },
-  quiz:            { icon: '📝', label: 'Квиз',         color: 'bg-purple-100 text-purple-700 border-purple-300' },
-  code:            { icon: '💻', label: 'Код',          color: 'bg-gray-100 text-gray-700 border-gray-300' },
-  'fill-in-code':  { icon: '🔧', label: 'Заполни код',  color: 'bg-green-100 text-green-700 border-green-300' },
-  debugging:       { icon: '🐛', label: 'Отладка',      color: 'bg-red-100 text-red-700 border-red-300' },
-  recap:           { icon: '🔁', label: 'Итого',        color: 'bg-teal-100 text-teal-700 border-teal-300' },
-  pitfalls:        { icon: '⚠️', label: 'Ошибки',       color: 'bg-rose-100 text-rose-700 border-rose-300' },
-  sources:         { icon: '📚', label: 'Источники',    color: 'bg-slate-100 text-slate-700 border-slate-300' },
+  theory: { icon: '📖', label: 'Теория', color: 'bg-slate-100 text-slate-700 border-slate-300' },
+  quiz: { icon: '📝', label: 'Квиз', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+  code: { icon: '💻', label: 'Код', color: 'bg-indigo-100 text-indigo-700 border-indigo-300' },
+  recap: { icon: '📌', label: 'Шпаргалка', color: 'bg-cyan-100 text-cyan-700 border-cyan-300' },
+  pitfalls: { icon: '⚠️', label: 'Ошибки', color: 'bg-amber-100 text-amber-700 border-amber-300' },
+  interview: { icon: '🎤', label: 'Собес', color: 'bg-violet-100 text-violet-700 border-violet-300' },
 }
 
-// Example subtopics with steps for a few topics
+const requiredCodeTasks = [
+  'sum-pairs',
+  'stdin-feature-stats',
+  'stdin-minmax-scale',
+  'stdin-threshold-metrics',
+  'stdin-batch-loss',
+]
+
+function theoryTemplate(topic: string, term: string, formula: string, lifeCase: string, codeExample: string): string {
+  return [
+    `Тема: ${topic}`,
+    '',
+    '1) Терминология',
+    `${term}`,
+    '',
+    '2) Объяснение простыми словами',
+    'Это базовая идея, которая помогает модели учиться на данных и улучшать качество предсказаний шаг за шагом.',
+    '',
+    '3) Где и зачем используется',
+    'Используется в production ML-пайплайнах: от baseline до продвинутых моделей, когда нужно контролировать качество и интерпретацию результата.',
+    '',
+    '4) Пример из жизни',
+    `${lifeCase}`,
+    '',
+    '5) Пример кода',
+    codeExample,
+    '',
+    '6) Словесная интерпретация кода',
+    'Код берёт входные данные, считает ключевые промежуточные величины, а затем возвращает метрику/обновлённое состояние модели. Это прямое отображение формулы в программную логику.',
+    '',
+    'Ключевая формула:',
+    formula,
+  ].join('\n')
+}
+
+function pitfallsTemplate(): string {
+  return [
+    'Частые ошибки и как исправлять:',
+    '• Ошибка 1: считать формулы на всём датасете до split → Решение: все fit-операции только на train.',
+    '• Ошибка 2: путать precision/recall/F1 → Решение: всегда выписывать confusion matrix и формулы.',
+    '• Ошибка 3: не проверять крайние случаи (деление на 0) → Решение: добавлять явные guard-ветки.',
+    '• Ошибка 4: смотреть только на одну метрику → Решение: анализировать набор метрик и бизнес-стоимость ошибок.',
+  ].join('\n')
+}
+
+function interviewTemplate(topic: string): string {
+  return [
+    `Вопросы на собеседовании по теме «${topic}»`,
+    '',
+    'Q1: Как объяснить тему человеку без ML-бэкграунда?',
+    'A1: Через бизнес-пример, где ошибка модели имеет цену, и тема помогает эту цену уменьшить.',
+    '',
+    'Q2: Какие метрики/формулы ключевые?',
+    'A2: Нужно назвать формулу, расшифровать каждую переменную и объяснить ограничение формулы.',
+    '',
+    'Q3: Какие типичные ошибки в проде?',
+    'A3: Leakage, некорректный split, отсутствие baseline и отсутствие мониторинга дрейфа.',
+    '',
+    'Q4: Как проверить решение?',
+    'A4: Проверить на edge-cases, сравнить с baseline и прогнать hidden-тесты.',
+  ].join('\n')
+}
+
+function recapTemplate(formulas: string[]): string {
+  return [
+    'Шпаргалка подтемы:',
+    ...formulas.map((f) => `• ${f}`),
+    '• Минимальная практика: 5 quiz-вопросов + 5 задач stdin→stdout с hidden-тестами.',
+  ].join('\n')
+}
+
+function buildStandardSubTopic(
+  subId: string,
+  title: string,
+  quizId: string,
+  theory: string,
+  formulas: string[],
+): SubTopic {
+  return {
+    id: subId,
+    title,
+    steps: [
+      { id: `${subId}-theory`, type: 'theory', title: 'Теория: базовая рамка', content: theory },
+      { id: `${subId}-pitfalls`, type: 'pitfalls', title: 'Распространённые ошибки и решения', content: pitfallsTemplate() },
+      { id: `${subId}-interview`, type: 'interview', title: 'Вопросы и ответы для собеседования', content: interviewTemplate(title) },
+      { id: `${subId}-quiz`, type: 'quiz', title: 'Квиз (минимум 5 вопросов)', quizId },
+      ...requiredCodeTasks.map((taskId, idx) => ({
+        id: `${subId}-code-${idx + 1}`,
+        type: 'code' as const,
+        title: `Практика stdin→stdout #${idx + 1}`,
+        codeTaskId: taskId,
+      })),
+      { id: `${subId}-recap`, type: 'recap', title: 'Шпаргалка подтемы', content: recapTemplate(formulas) },
+    ],
+  }
+}
+
 export const subTopicsMap: Record<string, SubTopic[]> = {
   'precision-recall-f1': [
-    {
-      id: 'prf-sub1',
-      title: 'Precision & Recall',
-      steps: [
-        {
-          id: 'prf-s1',
-          type: 'theory',
-          title: 'Что такое Precision и Recall',
-          content:
-            'Precision (точность) — доля правильных положительных предсказаний среди всех положительных предсказаний:\nPrecision = TP / (TP + FP)\n\nRecall (полнота) — доля найденных положительных объектов среди всех реально положительных:\nRecall = TP / (TP + FN)\n\nPrecision отвечает на вопрос: "Сколько из тех, кого мы назвали позитивными, реально позитивны?"\nRecall отвечает: "Сколько реально позитивных мы нашли?"',
-        },
-        {
-          id: 'prf-s2',
-          type: 'intuition',
-          title: 'Когда важнее Precision, когда Recall',
-          content:
-            'Precision важна, когда цена ложной тревоги (FP) высока:\n• Спам-фильтр: не хочется отправить важное письмо в спам\n• Судебная система: лучше оправдать виновного, чем осудить невиновного\n\nRecall важен, когда цена пропуска (FN) высока:\n• Медицинская диагностика: лучше направить здорового на повторный тест, чем пропустить больного\n• Противопожарная сигнализация: лучше ложная тревога, чем пропустить пожар',
-        },
-        {
-          id: 'prf-s3',
-          type: 'formula',
-          title: 'Формула F1-Score',
-          content:
-            'F1-Score — гармоническое среднее Precision и Recall:\nF1 = 2·P·R / (P + R)\n\nПочему гармоническое, а не среднее арифметическое?\nГармоническое среднее штрафует за несбалансированность: если P=1.0, R=0.01, то:\n• Арифметическое: (1.0 + 0.01) / 2 = 0.505\n• Гармоническое: 2·1.0·0.01 / 1.01 ≈ 0.02\n\nF1 принуждает нас достичь баланса между P и R.',
-        },
-        {
-          id: 'prf-s4',
-          type: 'manual-solution',
-          title: 'Ручной расчёт F1',
-          content:
-            'Задача: TP=70, FP=30, FN=70\n\nШаг 1: Precision = TP/(TP+FP) = 70/(70+30) = 70/100 = 0.7\nШаг 2: Recall = TP/(TP+FN) = 70/(70+70) = 70/140 = 0.5\nШаг 3: F1 = 2·0.7·0.5 / (0.7+0.5) = 0.7 / 1.2 ≈ 0.583\n\nПроверка: F1 всегда между min(P,R) и max(P,R)\n0.5 ≤ 0.583 ≤ 0.7 ✓',
-        },
-        {
-          id: 'prf-s5',
-          type: 'quiz',
-          title: 'Квиз: Precision, Recall, F1',
-          quizId: 'quiz-metrics',
-        },
-        {
-          id: 'prf-s6',
-          type: 'pitfalls',
-          title: 'Типичные ошибки',
-          content:
-            '1. Путать Precision и Recall местами — всегда проверяй по формуле.\n2. Использовать Accuracy для несбалансированных датасетов — модель "всегда предсказывает 0" даст 99% Accuracy при 1% позитивов.\n3. Оптимизировать F1 напрямую в sklearn — используй make_scorer(f1_score, average="binary").\n4. Забывать указывать average= при мультиклассовом F1: "macro", "micro", "weighted".',
-        },
-        {
-          id: 'prf-s7',
-          type: 'recap',
-          title: 'Итого',
-          content:
-            '✅ Precision = TP/(TP+FP) — точность положительных предсказаний\n✅ Recall = TP/(TP+FN) — полнота поиска позитивных\n✅ F1 = 2PR/(P+R) — баланс между P и R\n✅ Выбор метрики зависит от стоимости FP vs FN ошибок\n✅ При несбалансированных классах F1 > Accuracy',
-        },
+    buildStandardSubTopic(
+      'prf-core',
+      'Precision / Recall / F1',
+      'quiz-prf-subtopic',
+      theoryTemplate(
+        'Precision / Recall / F1',
+        'TP, FP, FN — базовые элементы матрицы ошибок; Precision = TP/(TP+FP), Recall = TP/(TP+FN), F1 = 2PR/(P+R).',
+        'P = TP/(TP+FP), R = TP/(TP+FN), F1 = 2PR/(P+R)',
+        'Медицинский скрининг: высокий Recall снижает риск пропустить заболевание, высокий Precision снижает число ложных тревог.',
+        'tp, fp, fn = 70, 30, 70\nprecision = tp / (tp + fp)\nrecall = tp / (tp + fn)\nf1 = 2 * precision * recall / (precision + recall)',
+      ),
+      [
+        'Precision = TP / (TP + FP)',
+        'Recall = TP / (TP + FN)',
+        'F1 = 2 * Precision * Recall / (Precision + Recall)',
       ],
-    },
+    ),
   ],
-
   'gradient-descent': [
-    {
-      id: 'gd-sub1',
-      title: 'Градиентный спуск',
-      steps: [
-        {
-          id: 'gd-s1',
-          type: 'theory',
-          title: 'Идея градиентного спуска',
-          content:
-            'Градиентный спуск — итеративный алгоритм оптимизации для минимизации дифференцируемой функции потерь.\n\nАналогия: представь, что ты в горах с завязанными глазами. Ты можешь нащупать направление уклона под ногами (градиент) и сделать шаг вниз. Повторяя это, ты придёшь в долину (локальный минимум).\n\nОбновление: θ_{t+1} = θ_t - η·∇_θ L(θ_t)\n• θ — параметры модели (веса)\n• η — learning rate (размер шага)\n• ∇_θ L — градиент функции потерь',
-        },
-        {
-          id: 'gd-s2',
-          type: 'intuition',
-          title: 'Выбор learning rate',
-          content:
-            'Learning rate η — критический гиперпараметр:\n\nСлишком большой η: колебания, расходимость\n• Представь большой прыжок — перелетаешь через долину\n\nСлишком маленький η: очень медленная сходимость\n• Маленькие шажки — придёшь в минимум, но очень долго\n\nОптимальный η: быстрая сходимость к минимуму\n\nПрактика: начинай с η=0.01 для Adam, η=0.1 для SGD с LR scheduler.',
-        },
-        {
-          id: 'gd-s3',
-          type: 'formula',
-          title: 'SGD vs Batch GD vs Mini-batch',
-          content:
-            'Batch GD: ∇L = (1/n)·Σᵢ ∇Lᵢ\n• Один шаг = весь датасет. Точно, медленно.\n\nSGD: ∇L ≈ ∇Lᵢ (один объект)\n• Быстрый, шумный. Хорошо обобщает.\n\nMini-batch: ∇L ≈ (1/B)·Σᵢ∈batch ∇Lᵢ\n• Баланс: скорость + стабильность. B=32-256 типично.',
-        },
-        {
-          id: 'gd-s4',
-          type: 'quiz',
-          title: 'Квиз по оптимизации',
-          quizId: 'quiz-deep-learning',
-        },
-        {
-          id: 'gd-s5',
-          type: 'code',
-          title: 'Код: Fill-in gradient descent',
-          codeTaskId: 'fill-gradient-descent',
-        },
-        {
-          id: 'gd-s6',
-          type: 'pitfalls',
-          title: 'Типичные ошибки',
-          content:
-            '1. Забывать zero_grad() в PyTorch — градиенты накапливаются!\n2. Слишком большой LR — loss сразу идёт в NaN.\n3. Не нормализовать данные — разные масштабы признаков = плохое обусловливание.\n4. Использовать SGD без momentum для нейросетей — сходится медленно.\n5. Не использовать LR scheduler — фиксированный LR редко оптимален.',
-        },
-        {
-          id: 'gd-s7',
-          type: 'recap',
-          title: 'Итого',
-          content:
-            '✅ GD: θ -= η·∇L (итеративная оптимизация)\n✅ η слишком большой → расходимость; слишком маленький → медленно\n✅ Mini-batch = компромисс скорость/стабильность\n✅ Adam = SGD + momentum + адаптивный LR\n✅ В PyTorch: zero_grad → forward → loss → backward → step',
-        },
+    buildStandardSubTopic(
+      'gd-core',
+      'Градиентный спуск',
+      'quiz-gd-subtopic',
+      theoryTemplate(
+        'Градиентный спуск',
+        'Функция потерь L(θ), градиент ∇L, скорость обучения η.',
+        'θ(t+1) = θ(t) - η * ∇L(θ(t))',
+        'Подбор цены в динамике: если шаг слишком большой, «перелетаем» минимум; слишком маленький — двигаемся очень медленно.',
+        'for _ in range(steps):\n    grad = (2 / n) * X.T @ (X @ w - y)\n    w = w - lr * grad',
+      ),
+      [
+        'θ(t+1) = θ(t) - η∇L(θ(t))',
+        'MSE = (1/n) * Σ(ŷ - y)^2',
+        '∇MSE = (2/n) * X.T @ (Xw - y)',
       ],
-    },
+    ),
   ],
-
   'gini-impurity': [
-    {
-      id: 'gi-sub1',
-      title: 'Индекс Джини',
-      steps: [
-        {
-          id: 'gi-s1',
-          type: 'theory',
-          title: 'Что такое Gini Impurity',
-          content:
-            'Gini Impurity (нечистота Джини) — мера неоднородности узла дерева решений.\n\nФормула: G = 1 - Σ pₖ²\n\nгде pₖ — доля объектов класса k в узле.\n\nСвойства:\n• G = 0: узел чистый (все объекты одного класса)\n• G максимальна при равном распределении классов\n• Для K классов: G_max = 1 - 1/K\n• Для 2 классов: G_max = 0.5 при p₁ = p₂ = 0.5',
-        },
-        {
-          id: 'gi-s2',
-          type: 'manual-solution',
-          title: 'Ручной расчёт Gini',
-          content:
-            'Задача: узел содержит 7 объектов класса A и 3 объекта класса B.\n\np_A = 7/10 = 0.7\np_B = 3/10 = 0.3\n\nGini = 1 - (0.7² + 0.3²)\n     = 1 - (0.49 + 0.09)\n     = 1 - 0.58\n     = 0.42\n\nПроверка: 0 ≤ 0.42 ≤ 0.5 ✓ (не превышает максимум для 2 классов)',
-        },
-        {
-          id: 'gi-s3',
-          type: 'intuition',
-          title: 'Gini vs Entropy',
-          content:
-            'Gini и Entropy — оба критерия для выбора лучшего разбиения.\n\nGini: быстрее вычисляется (нет логарифма)\nEntropy: чуть более чувствительна к редким классам\n\nОтличие невелико: в большинстве задач дают схожие деревья.\nsklearn Decision Tree использует Gini по умолчанию.',
-        },
-        {
-          id: 'gi-s4',
-          type: 'quiz',
-          title: 'Квиз по деревьям решений',
-          quizId: 'quiz-classical-ml',
-        },
-        {
-          id: 'gi-s5',
-          type: 'recap',
-          title: 'Итого',
-          content:
-            '✅ Gini = 1 - Σpₖ² (мера неоднородности)\n✅ G=0: чистый узел; G_max=0.5 для бинарной задачи\n✅ Дерево выбирает разбиение с наименьшим взвешенным Gini потомков\n✅ Альтернатива: Information Gain (энтропия Шеннона)',
-        },
+    buildStandardSubTopic(
+      'gini-core',
+      'Индекс Джини',
+      'quiz-gini-subtopic',
+      theoryTemplate(
+        'Индекс Джини',
+        'p_k — доля класса k в узле дерева, impurity — степень неоднородности.',
+        'Gini = 1 - Σ p_k^2',
+        'Сегментация клиентов: чем «чище» сегмент по целевому действию, тем проще принимать бизнес-решение.',
+        'p1, p2 = 0.7, 0.3\ngini = 1 - (p1**2 + p2**2)\nprint(round(gini, 2))',
+      ),
+      [
+        'Gini = 1 - Σ p_k^2',
+        'Для 2 классов максимум Gini = 0.5',
+        'Лучший split минимизирует взвешенный Gini потомков',
       ],
-    },
+    ),
+  ],
+}
+
+export const topicCheatsheets: Record<string, string[]> = {
+  'precision-recall-f1': [
+    'Precision = TP / (TP + FP)',
+    'Recall = TP / (TP + FN)',
+    'F1 = 2PR / (P + R)',
+  ],
+  'gradient-descent': [
+    'θ(t+1) = θ(t) - η∇L(θ(t))',
+    'MSE = (1/n) * Σ(ŷ - y)^2',
+    '∇MSE = (2/n) * X.T @ (Xw - y)',
+  ],
+  'gini-impurity': [
+    'Gini = 1 - Σ p_k^2',
+    'Gini = 0 для чистого узла',
+    'Для бинарного случая максимум 0.5',
   ],
 }

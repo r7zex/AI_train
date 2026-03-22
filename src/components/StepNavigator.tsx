@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { SubTopic } from '../data/steps'
 import { stepTypeConfig } from '../data/steps'
@@ -53,56 +53,62 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
   const completedCount = steps.filter(s => progress[s.id]).length
   const progressPct = steps.length > 0 ? (completedCount / steps.length) * 100 : 0
 
-  useEffect(() => {
-    setProgress(loadProgress())
-  }, [subTopic.id])
-
   const cfg = stepTypeConfig[currentStep.type]
 
   return (
     <div className="space-y-4">
-      {/* Step pills */}
-      <div className="flex flex-wrap gap-2">
-        {steps.map((step, i) => {
-          const c = stepTypeConfig[step.type]
-          const isActive = i === currentIndex
-          const isDone = progress[step.id]
-          return (
-            <button
-              key={step.id}
-              onClick={() => setCurrentIndex(i)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all ${
-                isActive
-                  ? `${c.color} ring-2 ring-offset-1 ring-current scale-105`
-                  : isDone
-                  ? 'bg-green-50 border-green-300 text-green-700'
-                  : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-400'
-              }`}
-            >
-              <span>{isDone && !isActive ? '✓' : c.icon}</span>
-              <span>{c.label}</span>
-            </button>
-          )
-        })}
+      <div className="grid lg:grid-cols-[270px,1fr] gap-4">
+        <aside className="bg-gray-900 text-white rounded-xl p-3 h-fit">
+          <div className="text-sm font-semibold mb-2">{subTopic.title}</div>
+          <div className="text-xs text-gray-300 mb-3">
+            Прогресс: {completedCount}/{steps.length}
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-1.5 mb-3">
+            <div
+              className="bg-emerald-400 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <div className="space-y-1.5">
+            {steps.map((step, i) => {
+              const c = stepTypeConfig[step.type]
+              const isActive = i === currentIndex
+              const isDone = progress[step.id]
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setCurrentIndex(i)}
+                  className={`w-full text-left rounded-lg px-2.5 py-2 text-xs border transition-colors ${
+                    isActive
+                      ? 'bg-white text-gray-900 border-white'
+                      : isDone
+                      ? 'bg-emerald-950/40 text-emerald-200 border-emerald-800'
+                      : 'bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700'
+                  }`}
+                >
+                  <span className="mr-1.5">{isDone && !isActive ? '✓' : c.icon}</span>
+                  <span>{step.title}</span>
+                </button>
+              )
+            })}
+          </div>
+        </aside>
+
+        <div>
+          <div className="flex justify-between text-xs text-gray-500 mb-1">
+            <span>{cfg.icon} {cfg.label}</span>
+            <span>{currentIndex + 1} / {steps.length}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+            <div
+              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentIndex + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Progress bar */}
-      <div>
-        <div className="flex justify-between text-xs text-gray-500 mb-1">
-          <span>Прогресс: {completedCount}/{steps.length} шагов</span>
-          <span>{Math.round(progressPct)}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Current step card */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        {/* Step header */}
         <div className="flex items-center gap-3 px-5 py-3 bg-gray-50 border-b border-gray-100">
           <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${cfg.color}`}>
             {cfg.icon} {cfg.label}
@@ -113,9 +119,7 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
           </span>
         </div>
 
-        {/* Step content */}
         <div className="p-5">
-          {/* Theory / Formula / Intuition / Manual / Recap / Pitfalls / Sources */}
           {currentStep.content && (
             <div className="prose prose-sm max-w-none">
               <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 leading-relaxed bg-transparent p-0 m-0">
@@ -124,7 +128,6 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
             </div>
           )}
 
-          {/* Quiz step */}
           {currentStep.type === 'quiz' && currentStep.quizId && (() => {
             const quiz = getQuizById(currentStep.quizId)
             return quiz ? (
@@ -139,13 +142,12 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
             )
           })()}
 
-          {/* Code step */}
-          {(currentStep.type === 'code' || currentStep.type === 'fill-in-code' || currentStep.type === 'debugging') && currentStep.codeTaskId && (
+          {currentStep.type === 'code' && currentStep.codeTaskId && (
             <div className="text-center py-8">
               <div className="text-4xl mb-3">💻</div>
               <p className="text-gray-600 mb-4">Задача доступна в Code Practice Hub</p>
               <Link
-                to="/code-practice"
+                to={`/code-practice?task=${currentStep.codeTaskId}`}
                 className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Открыть Code Practice →
@@ -154,7 +156,6 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
           )}
         </div>
 
-        {/* Navigation */}
         <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-t border-gray-100">
           <button
             onClick={handlePrev}

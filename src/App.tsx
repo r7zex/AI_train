@@ -14,6 +14,7 @@ import PracticeHubPage from './pages/PracticeHubPage'
 import CodePracticePage from './pages/CodePracticePage'
 import PyTorchLabPage from './pages/PyTorchLabPage'
 import ProgressPage from './pages/ProgressPage'
+import TermsFunctionsPage from './pages/TermsFunctionsPage'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="code-practice" element={<CodePracticePage />} />
         <Route path="pytorch-lab" element={<PyTorchLabPage />} />
         <Route path="progress" element={<ProgressPage />} />
+        <Route path="terms-functions" element={<TermsFunctionsPage />} />
       </Route>
     </Routes>
   )
