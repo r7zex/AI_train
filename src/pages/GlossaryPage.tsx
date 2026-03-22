@@ -185,3 +185,87 @@ export default function GlossaryPage() {
     </div>
   )
 }
+
+interface FormulaEntry {
+  name: string
+  formula: string
+  meaning: string
+}
+
+const functionCatalog: Record<string, FormulaEntry[]> = {
+  'Термины': [
+    { name: 'Precision', formula: 'TP / (TP + FP)', meaning: 'Доля верных позитивных предсказаний.' },
+    { name: 'Recall', formula: 'TP / (TP + FN)', meaning: 'Доля найденных позитивных объектов.' },
+    { name: 'Gini', formula: '1 - Σ p_k²', meaning: 'Неоднородность узла дерева.' },
+  ],
+  'Функции потерь (формулы)': [
+    { name: 'MSE', formula: '(1/n) * Σ(ŷ - y)²', meaning: 'Квадратичная ошибка регрессии.' },
+    { name: 'MAE', formula: '(1/n) * Σ|ŷ - y|', meaning: 'Абсолютная ошибка регрессии.' },
+    { name: 'Binary Cross-Entropy', formula: '-[y log p + (1-y) log(1-p)]', meaning: 'Лосс для бинарной классификации.' },
+  ],
+  'Функции активации (формулы)': [
+    { name: 'Sigmoid', formula: '1 / (1 + e^(-x))', meaning: 'Сжимает значение в [0,1].' },
+    { name: 'ReLU', formula: 'max(0, x)', meaning: 'Обнуляет отрицательные активации.' },
+    { name: 'Softmax', formula: 'exp(z_i) / Σ exp(z_j)', meaning: 'Вероятностное распределение по классам.' },
+  ],
+  'Оптимизация (формулы)': [
+    { name: 'Gradient Descent', formula: 'θ <- θ - η∇L(θ)', meaning: 'Шаг оптимизации против градиента.' },
+    { name: 'Adam (идея)', formula: 'm_t, v_t + bias correction', meaning: 'Адаптивный оптимизатор на моментах градиента.' },
+  ],
+}
+
+export function TermsAndFunctionsPage() {
+  const [query, setQuery] = useState('')
+  const norm = query.trim().toLowerCase()
+
+  const filtered = useMemo<Record<string, FormulaEntry[]>>(() => {
+    if (!norm) return functionCatalog
+    return Object.fromEntries(
+      Object.entries(functionCatalog)
+        .map(([section, items]) => [
+          section,
+          items.filter(
+            (item) =>
+              item.name.toLowerCase().includes(norm) ||
+              item.formula.toLowerCase().includes(norm) ||
+              item.meaning.toLowerCase().includes(norm),
+          ),
+        ])
+        .filter(([, items]) => items.length > 0),
+    )
+  }, [norm])
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-10">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">📚 Термины и функции</h1>
+        <p className="text-gray-600 mb-4">
+          Единая страница по блокам: термины, функции потерь, функции активации, оптимизация.
+        </p>
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Поиск по термину/формуле..."
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+        />
+      </div>
+
+      <div className="space-y-6">
+        {Object.entries(filtered).map(([section, items]) => (
+          <section key={section} className="bg-white border border-gray-200 rounded-xl p-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">{section}</h2>
+            <div className="space-y-3">
+              {items.map((item) => (
+                <div key={`${section}-${item.name}`} className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                  <div className="font-medium text-gray-900">{item.name}</div>
+                  <div className="text-sm font-mono text-indigo-700 mt-1">{item.formula}</div>
+                  <div className="text-sm text-gray-600 mt-1">{item.meaning}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  )
+}

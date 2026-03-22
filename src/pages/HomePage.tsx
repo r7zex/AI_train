@@ -228,17 +228,11 @@ export default function HomePage() {
         <SearchBar />
 
         <div className="flex flex-wrap justify-center gap-3">
-          <Link to="/topics" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
-            Начать обучение
+          <Link to="/topics" className="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+            Перейти к структуре курса
           </Link>
-          <Link to="/practice" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
-            Открыть практику
-          </Link>
-          <Link to="/code-practice" className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-            Код-задачи
-          </Link>
-          <Link to="/progress" className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-            Прогресс
+          <Link to="/terms-functions" className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+            Термины и функции
           </Link>
         </div>
       </div>
@@ -255,7 +249,7 @@ export default function HomePage() {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Хабы и кнопки быстрого старта</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Основные разделы</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
         {hubCards.map((card) => (
           <Link key={card.to} to={card.to} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md hover:border-blue-300 transition-all">
@@ -300,13 +294,12 @@ export default function HomePage() {
       </div>
 
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Справочные страницы</h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { to: '/cheatsheet', icon: '📐', title: 'Шпаргалка формул' },
           { to: '/comparisons', icon: '⚖️', title: 'Сравнительные таблицы' },
-          { to: '/glossary', icon: '📖', title: 'Словарь терминов' },
+          { to: '/terms-functions', icon: '📖', title: 'Термины и функции' },
           { to: '/mistakes', icon: '🚫', title: 'Типичные ошибки' },
-          { to: '/guide', icon: '📘', title: 'Как пользоваться' },
         ].map((item) => (
           <Link key={item.to} to={item.to} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow hover:border-blue-300">
             <div className="text-2xl mb-2">{item.icon}</div>

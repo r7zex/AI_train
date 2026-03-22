@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Editor from '@monaco-editor/react'
+import { useSearchParams } from 'react-router-dom'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ const codeTasks: CodeTask[] = [
       const hasFN = c.includes('fn')
       const hasDenom = /2\s*\*\s*tp\s*\+\s*fp\s*\+\s*fn|fp\s*\+\s*fn/.test(c)
       const hasZeroCheck = /if|==\s*0|denomin/.test(c)
-      const hasFormula = /2\s*[\*·]\s*tp/.test(c)
+      const hasFormula = /2\s*[*·]\s*tp/.test(c)
 
       const sampleResults: TestResult[] = [
         {
@@ -221,6 +222,214 @@ const codeTasks: CodeTask[] = [
       const totalPassed = [...sampleResults, ...hiddenResults].filter(r => r.passed).length
       const score = Math.round((totalPassed / (sampleResults.length + hiddenResults.length)) * 100)
 
+      return { passed: allPassed, sampleResults, hiddenResults, score }
+    },
+  },
+
+  // ── Task 2b: feature means stdin/stdout ──────────────────────────────────
+  {
+    id: 'stdin-feature-stats',
+    title: '2b. Feature Means (stdin/stdout)',
+    type: 'stdin-stdout',
+    statement:
+      'Считайте из stdin матрицу размера n×m и выведите среднее значение каждого столбца с точностью до 2 знаков.\n\nВвод:\n- Первая строка: n m\n- Далее n строк по m чисел\n\nВывод:\n- Одна строка: m чисел (средние по столбцам) через пробел.',
+    constraints: [
+      '1 ≤ n, m ≤ 100',
+      'Использовать stdin/stdout формат',
+      'Округление до 2 знаков после запятой',
+      'Не использовать внешние библиотеки',
+    ],
+    starterCode:
+      'n, m = map(int, input().split())\nrows = [list(map(float, input().split())) for _ in range(n)]\n# print column means\n',
+    sampleTests: [
+      {
+        input: '3 2\n1 2\n3 4\n5 6',
+        expectedOutput: '3.00 4.00',
+        description: 'Средние по столбцам для простой матрицы',
+      },
+    ],
+    hiddenTests: [
+      { id: 'fs-h1', description: 'n=1, проверка единичной строки' },
+      { id: 'fs-h2', description: 'Отрицательные и дробные значения' },
+      { id: 'fs-h3', description: 'Проверка формата stdout с пробелами' },
+    ],
+    checker: (code: string): CheckResult => {
+      const c = code.toLowerCase()
+      const hasRead = /input\s*\(/.test(c) && /split\s*\(/.test(c)
+      const hasLoop = /for\s+.+in\s+range|for\s+.+in\s+rows/.test(c)
+      const hasColumnCalc = /sum\s*\(|zip\s*\(\s*\*rows|rows\[.*\]\[/.test(c)
+      const hasPrint = /print\s*\(/.test(c)
+      const hasFormat = /round\s*\(|:.2f|format\s*\(/.test(c)
+
+      const sampleResults: TestResult[] = [
+        { testId: 'fs-s1', passed: hasRead, description: 'Чтение n, m и строк матрицы' },
+        { testId: 'fs-s2', passed: hasColumnCalc && hasLoop, description: 'Подсчёт средних по столбцам' },
+        { testId: 'fs-s3', passed: hasPrint && hasFormat, description: 'Печать с точностью до 2 знаков' },
+      ]
+      const hiddenResults: TestResult[] = [
+        { testId: 'fs-h1', passed: hasRead && hasPrint, description: 'Единичный случай' },
+        { testId: 'fs-h2', passed: hasColumnCalc, description: 'Знаки и дроби' },
+        { testId: 'fs-h3', passed: hasFormat, description: 'Формат вывода' },
+      ]
+      const allPassed = sampleResults.every(r => r.passed)
+      const totalPassed = [...sampleResults, ...hiddenResults].filter(r => r.passed).length
+      const score = Math.round((totalPassed / (sampleResults.length + hiddenResults.length)) * 100)
+      return { passed: allPassed, sampleResults, hiddenResults, score }
+    },
+  },
+
+  // ── Task 2c: minmax scaling stdin/stdout ─────────────────────────────────
+  {
+    id: 'stdin-minmax-scale',
+    title: '2c. MinMax Scale (stdin/stdout)',
+    type: 'stdin-stdout',
+    statement:
+      'Реализуйте MinMax масштабирование массива.\n\nВвод:\n- Первая строка: n\n- Вторая строка: n чисел\n\nВывод:\n- n чисел: (x-min)/(max-min), если max=min -> вывести n нулей.',
+    constraints: [
+      '1 ≤ n ≤ 1000',
+      'Поддержка отрицательных чисел',
+      'Если max == min, выводить 0.0 для каждого элемента',
+      'Формат stdin/stdout',
+    ],
+    starterCode:
+      'n = int(input())\narr = list(map(float, input().split()))\n# print scaled values\n',
+    sampleTests: [
+      {
+        input: '5\n1 2 3 4 5',
+        expectedOutput: '0.0 0.25 0.5 0.75 1.0',
+        description: 'Базовый min-max scaling',
+      },
+    ],
+    hiddenTests: [
+      { id: 'mm-h1', description: 'max == min' },
+      { id: 'mm-h2', description: 'Отрицательный диапазон' },
+      { id: 'mm-h3', description: 'Большой n' },
+    ],
+    checker: (code: string): CheckResult => {
+      const c = code.toLowerCase()
+      const hasMinMax = /min\s*\(|max\s*\(/.test(c)
+      const hasFormula = /\(\s*\w+\s*-\s*\w+\s*\)\s*\/\s*\(\s*\w+\s*-\s*\w+\s*\)/.test(c)
+      const hasZeroCase = /if\s+.*==.*:|if\s+.*max.*min/.test(c)
+      const hasPrint = /print\s*\(/.test(c)
+      const hasRead = /int\s*\(\s*input/.test(c) && /split\s*\(/.test(c)
+
+      const sampleResults: TestResult[] = [
+        { testId: 'mm-s1', passed: hasRead, description: 'Чтение n и массива' },
+        { testId: 'mm-s2', passed: hasMinMax && hasFormula, description: 'Формула min-max' },
+        { testId: 'mm-s3', passed: hasZeroCase && hasPrint, description: 'Обработка max==min и вывод' },
+      ]
+      const hiddenResults: TestResult[] = [
+        { testId: 'mm-h1', passed: hasZeroCase, description: 'Degenerate case' },
+        { testId: 'mm-h2', passed: hasFormula, description: 'Отрицательные значения' },
+        { testId: 'mm-h3', passed: hasPrint, description: 'Формат вывода' },
+      ]
+      const allPassed = sampleResults.every(r => r.passed)
+      const totalPassed = [...sampleResults, ...hiddenResults].filter(r => r.passed).length
+      const score = Math.round((totalPassed / (sampleResults.length + hiddenResults.length)) * 100)
+      return { passed: allPassed, sampleResults, hiddenResults, score }
+    },
+  },
+
+  // ── Task 2d: threshold metrics stdin/stdout ───────────────────────────────
+  {
+    id: 'stdin-threshold-metrics',
+    title: '2d. Threshold Metrics (stdin/stdout)',
+    type: 'stdin-stdout',
+    statement:
+      'По вероятностям и истинным меткам посчитайте TP FP FN при заданном пороге.\n\nВвод:\n- Первая строка: n threshold\n- Вторая строка: n вероятностей [0..1]\n- Третья строка: n меток 0/1\n\nВывод:\n- Одна строка: TP FP FN',
+    constraints: [
+      'Использовать threshold: pred=1, если p >= threshold',
+      'Подсчитать TP, FP, FN',
+      'stdin/stdout формат',
+      'n до 10^4',
+    ],
+    starterCode:
+      'n, threshold = input().split()\nn = int(n)\nthreshold = float(threshold)\nprobs = list(map(float, input().split()))\ny = list(map(int, input().split()))\n# print TP FP FN\n',
+    sampleTests: [
+      {
+        input: '5 0.5\n0.9 0.7 0.4 0.3 0.8\n1 0 1 0 1',
+        expectedOutput: '2 1 1',
+        description: 'TP=2, FP=1, FN=1',
+      },
+    ],
+    hiddenTests: [
+      { id: 'tm-h1', description: 'Порог 0 и 1' },
+      { id: 'tm-h2', description: 'Все предсказания отрицательные' },
+      { id: 'tm-h3', description: 'Граничные p == threshold' },
+    ],
+    checker: (code: string): CheckResult => {
+      const c = code.toLowerCase()
+      const hasThresholdComp = />=\s*threshold|>=\s*t|if\s+.*>=/.test(c)
+      const hasCounters = /tp|fp|fn/.test(c)
+      const hasConditions = /if\s+.*and|if\s+.*==\s*1|elif/.test(c)
+      const hasLoop = /for\s+.+in\s+range|zip\s*\(/.test(c)
+      const hasPrint = /print\s*\(/.test(c)
+
+      const sampleResults: TestResult[] = [
+        { testId: 'tm-s1', passed: hasThresholdComp, description: 'Пороговая бинаризация p>=threshold' },
+        { testId: 'tm-s2', passed: hasCounters && hasConditions && hasLoop, description: 'Подсчёт TP/FP/FN' },
+        { testId: 'tm-s3', passed: hasPrint, description: 'Вывод трёх счётчиков' },
+      ]
+      const hiddenResults: TestResult[] = [
+        { testId: 'tm-h1', passed: hasThresholdComp, description: 'Экстремальные пороги' },
+        { testId: 'tm-h2', passed: hasCounters, description: 'Случай без позитивных предсказаний' },
+        { testId: 'tm-h3', passed: hasConditions, description: 'Граница равенства порогу' },
+      ]
+      const allPassed = sampleResults.every(r => r.passed)
+      const totalPassed = [...sampleResults, ...hiddenResults].filter(r => r.passed).length
+      const score = Math.round((totalPassed / (sampleResults.length + hiddenResults.length)) * 100)
+      return { passed: allPassed, sampleResults, hiddenResults, score }
+    },
+  },
+
+  // ── Task 2e: batch mse stdin/stdout ───────────────────────────────────────
+  {
+    id: 'stdin-batch-loss',
+    title: '2e. Batch MSE (stdin/stdout)',
+    type: 'stdin-stdout',
+    statement:
+      'Вычислите MSE по двум векторным строкам y_true и y_pred.\n\nВвод:\n- Первая строка: n\n- Вторая строка: y_true (n чисел)\n- Третья строка: y_pred (n чисел)\n\nВывод:\n- Одно число MSE.',
+    constraints: [
+      'MSE = (1/n) * sum((y_pred - y_true)^2)',
+      'Поддержка float',
+      'stdin/stdout формат',
+      'Результат можно выводить с 6 знаками',
+    ],
+    starterCode:
+      'n = int(input())\ny_true = list(map(float, input().split()))\ny_pred = list(map(float, input().split()))\n# print mse\n',
+    sampleTests: [
+      {
+        input: '3\n1 2 3\n1 3 5',
+        expectedOutput: '1.666667',
+        description: 'MSE для [0,1,2]^2 -> 5/3',
+      },
+    ],
+    hiddenTests: [
+      { id: 'bl-h1', description: 'n=1' },
+      { id: 'bl-h2', description: 'Отрицательные значения' },
+      { id: 'bl-h3', description: 'Нули и равные векторы' },
+    ],
+    checker: (code: string): CheckResult => {
+      const c = code.toLowerCase()
+      const hasDiff = /y_pred.*y_true|y_true.*y_pred/.test(c)
+      const hasSquare = /\*\*\s*2|\*\s*\w+\s*\*/.test(c)
+      const hasMean = /\/\s*n|sum\s*\(.*\)\s*\/\s*n/.test(c)
+      const hasRead = /int\s*\(\s*input/.test(c) && /map\s*\(\s*float/.test(c)
+      const hasPrint = /print\s*\(/.test(c)
+
+      const sampleResults: TestResult[] = [
+        { testId: 'bl-s1', passed: hasRead, description: 'Чтение n, y_true, y_pred' },
+        { testId: 'bl-s2', passed: hasDiff && hasSquare, description: 'Квадрат ошибки' },
+        { testId: 'bl-s3', passed: hasMean && hasPrint, description: 'Среднее и вывод MSE' },
+      ]
+      const hiddenResults: TestResult[] = [
+        { testId: 'bl-h1', passed: hasMean, description: 'Единичный пример' },
+        { testId: 'bl-h2', passed: hasSquare, description: 'Отрицательные числа' },
+        { testId: 'bl-h3', passed: hasDiff, description: 'Нулевой loss case' },
+      ]
+      const allPassed = sampleResults.every(r => r.passed)
+      const totalPassed = [...sampleResults, ...hiddenResults].filter(r => r.passed).length
+      const score = Math.round((totalPassed / (sampleResults.length + hiddenResults.length)) * 100)
       return { passed: allPassed, sampleResults, hiddenResults, score }
     },
   },
@@ -723,6 +932,15 @@ function TaskPanel({ task }: TaskPanelProps) {
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 export default function CodePracticePage() {
+  const [searchParams] = useSearchParams()
+  const taskFromUrl = searchParams.get('task')
+  const orderedTasks = useMemo(() => {
+    if (!taskFromUrl) return codeTasks
+    const target = codeTasks.find((t) => t.id === taskFromUrl)
+    if (!target) return codeTasks
+    return [target, ...codeTasks.filter((t) => t.id !== taskFromUrl)]
+  }, [taskFromUrl])
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
       <div className="mb-8">
@@ -745,7 +963,7 @@ export default function CodePracticePage() {
       </div>
 
       <div className="space-y-8">
-        {codeTasks.map(task => (
+        {orderedTasks.map(task => (
           <TaskPanel key={task.id} task={task} />
         ))}
       </div>

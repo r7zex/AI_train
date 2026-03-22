@@ -4,14 +4,10 @@ import { Link, useLocation } from 'react-router-dom'
 const navLinks = [
   { to: '/', label: 'Главная' },
   { to: '/topics', label: 'Темы' },
-  { to: '/practice', label: 'Практика' },
   { to: '/quiz', label: 'Квизы' },
-  { to: '/code-practice', label: 'Код-задачи' },
-  { to: '/pytorch-lab', label: 'PyTorch Lab' },
-  { to: '/cheatsheet', label: 'Формулы' },
+  { to: '/code-practice', label: 'Код' },
+  { to: '/terms-functions', label: 'Термины и функции' },
   { to: '/progress', label: 'Прогресс' },
-  { to: '/glossary', label: 'Словарь' },
-  { to: '/mistakes', label: 'Ошибки' },
 ]
 
 export default function Navbar() {
@@ -21,10 +17,10 @@ export default function Navbar() {
   const isActive = (to: string) => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-14 gap-4">
-          <Link to="/" className="flex items-center gap-2 font-bold text-blue-600 text-lg shrink-0">
+          <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 text-lg shrink-0">
             <span>🧠</span>
             <span className="hidden sm:block">ML Тренажёр</span>
           </Link>
@@ -36,7 +32,7 @@ export default function Navbar() {
                 to={link.to}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
                   isActive(link.to)
-                    ? 'bg-blue-50 text-blue-700'
+                    ? 'bg-gray-100 text-gray-900'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -69,7 +65,7 @@ export default function Navbar() {
                 to={link.to}
                 onClick={() => setOpen(false)}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive(link.to) ? 'bg-blue-50 text-blue-700' : 'text-gray-600'
+                  isActive(link.to) ? 'bg-gray-100 text-gray-900' : 'text-gray-600'
                 }`}
               >
                 {link.label}
