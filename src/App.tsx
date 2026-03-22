@@ -14,6 +14,7 @@ export default function App() {
         <Route index element={<HomePage />} />
         <Route path="topics" element={<TopicsPage />} />
         <Route path="topics/:topicId" element={<TopicDetailPage />} />
+        <Route path="topics/:topicId/:stepId" element={<TopicDetailPage />} />
         <Route path="terms-functions" element={<TermsFunctionsPage />} />
         <Route path="comparison" element={<ComparisonPage />} />
         <Route path="cheatsheet" element={<CheatsheetPage />} />

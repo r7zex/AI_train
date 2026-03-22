@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { flowCourseBlocks, flowTopics, searchIndex } from '../data/courseFlow'
+import { flowCourseBlocks, flowTopics, getFlowStepHref, searchIndex } from '../data/courseFlow'
 import { useProgress } from '../hooks/useProgress'
 
 export default function HomePage() {
@@ -108,7 +108,7 @@ export default function HomePage() {
                   <div className="mt-2 text-sm leading-6 text-slate-600">{subblock.description}</div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {subblock.themes.slice(0, 4).map((topic) => (
-                      <Link key={topic.id} to={`/topics/${topic.id}`} className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm">
+                      <Link key={topic.id} to={getFlowStepHref(topic.id, topic.steps[0].id)} className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm">
                         {topic.title}
                       </Link>
                     ))}

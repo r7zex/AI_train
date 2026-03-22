@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { flowCourseBlocks } from '../data/courseFlow'
+import { flowCourseBlocks, getFlowStepHref } from '../data/courseFlow'
 import { useProgress } from '../hooks/useProgress'
 
 export default function TopicsPage() {
@@ -52,7 +52,7 @@ export default function TopicsPage() {
                       const done = progress.completedTopics.includes(topic.id)
                       const progressValue = getTopicProgress(topic.id)
                       return (
-                        <Link key={topic.id} to={`/topics/${topic.id}`} className="block rounded-[24px] border border-slate-200 bg-white p-4 transition hover:border-emerald-300 hover:bg-emerald-50/30">
+                        <Link key={topic.id} to={getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)} className="block rounded-[24px] border border-slate-200 bg-white p-4 transition hover:border-emerald-300 hover:bg-emerald-50/30">
                           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                               <div className="text-lg font-semibold text-slate-950">{topic.title}</div>
