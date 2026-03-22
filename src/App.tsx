@@ -10,6 +10,10 @@ import GlossaryPage from './pages/GlossaryPage'
 import ComparisonPage from './pages/ComparisonPage'
 import QuizPage from './pages/QuizPage'
 import QuizDetailPage from './pages/QuizDetailPage'
+import PracticeHubPage from './pages/PracticeHubPage'
+import CodePracticePage from './pages/CodePracticePage'
+import PyTorchLabPage from './pages/PyTorchLabPage'
+import ProgressPage from './pages/ProgressPage'
 
 export default function App() {
   return (
@@ -25,6 +29,10 @@ export default function App() {
         <Route path="comparisons" element={<ComparisonPage />} />
         <Route path="quiz" element={<QuizPage />} />
         <Route path="quiz/:quizId" element={<QuizDetailPage />} />
+        <Route path="practice" element={<PracticeHubPage />} />
+        <Route path="code-practice" element={<CodePracticePage />} />
+        <Route path="pytorch-lab" element={<PyTorchLabPage />} />
+        <Route path="progress" element={<ProgressPage />} />
       </Route>
     </Routes>
   )

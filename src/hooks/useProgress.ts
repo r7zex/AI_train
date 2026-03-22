@@ -20,6 +20,7 @@ export function useProgress() {
   const markIncomplete = (topicId: string) => setCompleted(prev => { const n = new Set(prev); n.delete(topicId); return n })
   const isCompleted = (topicId: string) => completed.has(topicId)
   const toggleCompleted = (topicId: string) => isCompleted(topicId) ? markIncomplete(topicId) : markCompleted(topicId)
+  const clearProgress = () => setCompleted(new Set())
 
-  return { completed, isCompleted, toggleCompleted, markCompleted }
+  return { completed, isCompleted, toggleCompleted, markCompleted, clearProgress }
 }
