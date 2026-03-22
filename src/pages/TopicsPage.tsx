@@ -4,11 +4,25 @@ import { sections } from '../data/topics'
 import { useProgress } from '../hooks/useProgress'
 
 const colorMap: Record<string, string> = {
+  slate: 'text-slate-600 bg-slate-50 border-slate-200',
   green: 'text-green-600 bg-green-50 border-green-200',
   blue: 'text-blue-600 bg-blue-50 border-blue-200',
   orange: 'text-orange-600 bg-orange-50 border-orange-200',
+  amber: 'text-amber-600 bg-amber-50 border-amber-200',
+  cyan: 'text-cyan-600 bg-cyan-50 border-cyan-200',
+  emerald: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+  rose: 'text-rose-600 bg-rose-50 border-rose-200',
+  indigo: 'text-indigo-600 bg-indigo-50 border-indigo-200',
+  lime: 'text-lime-600 bg-lime-50 border-lime-200',
+  yellow: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+  fuchsia: 'text-fuchsia-600 bg-fuchsia-50 border-fuchsia-200',
+  violet: 'text-violet-600 bg-violet-50 border-violet-200',
   purple: 'text-purple-600 bg-purple-50 border-purple-200',
   red: 'text-red-600 bg-red-50 border-red-200',
+  gray: 'text-gray-600 bg-gray-50 border-gray-200',
+  zinc: 'text-zinc-600 bg-zinc-50 border-zinc-200',
+  neutral: 'text-neutral-600 bg-neutral-50 border-neutral-200',
+  stone: 'text-stone-600 bg-stone-50 border-stone-200',
 }
 
 export default function TopicsPage() {
@@ -72,7 +86,7 @@ export default function TopicsPage() {
               <div className="grid sm:grid-cols-2 gap-3">
                 {section.topics.map(topic => (
                   <Link key={topic.id} to={`/topics/${topic.id}`}
-                    className={`border rounded-xl p-4 flex items-start gap-3 hover:shadow-md transition-all ${colorMap[section.color]} hover:scale-[1.01]`}>
+                    className={`border rounded-xl p-4 flex items-start gap-3 hover:shadow-md transition-all ${colorMap[section.color] ?? 'text-gray-600 bg-gray-50 border-gray-200'} hover:scale-[1.01]`}>
                     <div className="flex-shrink-0 mt-0.5">
                       {isCompleted(topic.id) ? <span className="text-green-500 text-lg">✅</span> : <span className="text-gray-300 text-lg">⬜</span>}
                     </div>
