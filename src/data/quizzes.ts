@@ -45,7 +45,7 @@ export const quizzes: Quiz[] = [
         options: [
           { id: 'a', text: '0.5' },
           { id: 'b', text: '0.7' },
-          { id: 'c', text: '0.5' },
+          { id: 'c', text: '0.3' },
           { id: 'd', text: '1.0' },
         ],
         correctAnswer: 'b',

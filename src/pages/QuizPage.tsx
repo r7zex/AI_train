@@ -173,7 +173,7 @@ const QuizPage: React.FC = () => {
                 {result ? (
                   <div className="mt-1">
                     <div className="flex items-center justify-between text-xs mb-1">
-                      <span className={`font-medium ${pct! >= 80 ? 'text-green-600' : pct! >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      <span className={`font-medium ${(pct ?? 0) >= 80 ? 'text-green-600' : (pct ?? 0) >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
                         {pct}% — {result.score}/{result.total} правильно
                       </span>
                       <span className="text-gray-400">
@@ -182,8 +182,8 @@ const QuizPage: React.FC = () => {
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-1.5">
                       <div
-                        className={`h-1.5 rounded-full ${pct! >= 80 ? 'bg-green-500' : pct! >= 60 ? 'bg-yellow-400' : 'bg-red-400'}`}
-                        style={{ width: `${pct}%` }}
+                        className={`h-1.5 rounded-full ${(pct ?? 0) >= 80 ? 'bg-green-500' : (pct ?? 0) >= 60 ? 'bg-yellow-400' : 'bg-red-400'}`}
+                        style={{ width: `${pct ?? 0}%` }}
                       />
                     </div>
                   </div>

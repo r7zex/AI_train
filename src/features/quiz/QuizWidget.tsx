@@ -86,7 +86,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
 
   const handleSubmitAnswer = (qId: string) => {
     const draft = drafts[qId] ?? (questions.find(q => q.id === qId)?.type === 'multiple' ? [] : '')
-    if (!draft && draft !== 0) return
+    if (draft === '' || draft === undefined) return
     if (Array.isArray(draft) && draft.length === 0) return
     setAnswers(prev => ({ ...prev, [qId]: draft }))
     setSubmitted(prev => ({ ...prev, [qId]: true }))
@@ -217,13 +217,14 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
     }
 
     if (q.type === 'numeric') {
-      const val = isSubmitted ? String(answers[q.id]) : String(draft)
+      const rawVal = isSubmitted ? answers[q.id] : draft
+      const val = rawVal === undefined || rawVal === '' ? '' : String(rawVal)
       return (
         <div className="flex flex-col gap-2">
           <input
             type="number"
             step="any"
-            value={val === 'undefined' || val === '' ? '' : val}
+            value={val}
             disabled={isSubmitted}
             onChange={e => !isSubmitted && setDrafts(prev => ({ ...prev, [q.id]: e.target.value === '' ? '' : Number(e.target.value) }))}
             placeholder="Введите числовой ответ"
@@ -240,12 +241,13 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
     }
 
     if (q.type === 'fillblank') {
-      const val = isSubmitted ? String(answers[q.id]) : String(draft)
+      const rawVal = isSubmitted ? answers[q.id] : draft
+      const val = rawVal === undefined ? '' : String(rawVal)
       return (
         <div className="flex flex-col gap-2">
           <input
             type="text"
-            value={val === 'undefined' ? '' : val}
+            value={val}
             disabled={isSubmitted}
             onChange={e => !isSubmitted && setDrafts(prev => ({ ...prev, [q.id]: e.target.value }))}
             placeholder="Введите ответ"
