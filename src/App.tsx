@@ -4,6 +4,8 @@ import HomePage from './pages/HomePage'
 import TopicsPage from './pages/TopicsPage'
 import TopicDetailPage from './pages/TopicDetailPage'
 import TermsFunctionsPage from './pages/TermsFunctionsPage'
+import ComparisonPage from './pages/ComparisonPage'
+import CheatsheetPage from './pages/CheatsheetPage'
 
 export default function App() {
   return (
@@ -13,6 +15,8 @@ export default function App() {
         <Route path="topics" element={<TopicsPage />} />
         <Route path="topics/:topicId" element={<TopicDetailPage />} />
         <Route path="terms-functions" element={<TermsFunctionsPage />} />
+        <Route path="comparison" element={<ComparisonPage />} />
+        <Route path="cheatsheet" element={<CheatsheetPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
