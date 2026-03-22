@@ -1,97 +1,69 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 const navLinks = [
   { to: '/', label: 'Главная' },
-  { to: '/topics', label: 'Темы' },
-  { to: '/quiz', label: 'Квизы' },
-  { to: '/code-practice', label: 'Код' },
+  { to: '/topics', label: 'Блоки и темы' },
   { to: '/terms-functions', label: 'Термины и функции' },
-  { to: '/progress', label: 'Прогресс' },
 ]
 
 export default function Navbar() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
-
   const isActive = (to: string) => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-14 gap-4">
-          <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 text-lg shrink-0">
-            <span>🧠</span>
-            <span className="hidden sm:block">ML Тренажёр</span>
-          </Link>
+    <header className="sticky top-0 z-50 border-b border-black/10 bg-[#202020] text-white shadow-sm">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-3 lg:px-6">
+        <Link to="/" className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-white/10 text-lg font-bold">S</div>
+          <div>
+            <div className="text-2xl font-semibold leading-none tracking-tight">stepik-like ML</div>
+            <div className="text-xs text-white/60">пересобранный локальный учебный сервис</div>
+          </div>
+        </Link>
 
-          <nav className="hidden lg:flex items-center gap-0.5 min-w-0 overflow-x-auto">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-                  isActive(link.to)
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+        <nav className="hidden items-center gap-2 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                isActive(link.to) ? 'bg-[#69d05c] text-[#101010]' : 'text-white/75 hover:bg-white/8 hover:text-white'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
-          <button
-            className="lg:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Открыть меню"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={open ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
-              />
-            </svg>
-          </button>
-        </div>
+        <button
+          type="button"
+          className="rounded-lg border border-white/10 px-3 py-2 text-sm text-white/80 md:hidden"
+          onClick={() => setOpen((value) => !value)}
+        >
+          Меню
+        </button>
+      </div>
 
-        {open && (
-          <div className="lg:hidden pb-3 flex flex-col gap-1">
+      {open && (
+        <div className="border-t border-white/10 bg-[#202020] px-4 py-3 md:hidden">
+          <div className="flex flex-col gap-2">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={() => setOpen(false)}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive(link.to) ? 'bg-gray-100 text-gray-900' : 'text-gray-600'
+                className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                  isActive(link.to) ? 'bg-[#69d05c] text-[#101010]' : 'text-white/80'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/guide"
-              onClick={() => setOpen(false)}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive('/guide') ? 'bg-blue-50 text-blue-700' : 'text-gray-600'
-              }`}
-            >
-              Как пользоваться
-            </Link>
-            <Link
-              to="/comparisons"
-              onClick={() => setOpen(false)}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive('/comparisons') ? 'bg-blue-50 text-blue-700' : 'text-gray-600'
-              }`}
-            >
-              Сравнения
-            </Link>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   )
 }
