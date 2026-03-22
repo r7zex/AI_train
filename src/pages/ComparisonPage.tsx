@@ -147,6 +147,137 @@ const tables: ComparisonTable[] = [
       { header: 'Переобучение', values: ['Хорошо управляется параметрами', 'Склонен при leaf-wise без лимита', '✅ Встроенная защита через ordered boosting'] },
     ],
   },
+  {
+    id: 'rf-vs-gb',
+    title: 'RandomForest vs GradientBoosting',
+    icon: '🌲',
+    color: 'teal',
+    description: 'Два ключевых ансамблевых метода на деревьях: разные стратегии обучения, смещение/дисперсия и применимость.',
+    columns: [
+      { label: 'Критерий' },
+      { label: 'RandomForest' },
+      { label: 'GradientBoosting' },
+    ],
+    rows: [
+      { header: 'Базовые деревья', values: ['Глубокие независимые деревья (low bias, high variance)', 'Мелкие деревья-«пни» (high bias, low variance)'] },
+      { header: 'Стратегия', values: ['Параллельное бутстрап-обучение, усреднение', 'Последовательное исправление ошибок'] },
+      { header: 'Bias/Variance', values: ['Снижает дисперсию (Variance)', 'Снижает смещение (Bias)'] },
+      { header: 'Скорость', values: ['Быстрее (параллелизм)', 'Медленнее (последовательно)'] },
+      { header: 'Переобучение', values: ['Устойчив к переобучению', 'Склонен без регуляризации'] },
+      { header: 'Ключевые гиперпараметры', values: ['n_estimators, max_features, max_depth', 'n_estimators, learning_rate, max_depth'] },
+      { header: 'Когда использовать', values: ['Быстрый бейзлайн, устойчивость важна', 'Нужна максимальная точность на табличных данных'] },
+    ],
+  },
+  {
+    id: 'l1-l2-elasticnet',
+    title: 'L1 vs L2 vs ElasticNet Regularization',
+    icon: '📐',
+    color: 'blue',
+    description: 'Три подхода к регуляризации линейных моделей с разными свойствами спарсивности и геометрии.',
+    columns: [
+      { label: 'Критерий' },
+      { label: 'L1 (Lasso)' },
+      { label: 'L2 (Ridge)' },
+      { label: 'ElasticNet' },
+    ],
+    rows: [
+      { header: 'Штраф', values: [{ math: '\\lambda\\sum|w_j|' }, { math: '\\lambda\\sum w_j^2' }, { math: '\\lambda_1\\sum|w_j|+\\lambda_2\\sum w_j^2' }] },
+      { header: 'Спарсивность', values: ['✅ Точно обнуляет', '❌ Не обнуляет', '⚠️ Частично'] },
+      { header: 'Дифференцируемость', values: ['❌ Не дифф. в 0', '✅ Всюду', '❌ Не дифф. в 0'] },
+      { header: 'Отбор признаков', values: ['✅ Встроен', '❌ Нет', '⚠️ Частично'] },
+      { header: 'Коррелированные признаки', values: ['Выбирает один', 'Усредняет все', 'Группирует'] },
+      { header: 'Байесовская интерпретация', values: ['Лапласов априорный', 'Гауссов априорный', 'Смешанный'] },
+      { header: 'Когда использовать', values: ['Нужна разрежённость', 'Много коррелированных', 'Промежуточный случай'] },
+    ],
+  },
+  {
+    id: 'rnn-lstm-gru',
+    title: 'RNN vs LSTM vs GRU',
+    icon: '🔄',
+    color: 'purple',
+    description: 'Эволюция рекуррентных архитектур: от базовой RNN к LSTM и GRU с решением проблемы затухающего градиента.',
+    columns: [
+      { label: 'Критерий' },
+      { label: 'RNN' },
+      { label: 'LSTM' },
+      { label: 'GRU' },
+    ],
+    rows: [
+      { header: 'Ворота (Gates)', values: ['Нет', '3: Input, Forget, Output', '2: Reset, Update'] },
+      { header: 'Cell State', values: ['❌ Нет', '✅ Отдельный', '❌ Объединён с hidden'] },
+      { header: 'Затухающий градиент', values: ['❌ Сильно страдает', '✅ Решено', '✅ Решено'] },
+      { header: 'Кол-во параметров', values: ['Минимум', 'Максимум', 'Меньше LSTM'] },
+      { header: 'Скорость обучения', values: ['Быстрее', 'Медленнее', 'Быстрее LSTM'] },
+      { header: 'Случаи применения', values: ['Короткие последовательности', 'Долгосрочные зависимости', 'Компромисс скорость/качество'] },
+      { header: 'Сложность', values: ['Простейшая', 'Высокая', 'Средняя'] },
+    ],
+  },
+  {
+    id: 'sklearn-pytorch',
+    title: 'scikit-learn vs PyTorch',
+    icon: '⚙️',
+    color: 'orange',
+    description: 'Когда использовать классический sklearn, а когда переходить на PyTorch — ключевые сценарии.',
+    columns: [
+      { label: 'Критерий' },
+      { label: 'scikit-learn' },
+      { label: 'PyTorch' },
+    ],
+    rows: [
+      { header: 'Основной сценарий', values: ['Классический ML на табличных данных', 'Нейросети, DL задачи'] },
+      { header: 'Тип данных', values: ['Табличные, text (TF-IDF), небольшие', 'Изображения, текст (embeddings), аудио'] },
+      { header: 'Автодифференцирование', values: ['❌ Нет', '✅ Autograd'] },
+      { header: 'GPU поддержка', values: ['❌ Нет (CPU only)', '✅ CUDA/MPS'] },
+      { header: 'Деплоймент', values: ['joblib/pickle', 'TorchScript/ONNX'] },
+      { header: 'Отладка', values: ['Простая (Python)', 'Средняя (графы, tensor shapes)'] },
+      { header: 'Экосистема', values: ['Pipeline, GridSearchCV, метрики', 'torchvision, HuggingFace, Lightning'] },
+      { header: 'Когда выбрать', values: ['Бейзлайн, небольшие данные', 'Сложные архитектуры, большие данные'] },
+    ],
+  },
+  {
+    id: 'predict-methods',
+    title: 'predict vs predict_proba vs decision_function',
+    icon: '🎯',
+    color: 'green',
+    description: 'Три метода вывода sklearn-классификаторов: выходной тип, диапазон значений и типичное применение.',
+    columns: [
+      { label: 'Критерий' },
+      { label: 'predict' },
+      { label: 'predict_proba' },
+      { label: 'decision_function' },
+    ],
+    rows: [
+      { header: 'Выходной тип', values: ['Метки классов', 'Вероятности', 'Расстояния/Scores'] },
+      { header: 'Диапазон', values: ['Дискретные классы', '[0, 1], сумма = 1', '(-∞, +∞)'] },
+      { header: 'Применение', values: ['Финальная классификация', 'Калиброванные вероятности', 'ROC-AUC, ранжирование'] },
+      { header: 'Доступность', values: ['Все классификаторы', 'Только вероятностные', 'SVM, LDA и др.'] },
+      { header: 'Калибровка', values: ['N/A', 'Требует CalibratedClassifierCV', 'Не калиброваны'] },
+      { header: 'Типичный use case', values: ['Финальный ответ', 'Порог, Log Loss', 'ROC-AUC без калибровки'] },
+    ],
+  },
+  {
+    id: 'norm-variants',
+    title: 'BatchNorm vs LayerNorm vs InstanceNorm vs GroupNorm',
+    icon: '⚖️',
+    color: 'pink',
+    description: 'Четыре варианта нормализации активаций: по каким осям нормализуют, зависимость от батча, область применения.',
+    columns: [
+      { label: 'Критерий' },
+      { label: 'BatchNorm' },
+      { label: 'LayerNorm' },
+      { label: 'InstanceNorm' },
+      { label: 'GroupNorm' },
+    ],
+    rows: [
+      { header: 'Оси нормализации', values: ['Батч + пространство (N, H, W)', 'Каналы/признаки (C)', 'Пространство (H, W)', 'Группы каналов (C/G)'] },
+      { header: 'Зависимость от батча', values: ['✅ Да', '❌ Нет', '❌ Нет', '❌ Нет'] },
+      { header: 'Применение', values: ['CNN (ResNet, VGG)', 'Transformer, RNN', 'Style Transfer, GAN', 'Малые батчи, видео'] },
+      { header: 'Параметры γ,β', values: ['По каналу', 'По признаку', 'По каналу', 'По каналу/группе'] },
+      { header: 'При инференсе', values: ['Running mean/var', 'Вычисляется на лету', 'Вычисляется на лету', 'Вычисляется на лету'] },
+      { header: 'Плюсы', values: ['Ускоряет сходимость', 'Не зависит от батча', 'Стиль на уровне экземпляра', 'Компромисс BN/LN'] },
+      { header: 'Минусы', values: ['Плохо при малом батче', 'Хуже для CNN', 'Не подходит классификации', 'Нужно подобрать G'] },
+    ],
+  },
 ]
 
 const colorHeader: Record<string, string> = {
@@ -156,6 +287,9 @@ const colorHeader: Record<string, string> = {
   orange: 'bg-orange-500',
   indigo: 'bg-indigo-600',
   red: 'bg-red-600',
+  teal: 'bg-teal-600',
+  pink: 'bg-pink-600',
+  sky: 'bg-sky-600',
 }
 
 const colorBorder: Record<string, string> = {
@@ -165,6 +299,9 @@ const colorBorder: Record<string, string> = {
   orange: 'border-orange-200',
   indigo: 'border-indigo-200',
   red: 'border-red-200',
+  teal: 'border-teal-200',
+  pink: 'border-pink-200',
+  sky: 'border-sky-200',
 }
 
 const colorRow: Record<string, string> = {
@@ -174,6 +311,9 @@ const colorRow: Record<string, string> = {
   orange: 'bg-orange-50',
   indigo: 'bg-indigo-50',
   red: 'bg-red-50',
+  teal: 'bg-teal-50',
+  pink: 'bg-pink-50',
+  sky: 'bg-sky-50',
 }
 
 export default function ComparisonPage() {
