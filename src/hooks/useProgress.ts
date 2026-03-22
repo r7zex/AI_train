@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { flowCourseBlocks, getFlowTopicById } from '../data/courseFlow'
 
-const STORAGE_KEY = 'ml-trainer-progress-v2'
-const LEGACY_KEYS = ['ml-trainer-progress', 'stepik-like-progress']
+const STORAGE_KEY = 'ml-trainer-progress-v3'
+const LEGACY_KEYS = ['ml-trainer-progress-v2', 'ml-trainer-progress', 'stepik-like-progress']
 
 export interface ProgressState {
-  version: 2
+  version: 3
   completedSteps: string[]
   passedQuizzes: string[]
   passedPractices: string[]
@@ -15,7 +15,7 @@ export interface ProgressState {
 }
 
 const defaultState: ProgressState = {
-  version: 2,
+  version: 3,
   completedSteps: [],
   passedQuizzes: [],
   passedPractices: [],
@@ -54,7 +54,7 @@ function deriveState(base: Omit<ProgressState, 'completedTopics' | 'completedSub
 
   return {
     ...normalizedBase,
-    version: 2,
+    version: 3,
     completedTopics,
     completedSubtopics,
   }
@@ -73,24 +73,25 @@ function loadProgress(): ProgressState {
       })
     }
 
-    const migratedCompletedSteps = LEGACY_KEYS.flatMap((key) => {
+    const migrated = LEGACY_KEYS.flatMap((key) => {
       const item = localStorage.getItem(key)
       if (!item) return [] as string[]
+
       try {
-        const parsed = JSON.parse(item)
-        if (Array.isArray(parsed)) return parsed as string[]
-        if (typeof parsed === 'object' && parsed !== null) {
-          return Object.entries(parsed)
-            .filter(([, value]) => Boolean(value))
-            .map(([stepId]) => stepId)
+        const parsed = JSON.parse(item) as Partial<ProgressState> | string[] | Record<string, boolean>
+        if (Array.isArray(parsed)) return parsed
+        if ('completedSteps' in (parsed as object)) {
+          return (parsed as Partial<ProgressState>).completedSteps ?? []
         }
+        return Object.entries(parsed as Record<string, boolean>)
+          .filter(([, value]) => Boolean(value))
+          .map(([stepId]) => stepId)
       } catch {
         return []
       }
-      return []
     })
 
-    return deriveState({ completedSteps: migratedCompletedSteps, passedPractices: [], passedQuizzes: [], lastVisitedStep: {} })
+    return deriveState({ completedSteps: migrated, passedPractices: [], passedQuizzes: [], lastVisitedStep: {} })
   } catch {
     return defaultState
   }
@@ -116,13 +117,16 @@ export function useProgress() {
   }
 
   const setLastVisitedStep = (topicId: string, stepId: string) => {
-    setProgress((prev) => deriveState({
-      ...prev,
-      lastVisitedStep: {
-        ...prev.lastVisitedStep,
-        [topicId]: stepId,
-      },
-    }))
+    setProgress((prev) => {
+      if (prev.lastVisitedStep[topicId] === stepId) return prev
+      return deriveState({
+        ...prev,
+        lastVisitedStep: {
+          ...prev.lastVisitedStep,
+          [topicId]: stepId,
+        },
+      })
+    })
   }
 
   const helpers = useMemo(() => ({
