@@ -1,6 +1,161 @@
-﻿import { Link } from 'react-router-dom'
+﻿import { useState, useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { sections } from '../data/topics'
+import { quizzes } from '../data/quizzes'
 import { useProgress } from '../hooks/useProgress'
+
+type SearchResult = {
+  label: string
+  description: string
+  link: string
+  type: 'topic' | 'quiz' | 'formula'
+}
+
+const cheatsheetFormulas = [
+  { name: 'Gini Impurity', link: '/cheatsheet#classical' },
+  { name: 'Precision', link: '/cheatsheet#metrics' },
+  { name: 'Recall', link: '/cheatsheet#metrics' },
+  { name: 'F1-Score', link: '/cheatsheet#metrics' },
+  { name: 'ROC-AUC', link: '/cheatsheet#metrics' },
+  { name: 'MSE / RMSE', link: '/cheatsheet#metrics' },
+  { name: 'R² Score', link: '/cheatsheet#metrics' },
+  { name: 'Gradient Descent Update', link: '/cheatsheet#optimization' },
+  { name: 'L1 Regularization (Lasso)', link: '/cheatsheet#optimization' },
+  { name: 'L2 Regularization (Ridge)', link: '/cheatsheet#optimization' },
+  { name: 'Elastic Net', link: '/cheatsheet#optimization' },
+  { name: 'Adam Update', link: '/cheatsheet#optimization' },
+  { name: 'Batch Normalization', link: '/cheatsheet#deeplearning' },
+  { name: 'Layer Normalization', link: '/cheatsheet#deeplearning' },
+  { name: 'Scaled Dot-Product Attention', link: '/cheatsheet#deeplearning' },
+  { name: 'Softmax', link: '/cheatsheet#deeplearning' },
+  { name: 'Dropout', link: '/cheatsheet#deeplearning' },
+  { name: 'Naive Bayes', link: '/cheatsheet#classical' },
+  { name: 'SVM Margin', link: '/cheatsheet#classical' },
+  { name: 'Logistic Regression', link: '/cheatsheet#classical' },
+]
+
+function SearchBar() {
+  const [query, setQuery] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  const allTopics = sections.flatMap(s => s.topics)
+
+  const results: SearchResult[] = query.trim().length < 2 ? [] : [
+    ...allTopics
+      .filter(t =>
+        t.title.toLowerCase().includes(query.toLowerCase()) ||
+        t.shortDescription.toLowerCase().includes(query.toLowerCase())
+      )
+      .slice(0, 5)
+      .map(t => ({
+        label: t.title,
+        description: t.shortDescription,
+        link: `/topics/${t.id}`,
+        type: 'topic' as const,
+      })),
+    ...quizzes
+      .filter(q =>
+        q.title.toLowerCase().includes(query.toLowerCase()) ||
+        q.description.toLowerCase().includes(query.toLowerCase())
+      )
+      .slice(0, 3)
+      .map(q => ({
+        label: q.title,
+        description: q.description,
+        link: `/quiz/${q.id}`,
+        type: 'quiz' as const,
+      })),
+    ...cheatsheetFormulas
+      .filter(f => f.name.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 3)
+      .map(f => ({
+        label: f.name,
+        description: 'Формула в шпаргалке',
+        link: f.link,
+        type: 'formula' as const,
+      })),
+  ].slice(0, 10)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const typeIcon: Record<string, string> = {
+    topic: '📚',
+    quiz: '📝',
+    formula: '📐',
+  }
+
+  const typeLabel: Record<string, string> = {
+    topic: 'Тема',
+    quiz: 'Квиз',
+    formula: 'Формула',
+  }
+
+  return (
+    <div ref={ref} className="relative max-w-xl mx-auto mb-6">
+      <div className="flex items-center border-2 border-gray-200 rounded-xl bg-white shadow-sm focus-within:border-blue-400 transition-colors">
+        <span className="pl-4 text-gray-400">🔍</span>
+        <input
+          type="text"
+          value={query}
+          onChange={e => {
+            setQuery(e.target.value)
+            setIsOpen(true)
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder="Поиск по темам, квизам, формулам..."
+          className="flex-1 px-3 py-3 text-sm text-gray-700 bg-transparent outline-none"
+        />
+        {query && (
+          <button
+            onClick={() => { setQuery(''); setIsOpen(false) }}
+            className="pr-4 text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {isOpen && results.length > 0 && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+          {results.map((r, i) => (
+            <Link
+              key={i}
+              to={r.link}
+              onClick={() => { setQuery(''); setIsOpen(false) }}
+              className="flex items-start gap-3 px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-0"
+            >
+              <span className="text-lg shrink-0 mt-0.5">{typeIcon[r.type]}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-800 truncate">{r.label}</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 shrink-0">
+                    {typeLabel[r.type]}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 truncate mt-0.5">{r.description}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {isOpen && query.trim().length >= 2 && results.length === 0 && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 px-4 py-3 text-sm text-gray-500 text-center">
+          Ничего не найдено по запросу «{query}»
+        </div>
+      )}
+    </div>
+  )
+}
 
 const styleByColor: Record<string, { card: string; button: string }> = {
   slate: { card: 'bg-slate-50 border-slate-200 text-slate-700', button: 'bg-slate-700 hover:bg-slate-800' },
@@ -69,6 +224,8 @@ export default function HomePage() {
         <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
           Локальный интерактивный учебник по ML и DL: теория, формулы, ручные расчеты, квизы, код-практика и трекинг прогресса.
         </p>
+
+        <SearchBar />
 
         <div className="flex flex-wrap justify-center gap-3">
           <Link to="/topics" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
