@@ -12,10 +12,10 @@ export default function CodeEditor({ value, onChange, height = 260 }: CodeEditor
 
   return (
     <div
-      className="grid grid-cols-[40px,1fr] overflow-hidden rounded-none border border-slate-300 bg-white text-slate-900"
+      className="grid grid-cols-[48px,1fr] overflow-hidden border border-[#cfd5dc] bg-white text-[#1e2329]"
       style={{ height }}
     >
-      <div className="overflow-hidden border-r border-slate-200 bg-slate-50 px-2 py-2 text-right font-mono text-sm leading-8 text-slate-400">
+      <div className="overflow-hidden border-r border-[#dde2e8] bg-[#f3f5f7] px-2 py-2 text-right font-mono text-[12px] leading-6 text-[#8b95a1]">
         {lineNumbers.map((line) => (
           <div key={line}>{line}</div>
         ))}
@@ -38,7 +38,7 @@ export default function CodeEditor({ value, onChange, height = 260 }: CodeEditor
             textarea.selectionStart = textarea.selectionEnd = start + 2
           })
         }}
-        className="h-full w-full resize-none bg-white px-3 py-2 font-mono text-sm leading-8 text-slate-900 outline-none"
+        className="h-full w-full resize-none bg-white px-3 py-2 font-mono text-[13px] leading-6 text-[#1f252d] outline-none"
       />
     </div>
   )
