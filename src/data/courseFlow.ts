@@ -430,11 +430,36 @@ const defaultSources: SourceLink[] = [
 
 function explainTerm(term: string): DefinitionCard {
   const entry = termDictionary[term]
+  // Generate a meaningful fallback based on common ML/DL/Python term patterns
+  const fallbackDef = entry?.definition ?? generateTermDefinition(term)
+  const fallbackWhy = entry?.why ?? generateTermWhy(term)
   return {
     term,
-    definition: entry?.definition ?? `Термин «${term}» описывает одну из рабочих сущностей темы и нужен, чтобы не путать синтаксис, данные и модельное решение.`,
-    whyItMatters: entry?.why ?? 'Если понимать термин только по названию, легко ошибиться в формуле, коде или интерпретации результата.',
+    definition: fallbackDef,
+    whyItMatters: fallbackWhy,
   }
+}
+
+function generateTermDefinition(term: string): string {
+  const t = term.toLowerCase()
+  if (t.includes('loss') || t.includes('функция потерь')) return `${term} — функция, измеряющая расхождение между предсказанием модели и истинным значением. Минимизируется во время обучения.`
+  if (t.includes('gradient') || t.includes('градиент')) return `${term} — вектор частных производных функции потерь по параметрам модели. Указывает направление наибольшего роста ошибки.`
+  if (t.includes('epoch') || t.includes('эпоха')) return `${term} — один полный проход по всему обучающему набору данных. После каждой эпохи параметры модели обновляются.`
+  if (t.includes('batch') || t.includes('батч')) return `${term} — подмножество обучающих примеров, обрабатываемых за один шаг оптимизации. Размер батча влияет на скорость и стабильность обучения.`
+  if (t.includes('layer') || t.includes('слой')) return `${term} — уровень нейросети, преобразующий входные активации в выходные через матрицу весов и функцию активации.`
+  if (t.includes('weight') || t.includes('вес')) return `${term} — обучаемый параметр модели. Изменяется оптимизатором так, чтобы минимизировать функцию потерь.`
+  if (t.includes('overfitting') || t.includes('переобучение')) return `${term} — ситуация, когда модель слишком точно запомнила обучающие примеры и плохо обобщается на новые данные.`
+  if (t.includes('regularization') || t.includes('регуляризация')) return `${term} — метод ограничения сложности модели путём добавления штрафного члена к функции потерь.`
+  return `${term} — ключевое понятие в данной теме, необходимое для правильного понимания алгоритмов, формул и ограничений подхода.`
+}
+
+function generateTermWhy(term: string): string {
+  const t = term.toLowerCase()
+  if (t.includes('loss') || t.includes('функция потерь')) return 'Выбор правильной функции потерь напрямую определяет, что именно оптимизирует модель и как она ведёт себя на разных данных.'
+  if (t.includes('gradient') || t.includes('градиент')) return 'Понимание градиента помогает объяснить, почему модель сходится или расходится, и как настраивать скорость обучения.'
+  if (t.includes('epoch') || t.includes('эпоха')) return 'Количество эпох — ключевой гиперпараметр: слишком мало — underfitting, слишком много — overfitting.'
+  if (t.includes('batch') || t.includes('батч')) return 'Размер батча влияет на качество градиента и скорость обучения; важно понимать компромисс между ними.'
+  return 'Без чёткого понимания термина легко допустить ошибку в формуле, коде или при интерпретации результатов модели.'
 }
 
 function describeFormula(theme: Theme, expression: string, index: number): FormulaCard {
@@ -613,18 +638,18 @@ print(min_value, max_value, max_value - min_value)
 }
 
 function buildOverview(theme: Theme): FlowStep {
-  const override = topicOverrides[theme.id]
+  const ov = topicOverrides[theme.id]
   return {
     id: `${theme.id}-overview`,
     type: 'theory',
-    title: 'Что это и зачем это нужно',
-    summary: 'Короткий вводный шаг: одна главная мысль, где тема используется и чем она полезна на практике.',
-    mainIdea: override?.focus ?? theme.simpleExplanation,
+    title: 'Что это и зачем нужно',
+    summary: ov?.focus ?? theme.simpleExplanation,
+    mainIdea: ov?.focus ?? theme.simpleExplanation,
     paragraphs: [
-      `${theme.simpleExplanation} Это ответ на вопрос «что это такое» без перегруза лишними деталями.`,
-      `Зачем нужно: ${theme.summary}`,
-      `Где встречается на практике: ${theme.usage.join(' ')}`,
-      `После шага студент должен уметь: кратко объяснить тему, назвать её типичный use-case и не перепутать её с соседним понятием.`,
+      theme.simpleExplanation,
+      `Зачем это нужно: ${theme.summary}`,
+      `Где встречается: ${theme.usage.slice(0, 2).join('. ')}.`,
+      `Реальный пример: ${theme.realLifeExample}`,
     ],
   }
 }
@@ -633,9 +658,9 @@ function buildTerminology(theme: Theme): FlowStep {
   return {
     id: `${theme.id}-terminology`,
     type: 'terminology',
-    title: 'Термины и понятия',
-    summary: 'Каждый термин уже объяснён: не нужно “придумывать определение самому”, можно сразу учиться по материалу.',
-    mainIdea: 'Сначала пойми словарь темы, иначе формулы и код будут восприниматься как механика.',
+    title: 'Ключевые термины',
+    summary: 'Словарь темы: каждый термин с определением и объяснением, зачем его знать.',
+    mainIdea: 'Понять термины — значит понять тему. Без этого формулы воспринимаются как механика.',
     definitions: [...theme.terminology, ...theme.extraTerms].map(explainTerm),
   }
 }
@@ -645,38 +670,43 @@ function buildFormulaStep(theme: Theme): FlowStep {
     id: `${theme.id}-formula`,
     type: 'formula',
     title: 'Формулы и обозначения',
-    summary: 'Здесь только опорные записи по теме: формула, расшифровка символов и смысл, когда её применять.',
-    mainIdea: 'Формулу нужно читать не как набор символов, а как короткий алгоритм вычисления.',
-    formulaCards: theme.formulas.map((formula, index) => describeFormula(theme, formula, index)),
+    summary: 'Опорные формулы темы с расшифровкой каждого символа и указанием, когда применять.',
+    mainIdea: 'Читай формулу не как набор букв, а как краткое описание вычисления.',
+    formulaCards: theme.formulas.length > 0
+      ? theme.formulas.map((formula, index) => describeFormula(theme, formula, index))
+      : [{ label: 'Опорная запись', expression: theme.simpleExplanation, meaning: theme.summary, notation: ['Понять формулу — понять суть метода.', 'Проверь: умеешь ли объяснить каждый символ?'] }],
   }
 }
 
 function buildIntuition(theme: Theme): FlowStep {
+  const ov = topicOverrides[theme.id]
   return {
     id: `${theme.id}-intuition`,
     type: 'intuition',
     title: 'Интуиция и смысл',
-    summary: 'Короткий шаг про смысловую, инженерную и иногда геометрическую интерпретацию темы.',
-    mainIdea: topicOverrides[theme.id]?.focus ?? theme.summary,
-    bullets: topicOverrides[theme.id]?.intuition ?? [
-      'Думай о теме как о рабочем инструменте, а не как о параграфе из учебника.',
-      'Связывай определение с одним конкретным кейсом и одной типичной ошибкой.',
-      'Если формула понятна, но неясно, когда её применять, значит тема ещё не усвоена.',
+    summary: 'Смысловая и инженерная интерпретация: зачем это работает и где ломается.',
+    mainIdea: ov?.focus ?? theme.summary,
+    bullets: ov?.intuition ?? [
+      `${theme.title} — рабочий инструмент для ${theme.usage[0] ?? 'решения задач ML'}.`,
+      'Главный вопрос: когда метод даёт хороший результат, а когда — нет?',
+      `Реальный контекст: ${theme.realLifeExample}`,
+      'Интуиция важнее заучивания формулы: если понимаешь смысл, формула выводится сама.',
     ],
   }
 }
 
 function buildWorkedExample(theme: Theme): FlowStep {
+  const ov = topicOverrides[theme.id]
   return {
     id: `${theme.id}-worked-example`,
     type: 'worked-example',
-    title: 'Ручной пример',
-    summary: 'Небольшой числовой разбор без пропуска промежуточных действий.',
-    mainIdea: 'Ручной счёт закрепляет формулу и помогает потом отлаживать код.',
-    workedExample: topicOverrides[theme.id]?.workedExample ?? [
-      { title: 'Шаг 1', body: 'Выпишите входные числа и явно назовите, что известно.' },
-      { title: 'Шаг 2', body: 'Подставьте значения в формулу, не пропуская знаменатель и числитель.' },
-      { title: 'Шаг 3', body: 'После вычисления интерпретируйте результат в контексте задачи.' },
+    title: 'Разбор на числах',
+    summary: 'Пошаговый расчёт без пропуска промежуточных действий.',
+    mainIdea: 'Ручной счёт — лучший способ проверить, что формула понята правильно.',
+    workedExample: ov?.workedExample ?? [
+      { title: 'Исходные данные', body: `Возьмём небольшой синтетический пример для темы «${theme.title}». Задаём входные значения явно, чтобы проследить каждый шаг.` },
+      { title: 'Применяем метод', body: `Подставляем данные в формулу по правилам темы «${theme.title}». Выполняем вычисления шаг за шагом, не пропуская промежуточных результатов.` },
+      { title: 'Интерпретация', body: 'Полученный результат интерпретируем в контексте задачи, а не как абстрактное значение. Что скажет этот результат бизнесу или пользователю?' },
     ],
   }
 }
@@ -685,23 +715,24 @@ function buildRecap(theme: Theme): FlowStep {
   return {
     id: `${theme.id}-recap`,
     type: 'recap',
-    title: 'Мини-конспект и шпаргалка',
-    summary: 'Короткое повторение: что помнить, где ловушки и какие мини-задания полезно уметь решать без кода.',
-    mainIdea: 'Шпаргалка должна помогать повторять, а не быть декоративным блоком.',
+    title: 'Шпаргалка и мини-конспект',
+    summary: 'Всё главное: суть, формулы, типичные ошибки, что отвечать на собесе.',
+    mainIdea: 'Хорошая шпаргалка — краткий маршрут по теме, а не просто список слов.',
     bullets: [
-      `Главное: ${theme.summary}`,
-      ...theme.themeCheatsheet.map((item) => `Помнить: ${item}`),
-      `Ключевые формулы: ${theme.formulas.join(' · ')}`,
-      'На экзамене/собесе сначала назови цель метода, потом формулу и только затем переходи к частным нюансам.',
+      `📌 Суть: ${theme.summary}`,
+      `💡 Простыми словами: ${theme.simpleExplanation}`,
+      ...(theme.themeCheatsheet.length > 0 ? theme.themeCheatsheet.map((item) => `📐 ${item}`) : []),
+      ...(theme.formulas.length > 0 ? [`∑ Ключевые формулы: ${theme.formulas.slice(0, 3).join(' | ')}`] : []),
+      `⚠️ Частая ошибка: ${theme.mistakes[0] ?? 'Не путай определение с применением.'}`,
+      '🎯 На собесе: сначала назови цель метода, потом формулу, потом ограничения.',
     ],
     drills: [
-      { prompt: 'Объясните тему человеку без ML-бэкграунда в двух предложениях.', answer: 'Начните с задачи, которую тема решает, затем приведите один простой пример и одну формулу.' },
-      { prompt: 'Сравните тему с ближайшим похожим понятием.', answer: 'Назовите одну общую черту, одно ключевое отличие и одну типичную ловушку.' },
-      { prompt: 'Назовите edge-case, который ломает наивную реализацию.', answer: 'Проверьте нулевой диапазон, пустой ввод, утечку данных или неверный порог — в зависимости от темы.' },
+      { prompt: 'Объясни тему в двух предложениях, как рассказываешь другу без ML-бэкграунда.', answer: `${theme.simpleExplanation} Используется для ${theme.usage[0] ?? 'решения задач машинного обучения'}.` },
+      { prompt: 'Назови один реальный пример применения этого метода.', answer: theme.realLifeExample },
+      { prompt: 'Какая типичная ошибка связана с этой темой?', answer: theme.mistakes[0] ?? 'Неправильная интерпретация результатов или применение метода вне его области применения.' },
     ],
   }
 }
-
 function buildSources(theme: Theme): FlowStep {
   const customSources = topicOverrides[theme.id]?.sources ?? []
   return {
