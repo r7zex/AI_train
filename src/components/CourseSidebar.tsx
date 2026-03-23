@@ -1,15 +1,6 @@
-import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { flowCourseBlocks, getFlowStepHref } from '../data/courseFlow'
 import type { ProgressState } from '../hooks/useProgress'
-
-function ProgressLine({ value }: { value: number }) {
-  return (
-    <div className="h-1 rounded-full bg-white/10">
-      <div className="h-1 rounded-full bg-emerald-400 transition-all" style={{ width: `${Math.max(0, Math.min(100, value * 100))}%` }} />
-    </div>
-  )
-}
 
 interface CourseSidebarProps {
   activeTopicId?: string
@@ -19,139 +10,76 @@ interface CourseSidebarProps {
   getBlockProgress: (blockId: string) => number
 }
 
-function findActiveLocation(activeTopicId?: string) {
+function findCurrentBlock(activeTopicId?: string) {
   for (const block of flowCourseBlocks) {
     for (const subblock of block.subblocks) {
-      if (subblock.themes.some((item) => item.id === activeTopicId)) {
-        return { blockId: block.id, subblockId: subblock.id }
-      }
+      if (subblock.themes.some((topic) => topic.id === activeTopicId)) return block.id
     }
   }
-  return null
+  return ''
 }
 
-export default function CourseSidebar({ activeTopicId, progress, getTopicProgress, getSubblockProgress, getBlockProgress }: CourseSidebarProps) {
-  const activeLocation = findActiveLocation(activeTopicId)
-
-  const [userOpenBlocks, setUserOpenBlocks] = useState<Record<string, boolean>>({})
-  const [userOpenSubblocks, setUserOpenSubblocks] = useState<Record<string, boolean>>({})
-
-  const openBlocks = useMemo(() => {
-    const base: Record<string, boolean> = Object.fromEntries(
-      flowCourseBlocks.map((block) => [block.id, userOpenBlocks[block.id] ?? false])
-    )
-    if (activeLocation) base[activeLocation.blockId] = true
-    return base
-  }, [activeLocation, userOpenBlocks])
-
-  const openSubblocks = useMemo(() => {
-    const base: Record<string, boolean> = Object.fromEntries(
-      flowCourseBlocks.flatMap((block) =>
-        block.subblocks.map((subblock) => [subblock.id, userOpenSubblocks[subblock.id] ?? false])
-      )
-    )
-    if (activeLocation) base[activeLocation.subblockId] = true
-    return base
-  }, [activeLocation, userOpenSubblocks])
+export default function CourseSidebar({ activeTopicId, progress, getTopicProgress, getBlockProgress }: CourseSidebarProps) {
+  const totalSteps = flowCourseBlocks.reduce(
+    (sum, block) => sum + block.subblocks.reduce((inner, subblock) => inner + subblock.themes.reduce((acc, topic) => acc + topic.steps.length, 0), 0),
+    0,
+  )
+  const completedSteps = progress.completedSteps.length
+  const currentBlock = findCurrentBlock(activeTopicId)
 
   return (
-    <aside className="sticky top-0 h-screen w-64 shrink-0 overflow-y-auto border-r border-white/8 bg-[#181818] text-white xl:w-72">
-      {/* Course header */}
-      <div className="border-b border-white/8 px-4 py-4">
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-emerald-400">Курс</div>
-        <div className="mt-1 text-base font-bold leading-tight text-white">ML/DL Тренажёр</div>
-        <p className="mt-1 text-xs leading-5 text-slate-400">Блок → Подблок → Тема</p>
+    <aside className="h-[calc(100vh-96px)] w-[320px] shrink-0 overflow-y-auto border-r border-[#2e343c] bg-[#252b32] text-[#d9e1ea]">
+      <div className="border-b border-[#343b44] px-5 py-4">
+        <div className="text-[12px] font-semibold text-[#f0f4f8]">AI Train</div>
+        <div className="mt-1 text-[11px] text-[#a6b1be]">Локальная учебная платформа</div>
       </div>
 
-      <div className="py-3">
+      <div className="border-b border-[#343b44] px-5 py-4">
+        <div className="text-[11px] text-[#a6b1be]">Прогресс по курсу: {completedSteps}/{totalSteps}</div>
+        <div className="mt-2 h-1.5 w-full bg-[#1f242a]">
+          <div className="h-1.5 bg-[#44bb66]" style={{ width: `${totalSteps === 0 ? 0 : (completedSteps / totalSteps) * 100}%` }} />
+        </div>
+      </div>
+
+      <div className="py-2">
         {flowCourseBlocks.map((block) => {
-          const isOpen = openBlocks[block.id]
-          const blockProgress = getBlockProgress(block.id)
-          const blockActive = activeLocation?.blockId === block.id
+          const blockProgress = Math.round(getBlockProgress(block.id) * 100)
+          const expanded = block.id === currentBlock || getBlockProgress(block.id) > 0
 
           return (
-            <div key={block.id} className="mb-1">
-              {/* Block header */}
-              <button
-                type="button"
-                onClick={() => setUserOpenBlocks((prev) => ({ ...prev, [block.id]: !(openBlocks[block.id]) }))}
-                className={`flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left transition-colors ${blockActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="text-base">{block.icon}</span>
-                  <div className="min-w-0">
-                    <div className="truncate text-[11px] font-semibold leading-tight text-slate-200">{block.title}</div>
-                    <div className="mt-0.5 text-[10px] text-slate-500">{Math.round(blockProgress * 100)}%</div>
-                  </div>
+            <section key={block.id} className="border-b border-[#303740] px-3 py-2">
+              <div className="px-2 py-1">
+                <div className="text-[12px] font-semibold text-[#e8eef5]">
+                  {block.order} {block.title}
                 </div>
-                <span className={`shrink-0 text-[11px] font-bold transition-transform ${isOpen ? '' : '-rotate-90'} text-slate-500`}>▾</span>
-              </button>
+                <div className="mt-0.5 text-[10px] text-[#92a0af]">{blockProgress}%</div>
+              </div>
 
-              {blockActive && (
-                <div className="mx-4 mb-1.5">
-                  <ProgressLine value={blockProgress} />
-                </div>
-              )}
+              {expanded && (
+                <div className="mt-1 space-y-0.5">
+                  {block.subblocks.flatMap((subblock) =>
+                    subblock.themes.map((topic) => {
+                      const href = getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)
+                      const isActive = topic.id === activeTopicId
+                      const topicProgress = Math.round(getTopicProgress(topic.id) * 100)
 
-              {isOpen && (
-                <div className="pb-1">
-                  {block.subblocks.map((subblock) => {
-                    const subOpen = openSubblocks[subblock.id]
-                    const subProgress = getSubblockProgress(subblock.id)
-                    const subActive = activeLocation?.subblockId === subblock.id
-
-                    return (
-                      <div key={subblock.id} className="mb-0.5">
-                        {/* Subblock header */}
-                        <button
-                          type="button"
-                          onClick={() => setUserOpenSubblocks((prev) => ({ ...prev, [subblock.id]: !(openSubblocks[subblock.id]) }))}
-                          className={`flex w-full items-center justify-between gap-2 py-2 pl-10 pr-4 text-left transition-colors ${subActive ? 'text-slate-200' : 'text-slate-500 hover:text-slate-300'}`}
+                      return (
+                        <Link
+                          key={topic.id}
+                          to={href}
+                          className={`flex items-center justify-between px-2 py-1.5 text-[11px] leading-4 transition ${
+                            isActive ? 'bg-[#45b96a] text-[#102012]' : 'text-[#c7d0db] hover:bg-[#2e3640] hover:text-white'
+                          }`}
                         >
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-[11px] font-medium leading-snug">
-                              {block.order}.{subblock.order} {subblock.title}
-                            </div>
-                            {subActive && (
-                              <div className="mt-1">
-                                <ProgressLine value={subProgress} />
-                              </div>
-                            )}
-                          </div>
-                          <span className={`shrink-0 text-[10px] transition-transform ${subOpen ? '' : '-rotate-90'} text-slate-600`}>▾</span>
-                        </button>
-
-                        {subOpen && (
-                          <div className="pb-1 pt-0.5">
-                            {subblock.themes.map((topic) => {
-                              const topicProgress = getTopicProgress(topic.id)
-                              const isCompleted = progress.completedTopics.includes(topic.id)
-                              const isInProgress = topicProgress > 0 && topicProgress < 1
-                              const isActive = topic.id === activeTopicId
-                              const href = getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)
-
-                              return (
-                                <Link
-                                  key={topic.id}
-                                  to={href}
-                                  className={`flex items-center justify-between gap-2 py-1.5 pl-14 pr-4 transition-colors ${isActive ? 'bg-emerald-400/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'}`}
-                                >
-                                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isCompleted ? 'bg-emerald-400' : isInProgress ? 'bg-amber-400' : isActive ? 'bg-white' : 'bg-slate-600'}`} />
-                                    <span className="truncate text-[11px] leading-snug">{topic.title}</span>
-                                  </div>
-                                  {isCompleted && <span className="shrink-0 text-[10px] text-emerald-400">✓</span>}
-                                </Link>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                          <span className="truncate">{topic.title}</span>
+                          <span className={`${isActive ? 'text-[#17331d]' : 'text-[#8f9eae]'}`}>{topicProgress}%</span>
+                        </Link>
+                      )
+                    }),
+                  )}
                 </div>
               )}
-            </div>
+            </section>
           )
         })}
       </div>
