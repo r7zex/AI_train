@@ -37,6 +37,11 @@ const categories: Category[] = [
         explanation: 'Зазор между двумя параллельными гиперплоскостями, разделяющими классы. SVM максимизирует этот зазор.',
       },
       {
+        name: 'SVM: Расстояние от точки до гиперплоскости',
+        math: 'd = \\frac{|\\mathbf{w}^\\top \\mathbf{x} + b|}{\\|\\mathbf{w}\\|}',
+        explanation: 'Подписанное расстояние от объекта x до разделяющей гиперплоскости w·x+b=0. Именно это расстояние возвращает decision_function в sklearn.SVC.',
+      },
+      {
         name: 'SVM: Hinge Loss',
         math: 'L = \\frac{1}{n}\\sum_{i=1}^{n} \\max(0,\\, 1 - y_i(\\mathbf{w}^\\top \\mathbf{x}_i + b))',
         explanation: 'Функция потерь SVM. Штрафует только объекты внутри зазора или неправильно классифицированные.',
