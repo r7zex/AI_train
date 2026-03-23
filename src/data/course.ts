@@ -1218,7 +1218,7 @@ const blockSeeds = [
             ],
             formulas: ['σ(z) = 1/(1+e^{-z})', 'ReLU(z) = max(0, z)', 'softmax(z_i) = e^{z_i} / Σe^{z_j}'],
             extraTerms: ['насыщение', 'мёртвые нейроны', 'Leaky ReLU'],
-            activationFunctions: ['Sigmoid = 1/(1+e^(-z})', 'ReLU = max(0, z)', 'tanh = (e^z - e^{-z})/(e^z + e^{-z})', 'Softmax(z_i) = e^{z_i} / Σe^{z_j}'],
+            activationFunctions: ['Sigmoid = 1/(1+e^{-z})', 'ReLU = max(0, z)', 'tanh = (e^z - e^{-z})/(e^z + e^{-z})', 'Softmax(z_i) = e^{z_i} / Σe^{z_j}'],
             quizQuestions: makeQuiz('activation-functions', 'Функции активации: Sigmoid, ReLU, tanh, Softmax', ['σ(z) = 1/(1+e^{-z})', 'ReLU(z) = max(0, z)', 'softmax(z_i) = e^{z_i} / Σe^{z_j}'], 'нейронных сетях'),
             codeTasks: makeCodeTasks('activation-functions', 'Функции активации: Sigmoid, ReLU, tanh, Softmax'),
           }),
