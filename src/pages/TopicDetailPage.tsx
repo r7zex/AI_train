@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import CodeEditor from '../components/CodeEditor'
 import CourseSidebar from '../components/CourseSidebar'
+import Formula from '../components/Formula'
 import QuizWidget from '../features/quiz/QuizWidget'
 import { getFlowPrevNextStep, getFlowPrevNextTopic, getFlowStep, getFlowStepHref, getFlowTopicById, stepTypeMeta, type FlowStep, type PracticeTask } from '../data/courseFlow'
 import { judgeTask, type JudgeRunResult } from '../lib/practiceEngine'
 import { useProgress } from '../hooks/useProgress'
+import { parseCheatsheetItem, toLatex } from '../lib/latex'
 
 function ProgressBar({ value }: { value: number }) {
   return (
@@ -219,7 +221,9 @@ function StepContent({ step, onStepComplete, isCompleted }: { step: FlowStep; on
           {step.formulaCards.map((card) => (
             <div key={card.expression} className="rounded-3xl border border-violet-100 bg-violet-50/60 p-5">
               <div className="text-[11px] uppercase tracking-[0.22em] text-violet-700">{card.label}</div>
-              <div className="mt-3 overflow-auto rounded-2xl bg-white px-4 py-3 font-mono text-sm text-slate-900">{card.expression}</div>
+              <div className="mt-3 overflow-auto rounded-2xl bg-white px-4 py-4 text-slate-900">
+                <Formula math={toLatex(card.expression)} block className="text-base" />
+              </div>
               <p className="mt-3 text-sm leading-7 text-slate-700">{card.meaning}</p>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
                 {card.notation.map((line) => <li key={line}>{line}</li>)}
@@ -340,7 +344,7 @@ export default function TopicDetailPage() {
   const activeIndex = topic.steps.findIndex((step) => step.id === currentStep.id)
 
   return (
-    <div className="flex min-h-screen bg-[#f3f4f6]">
+    <div className="flex min-h-screen flex-col bg-[#f3f4f6] xl:flex-row">
       <CourseSidebar
         activeTopicId={topic.id}
         progress={progress}
@@ -418,10 +422,24 @@ export default function TopicDetailPage() {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-3xl bg-slate-50 p-4">
+            <div className="space-y-4 rounded-3xl bg-slate-50 p-4">
               <div className="text-sm font-semibold text-slate-900">Шпаргалка темы</div>
-              <div className="space-y-2 text-sm leading-6 text-slate-600">
-                {topic.themeCheatsheet.slice(0, 4).map((item) => <div key={item}>{item}</div>)}
+              <div className="grid gap-3">
+                {topic.themeCheatsheet.slice(0, 4).map((item) => {
+                  const parsed = parseCheatsheetItem(item)
+                  return (
+                    <div key={item} className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{parsed.kind}</div>
+                      {parsed.isLatex ? (
+                        <div className="mt-2 overflow-auto text-slate-900">
+                          <Formula math={parsed.latex} block className="text-sm" />
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-sm leading-6 text-slate-700">{parsed.content}</div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
               <Link to="/topics" className="text-sm font-semibold text-emerald-700">Вернуться к карте курса</Link>
             </div>
