@@ -219,11 +219,9 @@ function StepContent({ step, onStepComplete, isCompleted }: { step: FlowStep; on
       </header>
 
       {step.paragraphs && (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="space-y-4 text-[15px] leading-8 text-slate-700">
           {step.paragraphs.map((paragraph) => (
-            <div key={paragraph} className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-[15px] leading-7 text-slate-700">
-              {paragraph}
-            </div>
+            <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
       )}
@@ -243,11 +241,14 @@ function StepContent({ step, onStepComplete, isCompleted }: { step: FlowStep; on
       )}
 
       {step.bullets && (
-        <div className="space-y-3">
+        <ul className="space-y-2 text-[15px] leading-7 text-slate-700">
           {step.bullets.map((bullet) => (
-            <div key={bullet} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-700">{bullet}</div>
+            <li key={bullet} className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />
+              <span>{bullet}</span>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
       {step.formulaCards && (
@@ -386,10 +387,17 @@ export default function TopicDetailPage() {
                 <Link
                   key={step.id}
                   to={getFlowStepHref(topic.id, step.id)}
-                  className={`grid h-10 w-10 place-items-center rounded-md border text-sm font-semibold transition ${isActive ? 'border-emerald-300 bg-emerald-400 text-slate-950' : isDone ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-200' : 'border-white/15 bg-white/5 text-slate-300 hover:bg-white/10'}`}
+                  className={`group relative grid h-10 w-10 place-items-center rounded-md border text-sm transition ${isActive ? 'border-emerald-300 bg-emerald-400 text-slate-950' : isDone ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300' : 'border-white/15 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'}`}
                   title={`${index + 1}. ${step.title} · ${meta.short}`}
                 >
-                  {isDone && !isActive ? '✓' : index + 1}
+                  {isDone && !isActive ? (
+                    <span className="text-xs">✓</span>
+                  ) : (
+                    <span className="text-base leading-none">{meta.icon}</span>
+                  )}
+                  <span className="pointer-events-none absolute -bottom-7 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-[10px] text-white shadow group-hover:block">
+                    {meta.short}
+                  </span>
                 </Link>
               )
             })}
