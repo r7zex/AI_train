@@ -20,13 +20,29 @@ export interface JudgeRunResult {
 
 type AnyValue = string | number | boolean | null | undefined | AnyValue[]
 
+declare global {
+  interface Window {
+    loadPyodide?: (options: { indexURL: string }) => Promise<PyodideApi>
+  }
+}
+
+interface PyodideApi {
+  runPythonAsync: (code: string) => Promise<unknown>
+  globals: {
+    set: (name: string, value: unknown) => void
+    get: (name: string) => unknown
+  }
+}
+
+let pyodidePromise: Promise<PyodideApi> | null = null
+
 function stableStringify(value: unknown): string {
   if (typeof value === 'string') return value
   return JSON.stringify(value)
 }
 
 function normalizeOutput(value: unknown): string {
-  return String(value).trim().replace(/\r\n/g, '\n')
+  return String(value ?? '').trim().replace(/\r\n/g, '\n')
 }
 
 function createDiff(actual: string, expected: string) {
@@ -43,7 +59,7 @@ function createDiff(actual: string, expected: string) {
   return diff.join('\n')
 }
 
-function executeUserCode(code: string) {
+function executeJavaScriptUserCode(code: string) {
   const exports: Record<string, unknown> = {}
   const wrapped = `${code}\n;return { ...exports, ...(typeof solve !== 'undefined' ? { solve } : {}), ...(typeof normalizeScores !== 'undefined' ? { normalizeScores } : {}), ...(typeof module !== 'undefined' && module.exports ? module.exports : {}) }`
   const fn = new Function('exports', 'module', wrapped)
@@ -76,7 +92,86 @@ function runFunctionCase(executed: Record<string, unknown>, task: PracticeTask, 
   }
 }
 
-function runStdInCase(executed: Record<string, unknown>, test: PracticeTestCase): JudgeCaseResult {
+async function loadPyodideApi() {
+  if (typeof window === 'undefined') {
+    throw new Error('Python runner is available only in the browser')
+  }
+
+  if (!pyodidePromise) {
+    pyodidePromise = (async () => {
+      if (!window.loadPyodide) {
+        await new Promise<void>((resolve, reject) => {
+          const existing = document.querySelector<HTMLScriptElement>('script[data-pyodide="true"]')
+          if (existing) {
+            existing.addEventListener('load', () => resolve(), { once: true })
+            existing.addEventListener('error', () => reject(new Error('Не удалось загрузить Pyodide')), { once: true })
+            return
+          }
+
+          const script = document.createElement('script')
+          script.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js'
+          script.async = true
+          script.dataset.pyodide = 'true'
+          script.onload = () => resolve()
+          script.onerror = () => reject(new Error('Не удалось загрузить Pyodide'))
+          document.head.appendChild(script)
+        })
+      }
+
+      if (!window.loadPyodide) {
+        throw new Error('Pyodide API недоступен')
+      }
+
+      return window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/' })
+    })()
+  }
+
+  return pyodidePromise
+}
+
+async function runPythonStdInCase(code: string, test: PracticeTestCase): Promise<JudgeCaseResult> {
+  const pyodide = await loadPyodideApi()
+  pyodide.globals.set('__judge_input__', test.input ?? '')
+  pyodide.globals.set('__user_code__', code)
+
+  const result = await pyodide.runPythonAsync(`
+import io
+import sys
+
+stdin_backup = sys.stdin
+stdout_backup = sys.stdout
+sys.stdin = io.StringIO(__judge_input__)
+sys.stdout = io.StringIO()
+namespace = {"__name__": "__main__"}
+
+try:
+    exec(__user_code__, namespace)
+    __judge_output__ = sys.stdout.getvalue()
+finally:
+    sys.stdin = stdin_backup
+    sys.stdout = stdout_backup
+
+__judge_output__
+`)
+
+  const actual = normalizeOutput(result)
+  const expected = normalizeOutput(test.expectedOutput ?? '')
+  return {
+    id: test.id,
+    description: test.description,
+    passed: actual === expected,
+    actual,
+    expected,
+    diff: actual === expected ? undefined : createDiff(actual, expected),
+  }
+}
+
+async function runStdInCase(task: PracticeTask, code: string, test: PracticeTestCase): Promise<JudgeCaseResult> {
+  if (task.language === 'python') {
+    return runPythonStdInCase(code, test)
+  }
+
+  const executed = executeJavaScriptUserCode(code)
   const callable = executed.solve
   if (typeof callable !== 'function') {
     return {
@@ -108,18 +203,20 @@ function getStructuralFeedback(code: string, task: PracticeTask) {
   ))
 }
 
-export function judgeTask(task: PracticeTask, code: string, includeHidden: boolean): JudgeRunResult {
+export async function judgeTask(task: PracticeTask, code: string, includeHidden: boolean): Promise<JudgeRunResult> {
   const structuralFeedback = getStructuralFeedback(code, task)
 
   try {
-    const executed = executeUserCode(code)
-    const runCase = (test: PracticeTestCase) => {
-      if (task.kind === 'stdin-stdout') return runStdInCase(executed, test)
-      return runFunctionCase(executed, task, test)
-    }
+    const sampleResults = task.kind === 'stdin-stdout'
+      ? await Promise.all(task.sampleTests.map((test) => runStdInCase(task, code, test)))
+      : task.sampleTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
 
-    const sampleResults = task.sampleTests.map(runCase)
-    const hiddenResults = includeHidden ? task.hiddenTests.map(runCase) : []
+    const hiddenResults = includeHidden
+      ? task.kind === 'stdin-stdout'
+        ? await Promise.all(task.hiddenTests.map((test) => runStdInCase(task, code, test)))
+        : task.hiddenTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
+      : []
+
     const allResults = [...sampleResults, ...hiddenResults]
     const passedCases = allResults.filter((item) => item.passed).length
     const score = allResults.length > 0 ? Math.round((passedCases / allResults.length) * 100) : 0
