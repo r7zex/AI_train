@@ -28,126 +28,153 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
   }
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[320px,minmax(0,1fr),320px]">
-      <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5">
+    <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.22em] text-fuchsia-600">Statement panel</div>
-          <h4 className="mt-2 text-xl font-semibold text-slate-950">{task.title}</h4>
-          <p className="mt-3 text-sm leading-7 text-slate-600">{task.statement}</p>
+          <div className="text-sm text-slate-500">
+            Практическое задание · Тестируется через {task.kind === 'stdin-stdout' ? 'stdin → stdout' : `${task.functionName ?? 'function'}(...)`}
+          </div>
+          <h3 className="mt-2 text-3xl font-semibold text-slate-950">{task.title}</h3>
+        </div>
+        <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
+          Сначала нажмите «Запустить код», потом — «Отправить».
+        </div>
+      </div>
+
+      <div className="mt-8 space-y-8">
+        <div className="space-y-4 text-lg leading-8 text-slate-800">
+          <p>{task.statement}</p>
+          {task.tips.length > 0 && (
+            <ul className="list-disc space-y-2 pl-6 text-base leading-7 text-slate-700">
+              {task.tips.map((tip) => <li key={tip}>{tip}</li>)}
+            </ul>
+          )}
         </div>
 
-        <div className="rounded-2xl bg-slate-50 p-4">
-          <div className="text-sm font-semibold text-slate-950">Что проверяется</div>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-600">
-            {task.tips.map((tip) => <li key={tip}>{tip}</li>)}
-          </ul>
-        </div>
-
-        <div className="rounded-2xl bg-slate-50 p-4">
-          <div className="text-sm font-semibold text-slate-950">Sample tests panel</div>
-          <div className="mt-3 space-y-3 text-xs text-slate-600">
+        {task.sampleTests.length > 0 && (
+          <div className="space-y-4 border-y border-slate-200 py-6">
             {task.sampleTests.map((sample) => (
-              <div key={sample.id} className="rounded-xl border border-slate-200 bg-white p-3">
-                <div className="font-semibold text-slate-800">{sample.description}</div>
-                {sample.input && <pre className="mt-2 whitespace-pre-wrap rounded-lg bg-slate-50 p-2">stdin: {sample.input}</pre>}
-                {sample.args && <pre className="mt-2 whitespace-pre-wrap rounded-lg bg-slate-50 p-2">args: {JSON.stringify(sample.args)}</pre>}
+              <div key={sample.id} className="space-y-2">
+                {sample.input && (
+                  <div>
+                    <div className="text-2xl font-semibold text-black">Sample Input:</div>
+                    <pre className="mt-2 whitespace-pre-wrap border-t border-slate-200 pt-3 font-mono text-xl text-slate-900">{sample.input}</pre>
+                  </div>
+                )}
+                {sample.args && (
+                  <div>
+                    <div className="text-2xl font-semibold text-black">Sample Args:</div>
+                    <pre className="mt-2 whitespace-pre-wrap border-t border-slate-200 pt-3 font-mono text-xl text-slate-900">{JSON.stringify(sample.args)}</pre>
+                  </div>
+                )}
+                {(sample.expectedOutput ?? sample.expectedValue) !== undefined && (
+                  <div>
+                    <div className="text-2xl font-semibold text-black">Sample Output:</div>
+                    <pre className="mt-2 whitespace-pre-wrap border-t border-slate-200 pt-3 font-mono text-xl text-slate-900">{sample.expectedOutput ?? JSON.stringify(sample.expectedValue)}</pre>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.22em] text-indigo-600">Editor panel</div>
-            <div className="mt-1 text-lg font-semibold text-slate-950">Local deterministic runner</div>
-          </div>
-          <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Line numbers · Tab = indent</div>
-        </div>
-
-        <CodeEditor value={code} onChange={setCode} height={430} />
-
-        <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={() => runJudge(false)} className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white">Запустить код</button>
-          <button type="button" onClick={() => runJudge(true)} className="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950">Отправить решение</button>
-          <button type="button" onClick={() => setCode(task.starterCode)} className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700">Сбросить</button>
-        </div>
-
-        {task.solution && (
-          <details className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            <summary className="cursor-pointer font-semibold">Показать эталонное решение</summary>
-            <pre className="mt-3 overflow-auto whitespace-pre-wrap rounded-xl bg-white p-3 text-xs">{task.solution}</pre>
-          </details>
         )}
-      </section>
 
-      <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5">
-        <div>
-          <div className="text-[11px] uppercase tracking-[0.22em] text-emerald-600">Result panel</div>
-          <div className="mt-1 text-lg font-semibold text-slate-950">Результат проверки</div>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="text-4xl font-semibold text-slate-950">Напишите программу. Тестируется через {task.kind === 'stdin-stdout' ? 'stdin → stdout' : `${task.functionName ?? 'function'}(...)`} </div>
+            <div className="mt-4 space-y-1 text-xl text-slate-900">
+              <div><span className="font-semibold">Time Limit:</span> 15 секунд</div>
+              <div><span className="font-semibold">Memory Limit:</span> 256 MB</div>
+            </div>
+          </div>
+
+          <div className="min-w-[170px] rounded-sm border border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-900 shadow-sm">
+            JavaScript (Node.js)
+          </div>
         </div>
 
-        <div className="rounded-2xl bg-slate-50 p-4">
-          <div className="text-sm font-semibold text-slate-950">Hidden tests panel</div>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-600">
-            {task.hiddenTests.map((hidden) => <li key={hidden.id}>{hidden.description}</li>)}
-          </ul>
+        <div className="space-y-4">
+          <CodeEditor value={code} onChange={setCode} height={190} />
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => runJudge(true)}
+                className="rounded-sm bg-emerald-500 px-8 py-3 text-xl font-semibold text-white transition hover:bg-emerald-600"
+              >
+                Отправить
+              </button>
+              <button
+                type="button"
+                onClick={() => setCode(task.starterCode)}
+                className="rounded-sm border border-slate-300 bg-white px-6 py-3 text-lg font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                Сбросить
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => runJudge(false)}
+              className="rounded-sm bg-black px-8 py-3 text-xl font-semibold text-white transition hover:bg-slate-900"
+            >
+              Запустить код
+            </button>
+          </div>
         </div>
 
-        {!result ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">Сначала нажмите «Запустить код» для sample tests. После этого можно отправить решение на полную проверку с hidden tests.</div>
-        ) : (
-          <div className="space-y-4">
+        {result && (
+          <div className="space-y-4 border-t border-slate-200 pt-6">
             <div className={`rounded-2xl border px-4 py-3 text-sm ${result.passed ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>
-              <div className="font-semibold">{result.passed ? 'passed' : 'failed'} · score {result.score}%</div>
+              <div className="font-semibold">{result.passed ? 'Проверка пройдена' : 'Есть ошибки'} · score {result.score}%</div>
               {result.runtimeError && <pre className="mt-3 overflow-auto whitespace-pre-wrap rounded-xl bg-white/80 p-3 font-mono text-xs text-rose-900">{result.runtimeError}</pre>}
             </div>
 
-            <div>
-              <div className="text-sm font-semibold text-slate-900">Structural checks</div>
-              <ul className="mt-2 space-y-2 text-sm text-slate-600">
-                {result.structuralFeedback.length > 0 ? result.structuralFeedback.map((line) => <li key={line}>{line}</li>) : <li>Дополнительных structural checks нет.</li>}
-              </ul>
-            </div>
-
-            <div>
-              <div className="text-sm font-semibold text-slate-900">Sample tests</div>
-              <div className="mt-2 space-y-3">
-                {result.sampleResults.map((sample) => (
-                  <div key={sample.id} className="rounded-2xl border border-slate-200 p-3 text-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-semibold text-slate-800">{sample.description}</span>
-                      <span className={sample.passed ? 'text-emerald-600' : 'text-rose-600'}>{sample.passed ? '✓' : '✗'}</span>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <div className="text-lg font-semibold text-slate-900">Sample tests</div>
+                <div className="mt-3 space-y-3">
+                  {result.sampleResults.length > 0 ? result.sampleResults.map((sample) => (
+                    <div key={sample.id} className="rounded-xl bg-slate-50 p-3 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-semibold text-slate-800">{sample.description}</span>
+                        <span className={sample.passed ? 'text-emerald-600' : 'text-rose-600'}>{sample.passed ? '✓' : '✗'}</span>
+                      </div>
+                      <div className="mt-2 text-xs text-slate-500">expected: {sample.expected}</div>
+                      <div className="text-xs text-slate-500">actual: {sample.actual}</div>
                     </div>
-                    <div className="mt-2 text-xs text-slate-500">expected: {sample.expected}</div>
-                    <div className="text-xs text-slate-500">actual: {sample.actual}</div>
-                    {sample.diff && <pre className="mt-2 overflow-auto rounded-xl bg-slate-50 p-2 text-xs text-slate-700">{sample.diff}</pre>}
-                  </div>
-                ))}
+                  )) : <div className="text-sm text-slate-500">Пока нет результатов sample tests.</div>}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <div className="text-lg font-semibold text-slate-900">Hidden tests</div>
+                <div className="mt-3 space-y-3">
+                  {result.hiddenResults.length > 0 ? result.hiddenResults.map((hidden) => (
+                    <div key={hidden.id} className="rounded-xl bg-slate-50 p-3 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-semibold text-slate-800">{hidden.description}</span>
+                        <span className={hidden.passed ? 'text-emerald-600' : 'text-rose-600'}>{hidden.passed ? '✓' : '✗'}</span>
+                      </div>
+                      <div className="mt-2 text-xs text-slate-500">expected: {hidden.expected}</div>
+                      <div className="text-xs text-slate-500">actual: {hidden.actual}</div>
+                    </div>
+                  )) : <div className="text-sm text-slate-500">Hidden tests запускаются после нажатия «Отправить».</div>}
+                </div>
               </div>
             </div>
 
-            <div>
-              <div className="text-sm font-semibold text-slate-900">Hidden tests</div>
-              <div className="mt-2 space-y-3">
-                {result.hiddenResults.length > 0 ? result.hiddenResults.map((hidden) => (
-                  <div key={hidden.id} className="rounded-2xl border border-slate-200 p-3 text-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-semibold text-slate-800">{hidden.description}</span>
-                      <span className={hidden.passed ? 'text-emerald-600' : 'text-rose-600'}>{hidden.passed ? '✓' : '✗'}</span>
-                    </div>
-                    <div className="mt-2 text-xs text-slate-500">expected: {hidden.expected}</div>
-                    <div className="text-xs text-slate-500">actual: {hidden.actual}</div>
-                    {hidden.diff && <pre className="mt-2 overflow-auto rounded-xl bg-slate-50 p-2 text-xs text-slate-700">{hidden.diff}</pre>}
-                  </div>
-                )) : <div className="text-sm text-slate-500">Нажмите «Отправить решение», чтобы запустить hidden tests.</div>}
+            {result.structuralFeedback.length > 0 && (
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <div className="text-lg font-semibold text-slate-900">Дополнительные проверки</div>
+                <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                  {result.structuralFeedback.map((line) => <li key={line}>{line}</li>)}
+                </ul>
               </div>
-            </div>
+            )}
           </div>
         )}
-      </section>
-    </div>
+      </div>
+    </section>
   )
 }
 

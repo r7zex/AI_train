@@ -6,13 +6,16 @@ interface CodeEditorProps {
   height?: number
 }
 
-export default function CodeEditor({ value, onChange, height = 420 }: CodeEditorProps) {
+export default function CodeEditor({ value, onChange, height = 260 }: CodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const lineNumbers = useMemo(() => Array.from({ length: Math.max(1, value.split('\n').length) }, (_, index) => index + 1), [value])
+  const lineNumbers = useMemo(() => Array.from({ length: Math.max(6, value.split('\n').length) }, (_, index) => index + 1), [value])
 
   return (
-    <div className="grid grid-cols-[56px,1fr] overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 text-slate-100" style={{ height }}>
-      <div className="overflow-hidden border-r border-slate-800 bg-slate-900 px-3 py-4 text-right font-mono text-xs leading-6 text-slate-500">
+    <div
+      className="grid grid-cols-[40px,1fr] overflow-hidden rounded-none border border-slate-300 bg-white text-slate-900"
+      style={{ height }}
+    >
+      <div className="overflow-hidden border-r border-slate-200 bg-slate-50 px-2 py-2 text-right font-mono text-sm leading-8 text-slate-400">
         {lineNumbers.map((line) => (
           <div key={line}>{line}</div>
         ))}
@@ -35,7 +38,7 @@ export default function CodeEditor({ value, onChange, height = 420 }: CodeEditor
             textarea.selectionStart = textarea.selectionEnd = start + 2
           })
         }}
-        className="h-full w-full resize-none bg-slate-950 px-4 py-4 font-mono text-sm leading-6 text-slate-100 outline-none"
+        className="h-full w-full resize-none bg-white px-3 py-2 font-mono text-sm leading-8 text-slate-900 outline-none"
       />
     </div>
   )
