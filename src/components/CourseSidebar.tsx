@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { flowCourseBlocks, getFlowStepHref } from '../data/courseFlow'
 import type { ProgressState } from '../hooks/useProgress'
@@ -32,28 +32,27 @@ function findActiveLocation(activeTopicId?: string) {
 
 export default function CourseSidebar({ activeTopicId, progress, getTopicProgress, getSubblockProgress, getBlockProgress }: CourseSidebarProps) {
   const activeLocation = findActiveLocation(activeTopicId)
-  const prevActiveTopicId = useRef(activeTopicId)
 
-  // Only expand the active block (and its active subblock) by default
-  const [openBlocks, setOpenBlocks] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(flowCourseBlocks.map((block) => [block.id, block.id === activeLocation?.blockId]))
-  )
-  const [openSubblocks, setOpenSubblocks] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
+  const [userOpenBlocks, setUserOpenBlocks] = useState<Record<string, boolean>>({})
+  const [userOpenSubblocks, setUserOpenSubblocks] = useState<Record<string, boolean>>({})
+
+  const openBlocks = useMemo(() => {
+    const base: Record<string, boolean> = Object.fromEntries(
+      flowCourseBlocks.map((block) => [block.id, userOpenBlocks[block.id] ?? false])
+    )
+    if (activeLocation) base[activeLocation.blockId] = true
+    return base
+  }, [activeLocation, userOpenBlocks])
+
+  const openSubblocks = useMemo(() => {
+    const base: Record<string, boolean> = Object.fromEntries(
       flowCourseBlocks.flatMap((block) =>
-        block.subblocks.map((subblock) => [subblock.id, subblock.id === activeLocation?.subblockId])
+        block.subblocks.map((subblock) => [subblock.id, userOpenSubblocks[subblock.id] ?? false])
       )
     )
-  )
-
-  // When active topic changes (navigation between topics), expand the new block/subblock
-  useEffect(() => {
-    if (activeTopicId !== prevActiveTopicId.current && activeLocation) {
-      prevActiveTopicId.current = activeTopicId
-      setOpenBlocks((prev) => ({ ...prev, [activeLocation.blockId]: true }))
-      setOpenSubblocks((prev) => ({ ...prev, [activeLocation.subblockId]: true }))
-    }
-  }, [activeTopicId, activeLocation])
+    if (activeLocation) base[activeLocation.subblockId] = true
+    return base
+  }, [activeLocation, userOpenSubblocks])
 
   return (
     <aside className="sticky top-0 h-screen w-64 shrink-0 overflow-y-auto border-r border-white/8 bg-[#181818] text-white xl:w-72">
@@ -75,7 +74,7 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
               {/* Block header */}
               <button
                 type="button"
-                onClick={() => setOpenBlocks((prev) => ({ ...prev, [block.id]: !prev[block.id] }))}
+                onClick={() => setUserOpenBlocks((prev) => ({ ...prev, [block.id]: !(openBlocks[block.id]) }))}
                 className={`flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left transition-colors ${blockActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -106,7 +105,7 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
                         {/* Subblock header */}
                         <button
                           type="button"
-                          onClick={() => setOpenSubblocks((prev) => ({ ...prev, [subblock.id]: !prev[subblock.id] }))}
+                          onClick={() => setUserOpenSubblocks((prev) => ({ ...prev, [subblock.id]: !(openSubblocks[subblock.id]) }))}
                           className={`flex w-full items-center justify-between gap-2 py-2 pl-10 pr-4 text-left transition-colors ${subActive ? 'text-slate-200' : 'text-slate-500 hover:text-slate-300'}`}
                         >
                           <div className="min-w-0 flex-1">
