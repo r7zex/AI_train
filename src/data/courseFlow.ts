@@ -36,7 +36,7 @@ export interface PracticeTask {
   id: string
   title: string
   kind: 'function' | 'stdin-stdout' | 'fill-in-code' | 'debugging' | 'structural'
-  language: 'javascript'
+  language: 'javascript' | 'python'
   statement: string
   tips: string[]
   starterCode: string
@@ -567,41 +567,28 @@ function buildQuiz(theme: Theme & { blockId: string }): Quiz {
 function buildPracticeTasks(theme: Theme): PracticeTask[] {
   return [
     {
-      id: `${theme.id}-practice-function`,
-      title: `${theme.title}: function-based checker`,
-      kind: 'function',
-      language: 'javascript',
-      functionName: 'summarizeValues',
-      statement: 'Реализуйте функцию `summarizeValues(values)`. Она должна вернуть объект `{ min, max, range, mean }` для массива чисел. Это базовая задача на реальную работоспособность функции: judge сначала прогоняет sample tests, а после отправки — hidden tests.',
-      tips: [
-        'Функция обязана возвращать объект, а не печатать его.',
-        'mean считайте как сумму / длину.',
-        'range = max - min.',
-      ],
-      starterCode: `function summarizeValues(values) {\n  // values: number[]\n  return {\n    min: 0,\n    max: 0,\n    range: 0,\n    mean: 0,\n  }\n}\n`,
-      sampleTests: [
-        { id: 'fn-s1', description: 'Базовый массив', args: [[2, 4, 8]], expectedValue: '{"min":2,"max":8,"range":6,"mean":4.666666666666667}' },
-        { id: 'fn-s2', description: 'Есть отрицательные значения', args: [[-3, 0, 3]], expectedValue: '{"min":-3,"max":3,"range":6,"mean":0}' },
-      ],
-      hiddenTests: [
-        { id: 'fn-h1', description: 'Один элемент', args: [[5]], expectedValue: '{"min":5,"max":5,"range":0,"mean":5}' },
-        { id: 'fn-h2', description: 'Дробные значения', args: [[1.5, 2.5, 3.5]], expectedValue: '{"min":1.5,"max":3.5,"range":2,"mean":2.5}' },
-      ],
-      structuralChecks: ['Math.min', 'Math.max', 'return {'],
-      solution: `function summarizeValues(values) {\n  const min = Math.min(...values)\n  const max = Math.max(...values)\n  const mean = values.reduce((acc, value) => acc + value, 0) / values.length\n\n  return {\n    min,\n    max,\n    range: max - min,\n    mean,\n  }\n}\n`,
-    },
-    {
       id: `${theme.id}-practice-stdin`,
       title: `${theme.title}: stdin → stdout`,
       kind: 'stdin-stdout',
-      language: 'javascript',
-      statement: 'Напишите функцию `solve(input)`, которая читает количество чисел и сам список, после чего выводит три значения: минимум, максимум и размах. Кнопка «Запустить код» гоняет sample tests, а «Отправить решение» добавляет hidden tests.',
+      language: 'python',
+      statement: 'Напишите программу на Python, которая читает количество чисел и сам список, а затем выводит три значения: минимум, максимум и размах. Решение проверяется только в базовом формате stdin → stdout.',
       tips: [
-        'Верните строку, а не массив.',
-        'Не забудьте преобразовать вход в числа.',
-        'При неверном формате judge покажет diff expected vs actual.',
+        'Считывайте вход из stdin и печатайте ответ в stdout.',
+        'Преобразуйте значения в int перед вычислениями.',
+        'Формат вывода: три числа через пробел — min max range.',
       ],
-      starterCode: `function solve(input) {\n  const lines = input.trim().split(/\\n+/)\n  const values = lines[1].trim().split(/\\s+/).map(Number)\n\n  // return \`${'${min}'} ${'${max}'} ${'${range}'}\`\n  return ''\n}\n`,
+      starterCode: `import sys
+
+lines = sys.stdin.read().strip().splitlines()
+count = int(lines[0])
+values = list(map(int, lines[1].split()))
+
+min_value = min(values)
+max_value = max(values)
+range_value = max_value - min_value
+
+print(min_value, max_value, range_value)
+`,
       sampleTests: [
         { id: 'io-s1', description: 'Обычный кейс', input: '5\n2 7 1 8 3', expectedOutput: '1 8 7' },
         { id: 'io-s2', description: 'Один элемент', input: '1\n9', expectedOutput: '9 9 0' },
@@ -610,31 +597,17 @@ function buildPracticeTasks(theme: Theme): PracticeTask[] {
         { id: 'io-h1', description: 'Отрицательные значения', input: '4\n-5 0 4 10', expectedOutput: '-5 10 15' },
         { id: 'io-h2', description: 'Повторы', input: '3\n6 6 6', expectedOutput: '6 6 0' },
       ],
-      solution: `function solve(input) {\n  const lines = input.trim().split(/\\n+/)\n  const values = lines[1].trim().split(/\\s+/).map(Number)\n  const min = Math.min(...values)\n  const max = Math.max(...values)\n\n  return \`${'${min}'} ${'${max}'} ${'${max - min}'}\`\n}\n`,
-    },
-    {
-      id: `${theme.id}-practice-debug`,
-      title: `${theme.title}: debugging task`,
-      kind: 'debugging',
-      language: 'javascript',
-      functionName: 'normalizeScores',
-      statement: 'Исправьте функцию `normalizeScores(values)`. Она должна возвращать массив min-max нормализованных значений. Если все элементы равны, верните массив из нулей. В starter code специально оставлены две типичные ошибки.',
-      tips: [
-        'Нужна формула (x - min) / (max - min).',
-        'При max === min диапазон равен нулю.',
-        'Judge проверяет реальное выполнение, а не только наличие ключевых слов.',
-      ],
-      starterCode: `function normalizeScores(values) {\n  const min = Math.min(...values)\n  const max = Math.max(...values)\n  const range = max + min\n\n  return values.map((value) => value / range)\n}\n`,
-      sampleTests: [
-        { id: 'dbg-s1', description: 'Обычный диапазон', args: [[1, 2, 3]], expectedValue: '[0,0.5,1]' },
-        { id: 'dbg-s2', description: 'Все элементы равны', args: [[5, 5, 5]], expectedValue: '[0,0,0]' },
-      ],
-      hiddenTests: [
-        { id: 'dbg-h1', description: 'Отрицательные значения', args: [[-2, 0, 2]], expectedValue: '[0,0.5,1]' },
-        { id: 'dbg-h2', description: 'Дробные значения', args: [[10, 15]], expectedValue: '[0,1]' },
-      ],
-      structuralChecks: ['max - min', 'range === 0', 'map('],
-      solution: `function normalizeScores(values) {\n  const min = Math.min(...values)\n  const max = Math.max(...values)\n  const range = max - min\n\n  if (range === 0) {\n    return values.map(() => 0)\n  }\n\n  return values.map((value) => (value - min) / range)\n}\n`,
+      structuralChecks: ['sys.stdin.read', 'min(', 'max(', 'print('],
+      solution: `import sys
+
+lines = sys.stdin.read().strip().splitlines()
+count = int(lines[0])
+values = list(map(int, lines[1].split()))
+
+min_value = min(values)
+max_value = max(values)
+print(min_value, max_value, max_value - min_value)
+`,
     },
   ]
 }
@@ -790,7 +763,7 @@ function toFlowTopic(theme: Theme & { blockId: string; blockTitle: string; block
         id: `${theme.id}-practice`,
         type: 'practice',
         title: 'Практическое задание',
-        summary: 'Три локальные задачи: function-based, stdin/stdout и debugging. Есть sample tests, hidden tests и отдельные кнопки запуска/отправки.',
+        summary: 'Одна базовая задача в формате stdin/stdout: пишем решение на Python, прогоняем sample tests и затем отправляем на полную проверку.',
         mainIdea: 'Сначала отлаживаемся на sample tests, только потом отправляем решение на полную проверку.',
         practiceTasks: buildPracticeTasks(theme),
       },

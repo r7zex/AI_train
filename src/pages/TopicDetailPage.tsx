@@ -20,19 +20,25 @@ function ProgressBar({ value }: { value: number }) {
 function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () => void }) {
   const [code, setCode] = useState(task.starterCode)
   const [result, setResult] = useState<JudgeRunResult | null>(null)
+  const [isRunning, setIsRunning] = useState(false)
 
-  const runJudge = (includeHidden: boolean) => {
-    const next = judgeTask(task, code, includeHidden)
-    setResult(next)
-    if (includeHidden && next.passed) onPassed()
+  const runJudge = async (includeHidden: boolean) => {
+    setIsRunning(true)
+    try {
+      const next = await judgeTask(task, code, includeHidden)
+      setResult(next)
+      if (includeHidden && next.passed) onPassed()
+    } finally {
+      setIsRunning(false)
+    }
   }
 
   return (
-    <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
+    <section className="mx-auto w-full max-w-none rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
           <div className="text-sm text-slate-500">
-            Практическое задание · Тестируется через {task.kind === 'stdin-stdout' ? 'stdin → stdout' : `${task.functionName ?? 'function'}(...)`}
+            Практическое задание · Тестируется через stdin → stdout
           </div>
           <h3 className="mt-2 text-3xl font-semibold text-slate-950">{task.title}</h3>
         </div>
@@ -80,7 +86,7 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="text-4xl font-semibold text-slate-950">Напишите программу. Тестируется через {task.kind === 'stdin-stdout' ? 'stdin → stdout' : `${task.functionName ?? 'function'}(...)`} </div>
+            <div className="text-4xl font-semibold text-slate-950">Напишите программу. Тестируется через stdin → stdout</div>
             <div className="mt-4 space-y-1 text-xl text-slate-900">
               <div><span className="font-semibold">Time Limit:</span> 15 секунд</div>
               <div><span className="font-semibold">Memory Limit:</span> 256 MB</div>
@@ -88,36 +94,39 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
           </div>
 
           <div className="min-w-[170px] rounded-sm border border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-900 shadow-sm">
-            JavaScript (Node.js)
+            {task.language === 'python' ? 'Python 3' : 'JavaScript (Node.js)'}
           </div>
         </div>
 
         <div className="space-y-4">
-          <CodeEditor value={code} onChange={setCode} height={190} />
+          <CodeEditor value={code} onChange={setCode} height={220} />
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => runJudge(true)}
-                className="rounded-sm bg-emerald-500 px-8 py-3 text-xl font-semibold text-white transition hover:bg-emerald-600"
+                onClick={() => void runJudge(true)}
+                disabled={isRunning}
+                className="rounded-sm bg-emerald-500 px-8 py-3 text-xl font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-wait disabled:bg-emerald-300"
               >
-                Отправить
+                {isRunning ? 'Проверяем…' : 'Отправить'}
               </button>
               <button
                 type="button"
                 onClick={() => setCode(task.starterCode)}
-                className="rounded-sm border border-slate-300 bg-white px-6 py-3 text-lg font-medium text-slate-700 transition hover:bg-slate-50"
+                disabled={isRunning}
+                className="rounded-sm border border-slate-300 bg-white px-6 py-3 text-lg font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
               >
                 Сбросить
               </button>
             </div>
             <button
               type="button"
-              onClick={() => runJudge(false)}
-              className="rounded-sm bg-black px-8 py-3 text-xl font-semibold text-white transition hover:bg-slate-900"
+              onClick={() => void runJudge(false)}
+              disabled={isRunning}
+              className="rounded-sm bg-black px-8 py-3 text-xl font-semibold text-white transition hover:bg-slate-900 disabled:cursor-wait disabled:bg-slate-700"
             >
-              Запустить код
+              {isRunning ? 'Запускаем…' : 'Запустить код'}
             </button>
           </div>
         </div>
@@ -180,8 +189,6 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
 
 function StepContent({ step, onStepComplete, isCompleted }: { step: FlowStep; onStepComplete: (stepId: string) => void; isCompleted: boolean }) {
   const meta = stepTypeMeta[step.type]
-  const [taskIndex, setTaskIndex] = useState(0)
-
   return (
     <article className="space-y-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
       <header className="border-b border-slate-100 pb-5">
@@ -293,19 +300,7 @@ function StepContent({ step, onStepComplete, isCompleted }: { step: FlowStep; on
 
       {step.practiceTasks && step.practiceTasks.length > 0 && (
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-3">
-            {step.practiceTasks.map((task, index) => (
-              <button
-                key={task.id}
-                type="button"
-                onClick={() => setTaskIndex(index)}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold ${index === taskIndex ? 'bg-fuchsia-500 text-white' : 'bg-slate-100 text-slate-700'}`}
-              >
-                {task.kind}
-              </button>
-            ))}
-          </div>
-          <PracticeRunner key={step.practiceTasks[taskIndex].id} task={step.practiceTasks[taskIndex]} onPassed={() => onStepComplete(step.id)} />
+          <PracticeRunner key={step.practiceTasks[0].id} task={step.practiceTasks[0]} onPassed={() => onStepComplete(step.id)} />
         </div>
       )}
 
@@ -428,7 +423,7 @@ export default function TopicDetailPage() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-[1040px] px-6 py-8 lg:px-8">
+        <div className="mx-auto max-w-[1320px] px-6 py-8 lg:px-8">
           <StepContent step={currentStep} onStepComplete={markStepCompleted} isCompleted={progress.completedSteps.includes(currentStep.id)} />
 
           <div className="mt-6 grid gap-4 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm lg:grid-cols-[1fr,auto] lg:items-center">
