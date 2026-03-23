@@ -909,7 +909,7 @@ const blockSeeds = [
               { question: 'В чём главный недостаток k-NN?', answer: 'Медленный инференс: для каждого объекта нужно считать расстояние до всех обучающих примеров.' },
             ],
             formulas: ['d(a,b) = √Σ(aᵢ - bᵢ)²', 'Manhattan: d = Σ|aᵢ - bᵢ|', 'класс = mode(labels[k_ближайших])'],
-            extraTerms: ['проклятие размерности', 'KD-tree', 'инленс-метод (lazy learning)'],
+            extraTerms: ['проклятие размерности', 'KD-tree', 'инстанс-метод (lazy learning)'],
             quizQuestions: makeQuiz('knn-classifier', 'Метод k ближайших соседей (k-NN)', ['d(a,b) = √Σ(aᵢ - bᵢ)²', 'Manhattan: d = Σ|aᵢ - bᵢ|', 'класс = mode(labels[k_ближайших])'], 'машинном обучении'),
             codeTasks: makeCodeTasks('knn-classifier', 'Метод k ближайших соседей (k-NN)'),
           }),
