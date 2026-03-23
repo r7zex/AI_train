@@ -36,8 +36,8 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
   }
 
   return (
-    <aside className="h-screen w-[320px] shrink-0 overflow-y-auto border-r border-white/10 bg-[#181818] text-white">
-      <div className="space-y-6 px-4 py-5">
+    <aside className="sticky top-0 h-screen w-full max-w-[348px] shrink-0 overflow-y-auto border-r border-white/10 bg-[#181818] text-white xl:w-[348px]">
+      <div className="space-y-6 px-5 py-5">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <div className="text-[11px] uppercase tracking-[0.24em] text-emerald-300">Course</div>
           <div className="mt-2 text-xl font-semibold">ML/DL trainer</div>
@@ -54,11 +54,11 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
               <button
                 type="button"
                 onClick={() => setOpenBlocks((prev) => ({ ...prev, [block.id]: !prev[block.id] }))}
-                className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition ${blockActive ? 'bg-emerald-500/15 text-white' : 'bg-white/5 text-slate-100 hover:bg-white/10'}`}
+                className={`flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition ${blockActive ? 'bg-emerald-500/15 text-white' : 'bg-white/5 text-slate-100 hover:bg-white/10'}`}
               >
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Блок {block.order}</div>
-                  <div className="mt-1 text-sm font-semibold">{block.icon} {block.title}</div>
+                  <div className="mt-1 break-words text-sm font-semibold leading-5">{block.icon} {block.title}</div>
                 </div>
                 <span className="text-xs text-slate-400">{isOpen ? '−' : '+'}</span>
               </button>
@@ -76,11 +76,11 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
                         <button
                           type="button"
                           onClick={() => setOpenSubblocks((prev) => ({ ...prev, [subblock.id]: !prev[subblock.id] }))}
-                          className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition ${subActive ? 'bg-white/10 text-white' : 'bg-transparent text-slate-300 hover:bg-white/5'}`}
+                          className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition ${subActive ? 'bg-white/10 text-white' : 'bg-transparent text-slate-300 hover:bg-white/5'}`}
                         >
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <div className="text-[10px] uppercase tracking-[0.16em] text-slate-500">Подблок</div>
-                            <div className="mt-1 text-sm font-medium">{block.order}.{subblock.order} {subblock.title}</div>
+                            <div className="mt-1 break-words text-sm font-medium leading-5">{block.order}.{subblock.order} {subblock.title}</div>
                           </div>
                           <span className="text-xs text-slate-400">{subOpen ? '−' : '+'}</span>
                         </button>
@@ -99,11 +99,11 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
                                 <Link
                                   key={topic.id}
                                   to={href}
-                                  className={`block rounded-xl border px-3 py-3 transition ${isActive ? 'border-emerald-400 bg-emerald-400/15 text-white' : 'border-white/5 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'}`}
+                                  className={`block overflow-hidden rounded-xl border px-3 py-3 transition ${isActive ? 'border-emerald-400 bg-emerald-400/15 text-white' : 'border-white/5 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'}`}
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">
-                                      <div className="text-sm font-medium leading-5">{topic.title}</div>
+                                      <div className="break-words text-sm font-medium leading-5">{topic.title}</div>
                                       <div className="mt-1 text-xs text-slate-400">{Math.round(topicProgress * 100)}% завершено</div>
                                     </div>
                                     <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${isCompleted ? 'bg-emerald-400 text-slate-950' : isInProgress ? 'bg-amber-300 text-slate-950' : 'bg-slate-700 text-slate-100'}`}>
