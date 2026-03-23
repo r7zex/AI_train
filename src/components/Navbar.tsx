@@ -2,60 +2,57 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 const navLinks = [
-  { to: '/', label: 'Главная' },
-  { to: '/topics', label: 'Курс' },
+  { to: '/topics', label: 'Программа' },
   { to: '/terms-functions', label: 'Глоссарий' },
   { to: '/comparison', label: 'Сравнения' },
-  { to: '/cheatsheet', label: 'Cheatsheet' },
+  { to: '/cheatsheet', label: 'Шпаргалка' },
 ]
 
 export default function Navbar() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
-  const isActive = (to: string) => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
+  const isActive = (to: string) => location.pathname.startsWith(to)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-[1480px] items-center justify-between px-4 py-3 lg:px-6">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-950 text-lg font-bold text-emerald-300">ML</div>
-          <div>
-            <div className="text-xl font-semibold tracking-tight text-slate-950">Stepik-like ML Trainer</div>
-            <div className="text-xs text-slate-500">локальная образовательная платформа на React + TS + Vite</div>
-          </div>
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#1e1e1e]">
+      <div className="flex h-11 items-center justify-between px-5">
+        <Link to="/" className="flex items-center gap-2 text-white">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect width="22" height="22" rx="3" fill="#22c55e" />
+            <text x="3" y="16" fontFamily="Arial,sans-serif" fontSize="13" fontWeight="700" fill="#111">ML</text>
+          </svg>
+          <span className="text-[13px] font-semibold tracking-tight text-white">ML.train</span>
         </Link>
 
-        <nav className="hidden items-center gap-2 lg:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${isActive(link.to) ? 'bg-slate-950 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'}`}
+              className={`px-3 py-1.5 text-[13px] transition ${isActive(link.to) ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <button type="button" className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 lg:hidden" onClick={() => setOpen((value) => !value)}>
+        <button type="button" className="px-3 py-1 text-[13px] text-slate-400 lg:hidden" onClick={() => setOpen((v) => !v)}>
           Меню
         </button>
       </div>
 
       {open && (
-        <div className="border-t border-slate-200 bg-white px-4 py-3 lg:hidden">
-          <div className="flex flex-col gap-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setOpen(false)}
-                className={`rounded-xl px-4 py-2 text-sm font-medium ${isActive(link.to) ? 'bg-slate-950 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+        <div className="border-t border-white/10 bg-[#1e1e1e] px-4 pb-3 pt-2 lg:hidden">
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setOpen(false)}
+              className={`block px-2 py-2 text-[13px] ${isActive(link.to) ? 'text-white' : 'text-slate-400'}`}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
       )}
     </header>

@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 import { flowCourseBlocks, getFlowStepHref } from '../data/courseFlow'
 import type { ProgressState } from '../hooks/useProgress'
 
-function ProgressLine({ value }: { value: number }) {
+function ProgressBar({ value }: { value: number }) {
   return (
-    <div className="h-1 rounded-full bg-white/10">
-      <div className="h-1 rounded-full bg-emerald-400 transition-all" style={{ width: `${Math.max(0, Math.min(100, value * 100))}%` }} />
+    <div className="h-[3px] w-full bg-white/10">
+      <div className="h-[3px] bg-[#22c55e] transition-all" style={{ width: `${Math.max(0, Math.min(100, value * 100))}%` }} />
     </div>
   )
 }
@@ -54,75 +54,78 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
     return base
   }, [activeLocation, userOpenSubblocks])
 
+  const totalTopics = flowCourseBlocks.reduce((sum, b) => sum + b.subblocks.reduce((s, sb) => s + sb.themes.length, 0), 0)
+  const doneTopics = progress.completedTopics.length
+
   return (
-    <aside className="sticky top-0 h-screen w-64 shrink-0 overflow-y-auto border-r border-white/8 bg-[#181818] text-white xl:w-72">
-      {/* Course header */}
-      <div className="border-b border-white/8 px-4 py-4">
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-emerald-400">Курс</div>
-        <div className="mt-1 text-base font-bold leading-tight text-white">ML/DL Тренажёр</div>
-        <p className="mt-1 text-xs leading-5 text-slate-400">Блок → Подблок → Тема</p>
+    <aside className="sticky top-0 h-screen w-[248px] shrink-0 overflow-y-auto bg-[#1e1e1e] text-white">
+      <div className="border-b border-white/8 px-4 py-3">
+        <div className="text-[11px] font-semibold text-[#22c55e]">ML.train</div>
+        <div className="mt-0.5 text-[13px] font-semibold leading-tight text-white">ML/DL Тренажёр</div>
+        <div className="mt-2">
+          <ProgressBar value={totalTopics > 0 ? doneTopics / totalTopics : 0} />
+        </div>
+        <div className="mt-1 text-[10px] text-slate-500">{doneTopics} / {totalTopics} тем</div>
       </div>
 
-      <div className="py-3">
+      <div className="py-1">
         {flowCourseBlocks.map((block) => {
           const isOpen = openBlocks[block.id]
           const blockProgress = getBlockProgress(block.id)
           const blockActive = activeLocation?.blockId === block.id
 
           return (
-            <div key={block.id} className="mb-1">
-              {/* Block header */}
+            <div key={block.id}>
               <button
                 type="button"
-                onClick={() => setUserOpenBlocks((prev) => ({ ...prev, [block.id]: !(openBlocks[block.id]) }))}
-                className={`flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left transition-colors ${blockActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                onClick={() => setUserOpenBlocks((prev) => ({ ...prev, [block.id]: !openBlocks[block.id] }))}
+                className={`flex w-full items-center justify-between gap-2 px-4 py-2 text-left ${blockActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="text-base">{block.icon}</span>
-                  <div className="min-w-0">
-                    <div className="truncate text-[11px] font-semibold leading-tight text-slate-200">{block.title}</div>
-                    <div className="mt-0.5 text-[10px] text-slate-500">{Math.round(blockProgress * 100)}%</div>
-                  </div>
+                  <span className="shrink-0 text-[10px] text-slate-600">{block.order}.</span>
+                  <span className="truncate text-[12px] font-semibold">{block.title}</span>
                 </div>
-                <span className={`shrink-0 text-[11px] font-bold transition-transform ${isOpen ? '' : '-rotate-90'} text-slate-500`}>▾</span>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className="text-[10px] text-slate-500">{Math.round(blockProgress * 100)}%</span>
+                  <svg width="8" height="8" viewBox="0 0 8 8" className={`shrink-0 text-slate-500 transition-transform ${isOpen ? '' : '-rotate-90'}`}>
+                    <path d="M1 3l3 3 3-3" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                  </svg>
+                </div>
               </button>
 
-              {blockActive && (
-                <div className="mx-4 mb-1.5">
-                  <ProgressLine value={blockProgress} />
+              {blockActive && isOpen && (
+                <div className="mx-4 mb-1">
+                  <ProgressBar value={blockProgress} />
                 </div>
               )}
 
               {isOpen && (
-                <div className="pb-1">
+                <div>
                   {block.subblocks.map((subblock) => {
                     const subOpen = openSubblocks[subblock.id]
                     const subProgress = getSubblockProgress(subblock.id)
                     const subActive = activeLocation?.subblockId === subblock.id
 
                     return (
-                      <div key={subblock.id} className="mb-0.5">
-                        {/* Subblock header */}
+                      <div key={subblock.id}>
                         <button
                           type="button"
-                          onClick={() => setUserOpenSubblocks((prev) => ({ ...prev, [subblock.id]: !(openSubblocks[subblock.id]) }))}
-                          className={`flex w-full items-center justify-between gap-2 py-2 pl-10 pr-4 text-left transition-colors ${subActive ? 'text-slate-200' : 'text-slate-500 hover:text-slate-300'}`}
+                          onClick={() => setUserOpenSubblocks((prev) => ({ ...prev, [subblock.id]: !openSubblocks[subblock.id] }))}
+                          className={`flex w-full items-center justify-between gap-2 py-1.5 pl-9 pr-4 text-left ${subActive ? 'text-slate-200' : 'text-slate-500 hover:text-slate-300'}`}
                         >
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-[11px] font-medium leading-snug">
-                              {block.order}.{subblock.order} {subblock.title}
-                            </div>
-                            {subActive && (
-                              <div className="mt-1">
-                                <ProgressLine value={subProgress} />
-                              </div>
-                            )}
+                          <span className="min-w-0 flex-1 truncate text-[11px]">
+                            {block.order}.{subblock.order} {subblock.title}
+                          </span>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            {subActive && <span className="text-[10px] text-slate-500">{Math.round(subProgress * 100)}%</span>}
+                            <svg width="8" height="8" viewBox="0 0 8 8" className={`shrink-0 text-slate-600 transition-transform ${subOpen ? '' : '-rotate-90'}`}>
+                              <path d="M1 3l3 3 3-3" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                            </svg>
                           </div>
-                          <span className={`shrink-0 text-[10px] transition-transform ${subOpen ? '' : '-rotate-90'} text-slate-600`}>▾</span>
                         </button>
 
                         {subOpen && (
-                          <div className="pb-1 pt-0.5">
+                          <div>
                             {subblock.themes.map((topic) => {
                               const topicProgress = getTopicProgress(topic.id)
                               const isCompleted = progress.completedTopics.includes(topic.id)
@@ -134,13 +137,20 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
                                 <Link
                                   key={topic.id}
                                   to={href}
-                                  className={`flex items-center justify-between gap-2 py-1.5 pl-14 pr-4 transition-colors ${isActive ? 'bg-emerald-400/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'}`}
+                                  className={`flex items-center gap-2 py-1.5 pl-12 pr-4 text-[11px] transition-colors ${
+                                    isActive
+                                      ? 'border-l-2 border-[#22c55e] bg-[#22c55e]/10 text-white'
+                                      : 'border-l-2 border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                                  }`}
                                 >
-                                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isCompleted ? 'bg-emerald-400' : isInProgress ? 'bg-amber-400' : isActive ? 'bg-white' : 'bg-slate-600'}`} />
-                                    <span className="truncate text-[11px] leading-snug">{topic.title}</span>
-                                  </div>
-                                  {isCompleted && <span className="shrink-0 text-[10px] text-emerald-400">✓</span>}
+                                  <span className={`shrink-0 ${isCompleted ? 'text-[#22c55e]' : isInProgress ? 'text-amber-400' : 'text-slate-600'}`}>
+                                    {isCompleted ? (
+                                      <svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" /></svg>
+                                    ) : (
+                                      <svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="currentColor" /></svg>
+                                    )}
+                                  </span>
+                                  <span className="truncate leading-snug">{topic.title}</span>
                                 </Link>
                               )
                             })}

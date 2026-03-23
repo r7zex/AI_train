@@ -97,17 +97,17 @@ export interface FlowTopic {
 }
 
 export const stepTypeMeta: Record<FlowStepType, { icon: string; label: string; accent: string; short: string }> = {
-  theory: { icon: '📘', label: 'Вводная теория', accent: 'border-sky-200 bg-sky-50 text-sky-700', short: 'Теория' },
-  terminology: { icon: '🧾', label: 'Термины', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Термины' },
-  formula: { icon: '∑', label: 'Формулы', accent: 'border-violet-200 bg-violet-50 text-violet-700', short: 'Формулы' },
-  intuition: { icon: '💡', label: 'Интуиция', accent: 'border-amber-200 bg-amber-50 text-amber-700', short: 'Интуиция' },
-  'worked-example': { icon: '🧮', label: 'Ручной разбор', accent: 'border-cyan-200 bg-cyan-50 text-cyan-700', short: 'Пример' },
-  quiz: { icon: '❓', label: 'Квиз', accent: 'border-emerald-200 bg-emerald-50 text-emerald-700', short: 'Квиз' },
-  code: { icon: '🧠', label: 'Код', accent: 'border-indigo-200 bg-indigo-50 text-indigo-700', short: 'Код' },
-  practice: { icon: '💻', label: 'Практика', accent: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700', short: 'Практика' },
-  pitfalls: { icon: '⚠️', label: 'Ловушки', accent: 'border-rose-200 bg-rose-50 text-rose-700', short: 'Ошибки' },
-  recap: { icon: '📌', label: 'Конспект', accent: 'border-teal-200 bg-teal-50 text-teal-700', short: 'Конспект' },
-  sources: { icon: '🔗', label: 'Источники', accent: 'border-stone-200 bg-stone-50 text-stone-700', short: 'Источники' },
+  theory: { icon: 'T', label: 'Вводная теория', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Теория' },
+  terminology: { icon: 'Tc', label: 'Термины', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Термины' },
+  formula: { icon: 'F', label: 'Формулы', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Формулы' },
+  intuition: { icon: 'I', label: 'Интуиция', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Интуиция' },
+  'worked-example': { icon: 'Ex', label: 'Ручной разбор', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Пример' },
+  quiz: { icon: 'Q', label: 'Квиз', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Квиз' },
+  code: { icon: 'C', label: 'Код', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Код' },
+  practice: { icon: 'Pr', label: 'Практика', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Практика' },
+  pitfalls: { icon: '!', label: 'Ловушки', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Ошибки' },
+  recap: { icon: 'R', label: 'Конспект', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Конспект' },
+  sources: { icon: 'S', label: 'Источники', accent: 'border-slate-200 bg-slate-50 text-slate-700', short: 'Источники' },
 }
 
 const termDictionary: Record<string, { definition: string; why: string }> = {
