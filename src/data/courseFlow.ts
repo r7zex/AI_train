@@ -793,9 +793,216 @@ export const flowTopics: FlowTopic[] = [
       },
     ],
   },
+  {
+    id: 'ml-model-families',
+    title: '7.1 Виды моделей: MLP, CNN, XGBoost, CatBoost',
+    order: 1,
+    summary: 'Сравниваем семейства моделей и выбираем инструмент под тип данных, размер датасета и требования к интерпретации.',
+    blockId: 'core-ml',
+    blockTitle: 'Ядро ML и DL',
+    blockIcon: '07',
+    subblockId: 'core-ml-foundations',
+    subblockTitle: 'Модели и архитектуры',
+    level: 'junior+',
+    simpleExplanation: 'Нет универсально лучшей модели: выбор зависит от структуры данных, бюджета обучения и ограничений продакшна.',
+    terminology: ['MLP', 'CNN', 'градиентный бустинг', 'XGBoost', 'CatBoost', 'inductive bias'],
+    formulas: ['h = \\sigma(Wx + b)', 'F_M(x) = \\sum_{m=1}^{M} \\eta f_m(x)'],
+    themeCheatsheet: [
+      'Табличные данные: начните с CatBoost/XGBoost как сильного baseline.',
+      'Изображения: CNN обычно дают лучший компромисс точность/скорость.',
+      'Небольшой табличный датасет: бустинг чаще устойчивее глубоких сетей.',
+    ],
+    steps: [
+      {
+        id: 'ml-model-families-theory',
+        type: 'theory',
+        title: 'Теория: как выбирать тип модели',
+        summary: 'Разбираем ключевые классы моделей и их ограничения.',
+        sections: [
+          {
+            id: 'model-family-1',
+            title: 'Функция predict и её реализация в разных семействах',
+            paragraphs: [
+              'Функция предсказания \u0066(x) — центральный объект любого алгоритма: она принимает признаки и возвращает оценку класса или числа. В MLP это композиция линейных преобразований и нелинейностей, где каждый слой учит более абстрактное представление входа. В CNN та же идея применяется локально: свёртка использует общие веса и усиливает пространственные паттерны, поэтому для изображений такие модели обычно эффективнее полносвязных. В XGBoost и CatBoost функция строится как сумма деревьев решений, где каждое следующее дерево исправляет ошибку текущего ансамбля. Этот подход хорошо работает на табличных данных, устойчив к разным масштабам признаков и часто требует меньше feature engineering. На практике выбор модели — это баланс между качеством, временем обучения, стоимостью инференса и потребностью в интерпретации.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'ml-model-families-formula',
+        type: 'formula',
+        title: 'Формулы: MLP и бустинг',
+        summary: 'Ключевые математические записи для архитектур и ансамблей.',
+        formulaCards: [
+          { label: 'MLP слой', expression: 'h = \\sigma(Wx + b)', meaning: 'Линейное преобразование + нелинейность.', notation: ['W — веса', 'b — сдвиг', 'σ — активация'] },
+          { label: 'Бустинг', expression: 'F_M(x) = \\sum_{m=1}^{M} \\eta f_m(x)', meaning: 'Предсказание как сумма слабых моделей.', notation: ['f_m — дерево', 'η — learning rate', 'M — число итераций'] },
+        ],
+      },
+      {
+        id: 'ml-model-families-code',
+        type: 'code',
+        title: 'Код: базовый выбор модели под данные',
+        summary: 'Полноценный мини-пример с MLP и CatBoost-подобным baseline через sklearn.',
+        codeExample: {
+          language: 'python',
+          code: "from sklearn.model_selection import train_test_split\nfrom sklearn.metrics import f1_score\nfrom sklearn.ensemble import HistGradientBoostingClassifier\nfrom sklearn.neural_network import MLPClassifier\n\nX = [[0.2, 1.1], [0.3, 1.2], [1.2, 0.1], [1.3, 0.2], [0.1, 1.0], [1.1, 0.2]]\ny = [0, 0, 1, 1, 0, 1]\n\nX_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.33, random_state=42, stratify=y)\n\nmlp = MLPClassifier(hidden_layer_sizes=(16, 8), max_iter=300, random_state=42)\nboost = HistGradientBoostingClassifier(max_depth=3, learning_rate=0.1, random_state=42)\n\nfor name, model in [('MLP', mlp), ('Boosting', boost)]:\n    model.fit(X_train, y_train)\n    pred = model.predict(X_val)\n    print(name, round(f1_score(y_val, pred), 3))",
+          explanation: [
+            'Обе модели обучаются и сравниваются на едином валидационном split.',
+            'MLP подходит для сложной нелинейности, бустинг — сильный baseline на таблицах.',
+            'На реальном проекте добавляют кросс-валидацию и подбор гиперпараметров.',
+          ],
+        },
+      },
+      { id: 'ml-model-families-quiz', type: 'quiz', title: 'Тест', summary: 'Проверьте понимание выбора архитектуры.', bullets: ['Почему XGBoost/CatBoost часто выигрывают на табличных признаках?', 'Когда CNN предпочтительнее MLP?', 'Какой риск у слишком глубокой сети на маленьком датасете?'] },
+      {
+        id: 'ml-model-families-practice',
+        type: 'practice',
+        title: 'Практика: выбор семейства модели',
+        summary: 'По параметрам задачи выберите класс модели.',
+        practiceTasks: [makeStdInTask({
+          id: 'task-model-family-pick',
+          title: 'Подбор модели по типу данных',
+          statement: 'Во входе строка: image/tabular/text и строка с размером small/large. Выведите CNN, Boosting или MLP по правилам: image -> CNN; tabular -> Boosting; text -> MLP.',
+          tips: ['Сравнение строк делайте в lower().', 'Нужен точный stdout без лишнего текста.'],
+          starterCode: "import sys\n\nlines = sys.stdin.read().strip().splitlines()\n# TODO\n",
+          sampleTests: [{ id: 'mf-s1', description: 'Image', input: 'image\nsmall', expectedOutput: 'CNN' }],
+          hiddenTests: [{ id: 'mf-h1', description: 'Tabular', input: 'tabular\nlarge', expectedOutput: 'Boosting' }, { id: 'mf-h2', description: 'Text', input: 'text\nsmall', expectedOutput: 'MLP' }],
+          structuralChecks: ['if ', 'print('],
+          solution: "import sys\n\ndomain = sys.stdin.read().strip().splitlines()[0].lower()\nif domain == 'image':\n    print('CNN')\nelif domain == 'tabular':\n    print('Boosting')\nelse:\n    print('MLP')\n",
+        })],
+      },
+      { id: 'ml-model-families-recap', type: 'recap', title: 'Шпаргалка', summary: 'Краткие правила выбора.', bullets: ['CNN: изображения и spatial-паттерны.', 'XGBoost/CatBoost: табличные данные и сильный baseline.', 'MLP: универсально, но требует аккуратной регуляризации.'] },
+    ],
+  },
+  {
+    id: 'ml-validation-loss-logits',
+    title: '7.2 Нормализация, валидация, метрики, логиты и loss',
+    order: 2,
+    summary: 'Собираем основу эксперимента: корректный split, масштабирование признаков, выбор метрик и функций потерь.',
+    blockId: 'core-ml',
+    blockTitle: 'Ядро ML и DL',
+    blockIcon: '07',
+    subblockId: 'core-ml-foundations',
+    subblockTitle: 'Модели и архитектуры',
+    level: 'junior+',
+    simpleExplanation: 'Качество модели определяется не только архитектурой, но и корректной валидацией и согласованностью logits/loss/метрик.',
+    terminology: ['валидация', 'logits', 'cross-entropy', 'normalization', 'batch size', 'F1'],
+    formulas: ['z = (x - \\mu_{train}) / \\sigma_{train}', 'CE = -\\sum y_i \\log p_i', 'p = softmax(logits)'],
+    themeCheatsheet: ['Нормализацию считаем только по train.', 'Loss оптимизируем на train, метрики контролируем на val.', 'Логиты подаются в CrossEntropyLoss без softmax.'],
+    steps: [
+      {
+        id: 'ml-validation-loss-logits-theory',
+        type: 'theory',
+        title: 'Теория: почему пайплайн важнее одной формулы',
+        summary: 'Объяснение ключевых функций preprocess/validate/train.',
+        sections: [
+          {
+            id: 'vl-1',
+            title: 'Функции normalize, validate и compute_metrics',
+            paragraphs: [
+              'Функция normalize преобразует масштаб признаков, чтобы оптимизатор видел сопоставимые диапазоны и делал стабильные шаги. Важное правило: параметры нормализации (среднее и стандартное отклонение) вычисляются только на train-части, иначе возникает data leakage. Функция validate оценивает модель на отложенной выборке после каждой эпохи или итерации подбора гиперпараметров: она не обновляет веса и показывает обобщающую способность. Функция compute_metrics переводит предсказания в бизнес-понятные числа: accuracy, F1, ROC-AUC, MAE и другие. Связка этих функций формирует методологически корректный эксперимент. Если хотя бы один блок реализован неверно — например, метрика считается на train или нормализация выполняется до split — итоговое качество будет завышено и не воспроизведётся в продакшне.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'ml-validation-loss-logits-code',
+        type: 'code',
+        title: 'Код: train + validate с logits',
+        summary: 'Компактный, но полноценный цикл с явным разделением этапов.',
+        codeExample: {
+          language: 'python',
+          code: "import torch\nimport torch.nn as nn\n\nmodel = nn.Sequential(nn.Linear(10, 32), nn.ReLU(), nn.Linear(32, 2))\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\ncriterion = nn.CrossEntropyLoss()\n\ndef train_step(x, y):\n    model.train()\n    optimizer.zero_grad()\n    logits = model(x)\n    loss = criterion(logits, y)\n    loss.backward()\n    optimizer.step()\n    return loss.item()\n\ndef validate_step(x, y):\n    model.eval()\n    with torch.no_grad():\n        logits = model(x)\n        loss = criterion(logits, y).item()\n        pred = logits.argmax(dim=1)\n        acc = (pred == y).float().mean().item()\n    return loss, acc",
+          explanation: ['train_step обновляет веса, validate_step — только измеряет качество.', 'CrossEntropyLoss ожидает logits, softmax внутри уже встроен.', 'Эта структура одинаково применима для MLP, CNN и Transformer-классификации.'],
+        },
+      },
+      { id: 'ml-validation-loss-logits-quiz', type: 'quiz', title: 'Тест', summary: 'Проверка базовых методологических правил.', bullets: ['Почему softmax не нужен перед CrossEntropyLoss?', 'Какая метрика лучше при дисбалансе классов?', 'Почему нельзя fit scaler на train+val вместе?'] },
+      {
+        id: 'ml-validation-loss-logits-practice',
+        type: 'practice',
+        title: 'Практика: подсчёт F1',
+        summary: 'Считайте метрику вручную по TP/FP/FN.',
+        practiceTasks: [makeStdInTask({
+          id: 'task-f1-by-counts',
+          title: 'F1 по счётчикам',
+          statement: 'Во входе три числа: TP FP FN. Выведите F1 с точностью до 6 знаков.',
+          tips: ['Используйте формулу 2PR/(P+R).', 'Если P+R=0, выводите 0.0.'],
+          starterCode: "import sys\n\ntp, fp, fn = map(float, sys.stdin.read().strip().split())\n# TODO\n",
+          sampleTests: [{ id: 'f1-s1', description: 'Простой', input: '8 2 2', expectedOutput: '0.800000' }],
+          hiddenTests: [{ id: 'f1-h1', description: 'Нули', input: '0 0 5', expectedOutput: '0.000000' }],
+          structuralChecks: ['print(', '/'],
+          solution: "import sys\n\ntp, fp, fn = map(float, sys.stdin.read().strip().split())\np = tp / (tp + fp) if (tp + fp) else 0.0\nr = tp / (tp + fn) if (tp + fn) else 0.0\nf1 = 2 * p * r / (p + r) if (p + r) else 0.0\nprint(f'{f1:.6f}')\n",
+        })],
+      },
+      { id: 'ml-validation-loss-logits-recap', type: 'recap', title: 'Шпаргалка по формулам', summary: 'Быстрое повторение перед практикой.', bullets: ['z-score: (x-μtrain)/σtrain', 'softmax(logits) -> вероятности', 'F1 = 2PR/(P+R)', 'CrossEntropy для мультикласса работает с logits.'] },
+    ],
+  },
+  {
+    id: 'ml-training-functions',
+    title: '7.3 Функции обучения и валидации для разных моделей',
+    order: 3,
+    summary: 'Пишем train/validate функции для sklearn, бустинга и PyTorch, чтобы код был переиспользуемым и проверяемым.',
+    blockId: 'core-ml',
+    blockTitle: 'Ядро ML и DL',
+    blockIcon: '07',
+    subblockId: 'core-ml-foundations',
+    subblockTitle: 'Модели и архитектуры',
+    level: 'junior+',
+    simpleExplanation: 'Ключевой навык ML-инженера — писать явные функции train/validate/evaluate с единым интерфейсом.',
+    terminology: ['train_model', 'validate_model', 'early stopping', 'epoch', 'batch', 'Adam', 'L1/L2'],
+    formulas: ['w_{t+1}=w_t-\\eta \\nabla L', 'L_{reg}=L+\\lambda_1||w||_1+\\lambda_2||w||_2^2'],
+    themeCheatsheet: ['sklearn: fit/predict + метрика на val.', 'PyTorch: train()/eval(), zero_grad/backward/step.', 'Boosting: early stopping по val метрике.'],
+    steps: [
+      {
+        id: 'ml-training-functions-theory',
+        type: 'theory',
+        title: 'Теория: архитектура функций train/validate',
+        summary: 'Разделяем обязанности между функциями и типами моделей.',
+        sections: [
+          {
+            id: 'tf-1',
+            title: 'Как проектировать функции обучения',
+            paragraphs: [
+              'Функция train_model должна отвечать только за обновление параметров модели и возврат наблюдаемых величин: train loss, время эпохи, шаги оптимизатора. Функция validate_model запускается отдельно и строго без обновления весов; для нейросетей это означает режим model.eval() и контекст no_grad(). Для классических моделей sklearn цикл проще: fit выполняется один раз, а validate собирает метрики на holdout или fold. Для XGBoost/CatBoost полезно явно передавать eval_set и раннюю остановку, чтобы ограничить переобучение. Отдельная evaluate_model на тесте вызывается ровно один раз после финального выбора конфигурации. Такой контракт функций делает код воспроизводимым, упрощает логирование экспериментов и позволяет заменять MLP на CNN или бустинг без переписывания всего пайплайна. Это фундамент production-ready обучения.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'ml-training-functions-code',
+        type: 'code',
+        title: 'Код: train/validate для sklearn и PyTorch',
+        summary: 'Два шаблона, которые можно переносить в проект.',
+        codeExample: {
+          language: 'python',
+          code: "from sklearn.metrics import f1_score\n\ndef train_validate_sklearn(model, X_train, y_train, X_val, y_val):\n    model.fit(X_train, y_train)\n    pred = model.predict(X_val)\n    return {'val_f1': f1_score(y_val, pred)}\n\nimport torch\n\ndef train_epoch_torch(model, loader, optimizer, criterion):\n    model.train()\n    total = 0.0\n    for x, y in loader:\n        optimizer.zero_grad()\n        logits = model(x)\n        loss = criterion(logits, y)\n        loss.backward()\n        optimizer.step()\n        total += loss.item()\n    return total / max(len(loader), 1)\n\ndef validate_epoch_torch(model, loader, criterion):\n    model.eval()\n    total = 0.0\n    with torch.no_grad():\n        for x, y in loader:\n            total += criterion(model(x), y).item()\n    return total / max(len(loader), 1)",
+          explanation: ['Интерфейс похожий: train_* обновляет параметры, validate_* только измеряет.', 'Для регуляризации L2 в PyTorch можно использовать weight_decay в Adam.', 'L1 добавляют вручную через сумму абсолютных весов к основному loss.'],
+        },
+      },
+      { id: 'ml-training-functions-quiz', type: 'quiz', title: 'Тест', summary: 'Проверка понимания train/validate цикла.', bullets: ['Почему validate нельзя делать в model.train()?','Где корректно применять early stopping?','Как отличается тренировка sklearn и нейросети по эпохам/батчам?'] },
+      {
+        id: 'ml-training-functions-practice',
+        type: 'practice',
+        title: 'Практика: мини-early-stopping',
+        summary: 'Найдите эпоху с минимальным val loss.',
+        practiceTasks: [makeStdInTask({
+          id: 'task-best-epoch',
+          title: 'Лучшая эпоха по val loss',
+          statement: 'В первой строке n, затем n строк с val_loss. Выведите индекс лучшей эпохи (с 1), при равенстве — первый.',
+          tips: ['Ищем минимум.', 'Индекс 1-основанный.'],
+          starterCode: "import sys\n\nlines = sys.stdin.read().strip().splitlines()\n# TODO\n",
+          sampleTests: [{ id: 'be-s1', description: 'Типичный', input: '4\n0.8\n0.7\n0.75\n0.72', expectedOutput: '2' }],
+          hiddenTests: [{ id: 'be-h1', description: 'Равенство', input: '3\n0.5\n0.5\n0.6', expectedOutput: '1' }],
+          structuralChecks: ['for ', 'if ', 'print('],
+          solution: "import sys\n\nvals = [float(x) for x in sys.stdin.read().strip().splitlines()[1:]]\nbest_i, best_v = 1, vals[0]\nfor i, v in enumerate(vals, start=1):\n    if v < best_v:\n        best_v = v\n        best_i = i\nprint(best_i)\n",
+        })],
+      },
+      { id: 'ml-training-functions-recap', type: 'recap', title: 'Шпаргалка', summary: 'Чеклист перед запуском обучения.', bullets: ['Train: обновляем веса.', 'Validate: только измеряем.', 'Test: один финальный запуск.', 'Adam + weight_decay = удобный baseline L2-регуляризации.'] },
+    ],
+  },
 ]
 
-const blockOrder = ['intro', 'numbers', 'strings', 'control-flow', 'quality', 'validation']
+const blockOrder = ['intro', 'numbers', 'strings', 'control-flow', 'quality', 'validation', 'core-ml']
 
 const blockInfo: Record<string, { title: string; order: number; icon: string; description: string }> = {
   intro: { title: 'Введение', order: 1, icon: '01', description: 'Старт, учебный ритм и рабочий протокол прохождения шагов.' },
@@ -804,6 +1011,7 @@ const blockInfo: Record<string, { title: string; order: number; icon: string; de
   'control-flow': { title: 'Управляющие конструкции', order: 4, icon: '04', description: 'Условия, циклы и обработка крайних случаев.' },
   quality: { title: 'Оценка качества моделей', order: 5, icon: '05', description: 'Метрики, валидация и интерпретация результатов.' },
   validation: { title: 'Валидация и гиперпараметры', order: 6, icon: '06', description: 'Надёжная оценка и системный подбор параметров.' },
+  'core-ml': { title: 'Ядро ML и DL', order: 7, icon: '07', description: 'Ключевые модели, loss/метрики и функции обучения/валидации.' },
 }
 
 function blockThemes(blockId: string) {
