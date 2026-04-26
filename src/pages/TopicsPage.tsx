@@ -9,12 +9,20 @@ export default function TopicsPage() {
     0,
   )
 
+  const sideNav = [
+    { label: 'Описание', to: '/topics' },
+    { label: 'Справочник', to: '/terms-functions' },
+    { label: 'Сравнения', to: '/comparison' },
+    { label: 'Шпаргалка', to: '/cheatsheet' },
+    { label: 'Яндекс теория', to: '/yandex-theory' },
+  ]
+
   return (
     <div className="mx-auto max-w-[1320px] px-4 py-6 lg:px-6">
       <div className="grid gap-6 lg:grid-cols-[280px,minmax(0,1fr)]">
-        <aside className="border border-[#d9dee4] bg-white">
-          <div className="border-b border-[#e2e6eb] px-4 py-4">
-            <div className="h-20 w-full bg-[#f0f3f6]" />
+        <aside className="overflow-hidden rounded-xl border border-[#d9dee4] bg-white shadow-[0_12px_30px_-20px_rgba(30,37,45,0.5)]">
+          <div className="border-b border-[#e2e6eb] bg-gradient-to-br from-[#eff6ff] to-[#f3f9f4] px-4 py-4">
+            <div className="h-20 w-full rounded-lg bg-[radial-gradient(circle_at_top_left,#d9e8ff,#eef2f7)]" />
             <h1 className="mt-3 text-[16px] font-semibold text-[#1e2329]">AI Train: Python и ML</h1>
             <div className="mt-1 text-[12px] text-[#6e7a88]">Практический курс с локальным раннером</div>
           </div>
@@ -29,14 +37,14 @@ export default function TopicsPage() {
           </div>
 
           <nav className="px-2 py-2">
-            {['Описание', 'Содержание', 'Новости', 'Комментарии', 'Отзывы'].map((item, index) => (
-              <button
-                key={item}
-                type="button"
-                className={`block w-full px-2 py-2 text-left text-[12px] ${index === 1 ? 'bg-[#eef7f0] font-semibold text-[#1f5f2f]' : 'text-[#5d6977] hover:bg-[#f5f7fa]'}`}
+            {sideNav.map((item, index) => (
+              <Link
+                key={item.label}
+                to={item.to}
+                className={`block w-full rounded-md px-2 py-2 text-left text-[12px] ${index === 0 ? 'bg-[#eef7f0] font-semibold text-[#1f5f2f]' : 'text-[#5d6977] hover:bg-[#f5f7fa]'}`}
               >
-                {item}
-              </button>
+                {item.label}
+              </Link>
             ))}
           </nav>
         </aside>

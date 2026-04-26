@@ -7,7 +7,7 @@
 :root {
   font-family: 'Open Sans', Arial, Helvetica, sans-serif;
   color: #1e252d;
-  background: #eceff1;
+  background: #eef2f6;
 }
 
 html {
@@ -17,7 +17,7 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  background: #eceff1;
+  background: linear-gradient(180deg, #eef2f6 0%, #e8edf3 100%);
   font-size: 14px;
   line-height: 1.5;
 }
