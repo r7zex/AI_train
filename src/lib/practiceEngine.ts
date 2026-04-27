@@ -203,17 +203,25 @@ function getStructuralFeedback(code: string, task: PracticeTask) {
   ))
 }
 
+async function runStdInCases(task: PracticeTask, code: string, tests: PracticeTestCase[]) {
+  const results: JudgeCaseResult[] = []
+  for (const test of tests) {
+    results.push(await runStdInCase(task, code, test))
+  }
+  return results
+}
+
 export async function judgeTask(task: PracticeTask, code: string, includeHidden: boolean): Promise<JudgeRunResult> {
   const structuralFeedback = getStructuralFeedback(code, task)
 
   try {
     const sampleResults = task.kind === 'stdin-stdout'
-      ? await Promise.all(task.sampleTests.map((test) => runStdInCase(task, code, test)))
+      ? await runStdInCases(task, code, task.sampleTests)
       : task.sampleTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
 
     const hiddenResults = includeHidden
       ? task.kind === 'stdin-stdout'
-        ? await Promise.all(task.hiddenTests.map((test) => runStdInCase(task, code, test)))
+        ? await runStdInCases(task, code, task.hiddenTests)
         : task.hiddenTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
       : []
 

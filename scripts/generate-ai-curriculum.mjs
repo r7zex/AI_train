@@ -47,6 +47,13 @@ const sourceLinks = [
 const S = (...parts) => ({ __joinSpace: parts })
 const C = (code) => ({ __joinNewline: code.trim().split('\n') })
 
+function toRuntimeString(value) {
+  if (typeof value === 'string') return value
+  if (value && typeof value === 'object' && value.__joinSpace) return value.__joinSpace.join(' ')
+  if (value && typeof value === 'object' && value.__joinNewline) return value.__joinNewline.join('\n')
+  return String(value ?? '')
+}
+
 function concept(slug, title, formula, params, kind, domain) {
   return { slug, title, formula, params, kind, domain }
 }
@@ -412,6 +419,22 @@ function padText(parts, minWords, title, purpose) {
 }
 
 function familyProfile(c) {
+  if (['pure-function', 'type-hints', 'assertions'].includes(c.slug)) {
+    return {
+      object: 'небольшой Python-блок, который получает данные, проверяет условия и возвращает результат без скрытых побочных эффектов',
+      mechanism: 'явную сигнатуру функции, предсказуемый return, проверки входа и повторяемое поведение на одинаковых аргументах',
+      risk: 'скрытая мутация исходной таблицы, неявный глобальный state, непонятные типы входа и отсутствие проверки на пустые или неправильные данные',
+      practice: 'писать короткую функцию, задать type hints, проверить крайние случаи assert-ами и затем использовать её внутри preprocessing или metric-кода',
+    }
+  }
+  if (['read-csv', 'train-test-split', 'random-state'].includes(c.slug)) {
+    return {
+      object: 'исходный датасет, который нужно загрузить, разделить и зафиксировать так, чтобы эксперимент можно было честно повторить',
+      mechanism: 'контроль колонок, целевой переменной, seed, train/validation/test границ и одинакового порядка действий во всех запусках',
+      risk: 'случайное перемешивание временных данных, исчезновение редкого класса в validation, чтение лишних колонок и сравнение моделей на разных split',
+      practice: 'сначала описать target и признаки, затем сделать split с нужной стратегией, зафиксировать random_state и логировать размеры получившихся частей',
+    }
+  }
   if (['simple-imputer', 'missing-indicator', 'iqr-clipping'].includes(c.slug)) {
     return {
       object: 'грязную таблицу с пропусками, выбросами и неоднородными колонками',
@@ -559,35 +582,35 @@ function familyProfile(c) {
 function buildLongFields(topic, c) {
   const profile = familyProfile(c)
   const theory = padText([
-    `${c.title} в теме «${topic.title}» разбирается не как название из библиотеки, а как самостоятельный учебный подблок с входом, выходом, формулой, параметрами и проверкой результата.`,
-    `По сути он работает с объектом «${profile.object}» и реализует механизм: ${profile.mechanism}. Поэтому студент должен понимать не только синтаксис вызова, но и то, какую статистику, градиент, представление или правило принимает модель.`,
-    `Главная практическая опасность: ${profile.risk}. Если её не проговорить заранее, код может выглядеть правильным, но validation-метрика окажется завышенной, нестабильной или бесполезной для настоящего применения.`,
-    `Правильная учебная привычка: ${profile.practice}. Такой порядок соединяет научное понимание, инженерную дисциплину и автотесты, поэтому подблок можно переносить из учебной задачи в реальный эксперимент.`,
+    `${c.title} в теме «${topic.title}» изучается как рабочий шаг ML-процесса: у него есть вход, выход, формула, параметры, код и проверка результата.`,
+    `Содержательно этот шаг работает с объектом «${profile.object}» и использует механизм: ${profile.mechanism}. Важно видеть не только строку вызова, но и то, какая статистика, градиент, представление или правило действительно меняет поведение модели.`,
+    `Главный риск здесь: ${profile.risk}. Если его пропустить, пример может запускаться без ошибок, но validation-метрика станет завышенной, нестабильной или плохо связанной с реальной задачей.`,
+    `Практический порядок простой: ${profile.practice}. После этого шаг фиксируют в функции или Pipeline, проверяют маленькими тестами и только затем используют в полном эксперименте.`,
   ], 100, c.title, c.domain)
 
   const what = padText([
-    `${c.title} — это инструмент для работы с объектом «${profile.object}».`,
-    `Он задаёт не просто вызов функции, а конкретное правило поведения: что считается входом, какие параметры сохраняются после fit, какой результат должен получиться и какую проверку нужно выполнить на validation.`,
+    `${c.title} — это конкретный способ обработать объект «${profile.object}».`,
+    `У него есть ожидаемый вход, результат и правило проверки: что происходит при fit, что применяется на validation и какую ошибку нужно заметить до обучения большой модели.`,
   ], 38, c.title, c.domain)
 
   const why = padText([
-    `${c.title} нужен, потому что в задачах ${c.domain} качество зависит не только от архитектуры модели, но и от дисциплины эксперимента.`,
-    `Он уменьшает случайность, делает шаг воспроизводимым и помогает понять, улучшилась ли модель из-за реальной закономерности, а не из-за leakage, неудачного split или случайной настройки.`,
+    `${c.title} нужен, чтобы в задачах ${c.domain} не смешивать улучшение модели с ошибкой эксперимента.`,
+    `Он делает шаг воспроизводимым, уменьшает случайность и помогает понять, изменилась ли метрика из-за полезной закономерности, а не из-за leakage, неудачного split или случайной настройки.`,
   ], 38, c.title, c.domain)
 
   const where = padText([
-    `${c.title} применяют там, где возникает ${profile.object}: в учебных датасетах, соревнованиях, аналитических моделях и production-пайплайнах.`,
-    `Особенно часто он нужен, когда команда должна повторить эксперимент, объяснить метрику, найти источник ошибки и безопасно применить тот же код к новым данным.`,
+    `${c.title} применяют в учебных ноутбуках, соревнованиях, аналитических сервисах и production-пайплайнах, где появляется ${profile.object}.`,
+    `Особенно полезен он тогда, когда эксперимент должны повторить другие люди: нужно объяснить метрику, найти источник ошибки и применить тот же код к новым данным.`,
   ], 38, c.title, c.domain)
 
   const formulaMeaning = padText([
-    `Формула ${c.formula} фиксирует математический смысл подблока: что является входом, что преобразуется, какая статистика или параметр участвует и где появляется результат.`,
-    `Даже когда библиотека скрывает вычисления за одним методом, формула помогает увидеть ограничения: что обучается на train, что только применяется на validation и что нельзя менять после финальной оценки.`,
+    `Формула ${c.formula} показывает, какой вход преобразуется, какая статистика или параметр участвует и где появляется результат.`,
+    `Даже если библиотека прячет вычисления за методом, формула напоминает ограничения: что обучается на train, что только применяется на validation и что нельзя менять после финальной оценки.`,
   ], 38, c.title, c.domain)
 
   const howToUse = padText([
-    `Применять ${c.title} нужно по явному протоколу: определить задачу, подготовить split, выполнить fit или вычисление только в разрешённой части данных и проверить результат на отложенной выборке.`,
-    `На практике это означает: ${profile.practice}. После этого параметры фиксируют в коде или конфиге, а сам шаг покрывают маленьким автотестом.`,
+    `Применяют ${c.title} по явному протоколу: определить задачу, подготовить split, выполнить fit или вычисление только в разрешённой части данных и проверить результат отдельно.`,
+    `Практически это означает: ${profile.practice}. После этого параметры фиксируют в коде или конфиге, а сам шаг покрывают маленьким автотестом.`,
   ], 38, c.title, c.domain)
 
   return { theory, what, why, where, formulaMeaning, howToUse }
@@ -1236,6 +1259,51 @@ print(placeholder())
 `)
 }
 
+function exampleOutput(c) {
+  const outputs = {
+    'pure-function': '[-0.75, -0.25, 0.25, 0.75]',
+    'type-hints': '[0.0, 0.5, 1.0]',
+    assertions: 'Проверка прошла: shape и диапазон корректны',
+    'read-csv': 'rows: 3\ncolumns: [feature, target]\ntarget_mean: 0.6667',
+    'train-test-split': '3 1 [1]',
+    'random-state': 'split #1 == split #2: True\nsplit #1 == split #3: False',
+    'one-hot-encoder': "['city_Kazan', 'city_Moscow', 'city_Sochi']\n[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]",
+    'ordinal-encoder': '[[0.0], [1.0], [2.0]]',
+    'target-encoding': 'A -> 0.72\nrare -> global_mean',
+    'simple-imputer': '[[1.0, 10.0], [2.0, 20.0], [1.5, 30.0]]',
+    'missing-indicator': '[[0, 1], [1, 0], [0, 0]]',
+    'iqr-clipping': '[10, 12, 13, 14, 17]\noutlier 120 clipped',
+    'standard-scaler': 'mean: 0.0\nstd: 1.0',
+    'minmax-scaler': '[[0.0], [0.5], [1.0]]',
+    'robust-scaler': 'median: 0.0',
+    kfold: 'fold scores: [0.79, 0.82, 0.80]\nmean: 0.803',
+    'stratified-kfold': 'fold class ratio: 0.10, 0.10, 0.11',
+    'time-series-split': 'train_end < validation_start: True',
+    'bootstrap-ci': 'mean=0.812\n95% CI=[0.781, 0.843]',
+    'xgb-classifier': 'validation f1: 0.84\nbest_iteration: 43',
+    'catboost-classifier': 'validation f1: 0.86\nbest_iteration: 51',
+    'early-stopping-boosting': 'stopped after 37 rounds without improvement',
+    sgd: 'epoch=1 train_loss=0.693 val_loss=0.681',
+    momentum: 'epoch=1 train_loss=0.681 val_loss=0.664',
+    rmsprop: 'epoch=1 train_loss=0.674 val_loss=0.659',
+    adam: 'epoch=1 train_loss=0.662 val_loss=0.641',
+    adamw: 'epoch=1 train_loss=0.655 val_loss=0.636',
+    'lr-scheduler': 'lr: 0.001000 -> 0.000900',
+    'cross-entropy-loss': 'loss: 0.8123\npredicted class: 1',
+    'bce-with-logits': 'loss: 0.5218\nprobability: 0.73',
+    'regression-losses': 'MAE: 1.40\nRMSE: 1.82',
+    'train-sklearn': 'validation_f1: 0.8333',
+    'validate-epoch-torch': 'val_loss: 0.612\nval_accuracy: 0.78',
+  }
+  if (outputs[c.slug]) return C(outputs[c.slug])
+  if (c.kind.includes('torch') || c.kind === 'optimizer') return C('train_loss: 0.684\nvalidation_metric: 0.76\nshapes checked: true')
+  if (c.kind === 'metrics') return C('metric_value: 0.812\nchecked on validation split')
+  if (c.kind === 'preprocess' || c.kind === 'pipeline') return C('transformed_train_shape: (4, 3)\ntransformed_validation_shape: (2, 3)')
+  if (c.kind === 'validation') return C('fold_scores: [0.78, 0.82, 0.80]\nmean_score: 0.800')
+  if (c.kind === 'model' || c.kind === 'boosting') return C('validation_score: 0.82\nbaseline_score: 0.71')
+  return C('sample_result: OK\nhidden_edge_case: проверяется отдельно')
+}
+
 function buildConcept(topic, c) {
   const fields = buildLongFields(topic, c)
   return {
@@ -1261,6 +1329,7 @@ function buildConcept(topic, c) {
     codeExample: {
       language: 'python',
       code: codeLines(c),
+      output: exampleOutput(c),
       explanation: [
         `Код показывает не одну строку, а минимальный рабочий фрагмент вокруг ${c.title}: импорт, создание объекта, fit/вычисление и контроль результата.`,
         'В реальном проекте этот фрагмент нужно поместить в функцию, добавить validation-метрику, seed, логирование параметров и отдельный тест на крайние случаи.',
@@ -1423,7 +1492,8 @@ function topicToFlowTopic(topic, index) {
         })),
         codeExample: {
           language: 'python',
-          code: concepts.map((item) => `# ${item.title}\n${item.codeExample.code}`).join('\n\n'),
+          code: concepts.map((item) => `# ${item.title}\n${toRuntimeString(item.codeExample.code)}`).join('\n\n'),
+          output: concepts.map((item) => `# ${item.title}\n${toRuntimeString(item.codeExample.output)}`).join('\n\n'),
           explanation: concepts.map((item) => `${item.title}: ${item.codeExample.explanation[0]}`),
         },
       },
