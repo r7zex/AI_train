@@ -131,7 +131,7 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
           {currentStep.type === 'quiz' && currentStep.quizId && (() => {
             const quiz = getQuizById(currentStep.quizId)
             return quiz ? (
-              <QuizWidget quiz={quiz} />
+              <QuizWidget key={quiz.id} quiz={quiz} />
             ) : (
               <div className="text-center py-8 text-gray-400">
                 <p>Квиз не найден: {currentStep.quizId}</p>
