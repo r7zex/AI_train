@@ -772,7 +772,7 @@ export const flowTopics: FlowTopic[] = [
     formulas: [
       "D = {(x_i, y_i)}_{i=1}^{n}",
       "D = table(rows, columns)",
-      "D = D_train ∪ D_val ∪ D_test, пересечения пусты",
+      "D_train ∪ D_val ∪ D_test = D",
       "seed -> deterministic pseudo-random sequence",
     ],
     themeCheatsheet: [
@@ -1031,7 +1031,7 @@ export const flowTopics: FlowTopic[] = [
             where: "Используют в задачах разделения датасета, где важны воспроизводимость и контроль качества.",
             formula: {
               label: "train_test_split()",
-              expression: "D = D_train ∪ D_val ∪ D_test, пересечения пусты",
+              expression: "D_train ∪ D_val ∪ D_test = D",
               meaning: "Запись показывает идею train_test_split(): что берём на вход, что настраиваем и какой результат ожидаем.",
               notation: [
                 "D_train — данные, на которых разрешено обучать и подбирать параметры.",
@@ -1218,7 +1218,7 @@ export const flowTopics: FlowTopic[] = [
           },
           {
             label: "train_test_split()",
-            expression: "D = D_train ∪ D_val ∪ D_test, пересечения пусты",
+            expression: "D_train ∪ D_val ∪ D_test = D",
             meaning: "Запись показывает идею train_test_split(): что берём на вход, что настраиваем и какой результат ожидаем.",
             notation: [
               "D_train — данные, на которых разрешено обучать и подбирать параметры.",
@@ -1467,7 +1467,7 @@ export const flowTopics: FlowTopic[] = [
           },
           {
             label: "train_test_split()",
-            expression: "D = D_train ∪ D_val ∪ D_test, пересечения пусты",
+            expression: "D_train ∪ D_val ∪ D_test = D",
             meaning: "Запись показывает идею train_test_split(): что берём на вход, что настраиваем и какой результат ожидаем.",
             notation: [
               "D_train — данные, на которых разрешено обучать и подбирать параметры.",

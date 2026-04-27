@@ -87,7 +87,7 @@ const topics = [
     summary: 'Разбираем, как устроить dataset, features, target, train/validation/test и почему порядок операций важнее красивой модели.',
     concepts: [
       concept('read-csv', 'Загрузка таблицы через read_csv', 'D = {(x_i, y_i)}_{i=1}^{n}', ['filepath', 'sep', 'encoding', 'usecols'], 'pandas', 'табличных данных'),
-      concept('train-test-split', 'train_test_split для holdout-валидации', 'D = D_train ∪ D_val ∪ D_test, пересечения пусты', ['test_size', 'random_state', 'stratify', 'shuffle'], 'sklearn-split', 'разделения датасета'),
+      concept('train-test-split', 'train_test_split для holdout-валидации', 'D_train ∪ D_val ∪ D_test = D', ['test_size', 'random_state', 'stratify', 'shuffle'], 'sklearn-split', 'разделения датасета'),
       concept('random-state', 'random_state и воспроизводимость эксперимента', 'seed -> deterministic pseudo-random sequence', ['random_state', 'seed', 'shuffle'], 'sklearn-split', 'экспериментального контроля'),
     ],
   },
