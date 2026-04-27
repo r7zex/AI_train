@@ -15,25 +15,25 @@ const expectedStepCounts = new Map([
   ['programming-vs-ml', 6],
   ['ml-task-types', 8],
   ['data-features-target', 6],
-  ['ml-model-fit-predict-metric', 7],
+  ['ml-model-fit-predict-metric', 9],
   ['numpy-why', 6],
   ['numpy-array-creation', 7],
-  ['numpy-shape-ndim-dtype', 7],
+  ['numpy-shape-ndim-dtype', 6],
   ['numpy-indexing-slices', 7],
   ['numpy-vector-operations', 6],
-  ['numpy-aggregations-statistics', 6],
-  ['numpy-2d-axis', 7],
-  ['numpy-masks-where', 6],
-  ['numpy-broadcasting', 7],
-  ['numpy-random-reproducibility', 6],
+  ['numpy-aggregations-statistics', 7],
+  ['numpy-2d-axis', 6],
+  ['numpy-masks-where', 7],
+  ['numpy-broadcasting', 8],
+  ['numpy-random-reproducibility', 7],
 ])
 
 const expectedQuizCounts = new Map([
   ['intro-ai-ml-dl', 2],
   ['programming-vs-ml', 2],
-  ['ml-task-types', 1],
+  ['ml-task-types', 2],
   ['data-features-target', 1],
-  ['ml-model-fit-predict-metric', 1],
+  ['ml-model-fit-predict-metric', 2],
   ['numpy-why', 2],
   ['numpy-array-creation', 2],
   ['numpy-shape-ndim-dtype', 2],
@@ -150,7 +150,7 @@ const topicIds = flowTopics.map((topic) => topic.id)
 requireCondition(topicIds.join(',') === [...expectedStepCounts.keys()].join(','), `Unexpected topic order: ${topicIds.join(',')}.`)
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 98, `Expected 98 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 102, `Expected 102 total steps, got ${totalSteps}.`)
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`

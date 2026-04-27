@@ -1,4 +1,4 @@
-import type { ConceptCodeExample, FlowStep, FlowTopic, LessonSection, PracticeTask } from '../aiCurriculumTypes'
+import type { ConceptCodeExample, FlowStep, FlowTopic, FormulaCard, LessonSection, PracticeTask } from '../aiCurriculumTypes'
 import type { Quiz } from '../quizzes'
 
 export const curriculumBlocks = [
@@ -61,12 +61,22 @@ export const section = (
   id: string,
   title: string,
   paragraphs: string[],
-  options: Pick<LessonSection, 'bullets' | 'table' | 'codeExamples'> = {},
+  options: Pick<LessonSection, 'bullets' | 'callouts' | 'table' | 'codeExamples'> = {},
 ): LessonSection => ({
   id,
   title,
   paragraphs,
   ...options,
+})
+
+export const callout = (
+  title: string,
+  body: string,
+  tone: 'important' | 'summary' | 'example' | 'remember' | 'schema' = 'important',
+) => ({
+  title,
+  body,
+  tone,
 })
 
 export const theoryStep = (id: string, title: string, summary: string, sections: LessonSection[]): FlowStep => ({
@@ -75,6 +85,21 @@ export const theoryStep = (id: string, title: string, summary: string, sections:
   title,
   summary,
   sections,
+})
+
+export const theoryStepWithFormulas = (
+  id: string,
+  title: string,
+  summary: string,
+  sections: LessonSection[],
+  formulaCards: FormulaCard[],
+): FlowStep => ({
+  id,
+  type: 'theory',
+  title,
+  summary,
+  sections,
+  formulaCards,
 })
 
 export const quizStep = (id: string, title: string, summary: string, quiz: Quiz): FlowStep => ({

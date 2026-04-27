@@ -117,7 +117,12 @@ export const searchIndex = flowTopics.flatMap((topic) => [
       step.mainIdea ?? '',
       ...(step.paragraphs ?? []),
       ...(step.bullets ?? []),
-      ...(step.sections?.flatMap((section) => [section.title, ...section.paragraphs, ...(section.bullets ?? [])]) ?? []),
+      ...(step.sections?.flatMap((section) => [
+        section.title,
+        ...section.paragraphs,
+        ...(section.bullets ?? []),
+        ...(section.callouts?.map((callout) => `${callout.title} ${callout.body}`) ?? []),
+      ]) ?? []),
       ...(step.conceptCards?.flatMap((concept) => [
         concept.title,
         concept.theory,
