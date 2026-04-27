@@ -1,5 +1,35 @@
 import { useMemo, useState } from 'react'
-import { referenceSections } from '../data/course'
+import { flowCourseBlocks } from '../data/courseFlow'
+
+interface ReferenceSection {
+  blockId: string
+  blockTitle: string
+  terms: string[]
+  functions: string[]
+  schemes: string[]
+  notes: string[]
+}
+
+function uniqueItems(items: string[]) {
+  return Array.from(new Set(items.filter(Boolean)))
+}
+
+const referenceSections: ReferenceSection[] = flowCourseBlocks.map((block) => {
+  const topics = block.subblocks.flatMap((subblock) => subblock.themes)
+  const terms = uniqueItems(topics.flatMap((topic) => topic.terminology))
+  const functions = uniqueItems(terms.filter((term) => term.includes('np.') || term.includes('rng.') || term.includes('shape') || term.includes('dtype') || term.includes('ndim') || term.includes('axis')))
+  const schemes = uniqueItems(topics.flatMap((topic) => topic.formulas))
+  const notes = uniqueItems(topics.flatMap((topic) => topic.themeCheatsheet))
+
+  return {
+    blockId: block.id,
+    blockTitle: block.title,
+    terms,
+    functions,
+    schemes,
+    notes,
+  }
+})
 
 export function TermsAndFunctionsPage() {
   const [query, setQuery] = useState('')
@@ -12,11 +42,11 @@ export function TermsAndFunctionsPage() {
       .map((section) => ({
         ...section,
         terms: section.terms.filter((item) => item.toLowerCase().includes(normalized)),
-        lossFunctions: section.lossFunctions.filter((item) => item.toLowerCase().includes(normalized)),
-        activationFunctions: section.activationFunctions.filter((item) => item.toLowerCase().includes(normalized)),
-        formulas: section.formulas.filter((item) => item.toLowerCase().includes(normalized)),
+        functions: section.functions.filter((item) => item.toLowerCase().includes(normalized)),
+        schemes: section.schemes.filter((item) => item.toLowerCase().includes(normalized)),
+        notes: section.notes.filter((item) => item.toLowerCase().includes(normalized)),
       }))
-      .filter((section) => section.terms.length || section.lossFunctions.length || section.activationFunctions.length || section.formulas.length)
+      .filter((section) => section.terms.length || section.functions.length || section.schemes.length || section.notes.length)
   }, [normalized])
 
   return (
@@ -24,10 +54,10 @@ export function TermsAndFunctionsPage() {
       <section className="rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.04)]">
         <div className="max-w-4xl">
           <div className="text-sm font-semibold uppercase tracking-[0.14em] text-[#2e7d32]">Справочник</div>
-          <h1 className="mt-3 text-3xl font-bold text-[#111] lg:text-4xl">Термины, функции потерь, функции активации и формулы по блокам</h1>
+          <h1 className="mt-3 text-3xl font-bold text-[#111] lg:text-4xl">Термины, функции NumPy и опорные схемы по блокам</h1>
           <p className="mt-3 text-base leading-7 text-[#666]">
-            Отдельная страница вынесена вне теории, как вы просили: здесь всё собрано по блокам и типам сущностей, чтобы
-            можно было быстро повторить термины, формулы лоссов, активаций и ключевые выражения перед практикой и собеседованием.
+            Здесь собраны сущности из текущей учебной траектории: первые два блока курса, ключевые термины, функции NumPy,
+            схемы и короткие правила для повторения перед практикой.
           </p>
         </div>
 
@@ -48,9 +78,9 @@ export function TermsAndFunctionsPage() {
             <div className="mt-5 grid gap-5 xl:grid-cols-2">
               {[
                 { title: 'Термины', items: section.terms },
-                { title: 'Функции потерь / формулы', items: section.lossFunctions },
-                { title: 'Функции активации / формулы', items: section.activationFunctions },
-                { title: 'Другие формулы и правила', items: section.formulas },
+                { title: 'Функции и методы', items: section.functions },
+                { title: 'Схемы и записи', items: section.schemes },
+                { title: 'Короткие правила', items: section.notes },
               ].map((group) => (
                 <article key={group.title} className="rounded-[24px] border border-black/10 bg-[#fafaf8] p-5">
                   <div className="text-sm font-semibold uppercase tracking-[0.08em] text-[#2e7d32]">{group.title}</div>

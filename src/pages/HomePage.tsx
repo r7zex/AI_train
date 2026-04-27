@@ -25,11 +25,13 @@ export default function HomePage() {
 
   const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
   const totalPractice = flowTopics.reduce((sum, topic) => sum + topic.steps.filter((step) => step.practiceTasks?.length).length, 0)
+  const totalTheory = flowTopics.reduce((sum, topic) => sum + topic.steps.filter((step) => step.type === 'theory').length, 0)
   const stats = [
     { label: 'Блоков', value: flowCourseBlocks.length, note: 'крупные разделы курса' },
     { label: 'Тем', value: flowTopics.length, note: 'каждая тема разбита на шаги' },
-    { label: 'Шагов', value: totalSteps, note: 'теория, формулы, квиз, практика' },
+    { label: 'Шагов', value: totalSteps, note: 'теория, тесты и практика' },
     { label: 'Практик', value: totalPractice, note: 'локальный sandbox и hidden tests' },
+    { label: 'Теорий', value: totalTheory, note: 'Stepik-like учебные страницы' },
     { label: 'Прогресс', value: `${Math.round(getCourseProgress() * 100)}%`, note: 'сохраняется локально' },
   ]
 
@@ -59,7 +61,7 @@ export default function HomePage() {
             <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
               <li>• курс разбит по блокам и подтемам, как в каталоге;</li>
               <li>• внутри темы — пошаговый lesson flow;</li>
-              <li>• формулы и шпаргалки отображаются в KaTeX/LaTeX-виде.</li>
+              <li>• теория, тесты и практика идут в одном учебном маршруте.</li>
             </ul>
           </div>
         </aside>
@@ -71,8 +73,8 @@ export default function HomePage() {
                 <div className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Главная</div>
                 <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 lg:text-5xl">Учитесь по программе курса, а не через перегруженный лендинг.</h2>
                 <p className="mt-4 text-base leading-8 text-slate-600">
-                  Мы упростили вход: слева — навигация и быстрые действия, справа — поиск и список блоков курса.
-                  Это ближе к формату учебной платформы, где главное — быстро открыть нужный раздел и продолжить обучение.
+                  Сейчас траектория сфокусирована на первых двух блоках: вводные понятия ИИ/ML и NumPy как база числовой работы.
+                  Это формат учебной платформы, где главное — открыть нужную тему, пройти шаги, проверить понимание и закрепить практикой.
                 </p>
               </div>
 
@@ -109,7 +111,7 @@ export default function HomePage() {
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Например: precision, gradient, BatchNorm, Naive Bayes"
+                placeholder="Например: NumPy, ndarray, features, target, broadcasting"
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-base outline-none transition focus:border-emerald-400"
               />
             </div>

@@ -3,6 +3,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import vm from 'node:vm'
 import { fileURLToPath } from 'node:url'
+import * as ts from 'typescript'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -10,9 +11,22 @@ const curriculumPath = path.join(root, 'src/data/aiCurriculum.ts')
 const source = fs.readFileSync(curriculumPath, 'utf8')
 const errors = []
 
-function wordCount(text) {
-  return (String(text).match(/[\p{L}\p{N}_+-]+/gu) ?? []).length
-}
+const expectedStepCounts = new Map([
+  ['intro-ai-ml-dl', 6],
+  ['programming-vs-ml', 6],
+  ['ml-task-types', 8],
+  ['ml-project-components', 7],
+  ['numpy-ndarray', 6],
+  ['numpy-creation', 7],
+  ['numpy-shape-ndim-dtype', 7],
+  ['numpy-indexing-slices', 7],
+  ['numpy-vector-operations', 6],
+  ['numpy-aggregations', 7],
+  ['numpy-2d-axis', 7],
+  ['numpy-boolean-masks', 6],
+  ['numpy-broadcasting', 7],
+  ['numpy-random', 6],
+])
 
 function requireCondition(condition, message) {
   if (!condition) errors.push(message)
@@ -22,14 +36,42 @@ function normalizeOutput(value) {
   return String(value ?? '').trim().replace(/\r\n/g, '\n')
 }
 
+function loadCurriculum() {
+  const { outputText, diagnostics } = ts.transpileModule(source, {
+    fileName: curriculumPath,
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+      esModuleInterop: true,
+    },
+    reportDiagnostics: true,
+  })
+
+  for (const diagnostic of diagnostics ?? []) {
+    const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+    requireCondition(false, `TypeScript transpile diagnostic: ${message}`)
+  }
+
+  const context = {
+    exports: {},
+    module: { exports: {} },
+  }
+  context.exports = context.module.exports
+  vm.runInNewContext(outputText, context, { filename: 'aiCurriculum.js' })
+  return context.module.exports
+}
+
 function verifyPythonTaskSolution(topicId, task) {
-  if (task.kind !== 'stdin-stdout' || task.language !== 'python' || !task.solution) return
+  if (task.kind !== 'stdin-stdout' || task.language !== 'python') return
+  requireCondition(Boolean(task.solution), `${topicId}: task ${task.id} must contain a reference solution.`)
+  if (!task.solution) return
 
   for (const test of [...(task.sampleTests ?? []), ...(task.hiddenTests ?? [])]) {
     const result = spawnSync(process.env.CURRICULUM_AUDIT_PYTHON ?? 'python', ['-c', task.solution], {
       input: test.input ?? '',
       encoding: 'utf8',
-      timeout: 5000,
+      env: { ...process.env, PYTHONUTF8: '1' },
+      timeout: 10000,
       windowsHide: true,
     })
     const actual = normalizeOutput(result.stdout)
@@ -39,63 +81,73 @@ function verifyPythonTaskSolution(topicId, task) {
   }
 }
 
-function loadFlowTopics() {
-  const runtimeSource = source
-    .replace(/^import type .*$/gm, '')
-    .replace(/export const curriculumBlocks =/, 'const curriculumBlocks =')
-    .replace(/export const flowTopics: FlowTopic\[\] =/, 'const flowTopics =')
-    .concat('\n;({ curriculumBlocks, flowTopics });')
-
-  return vm.runInNewContext(runtimeSource, {}, { filename: 'aiCurriculum.ts' })
+function collectText(value) {
+  if (value == null) return []
+  if (typeof value === 'string') return [value]
+  if (Array.isArray(value)) return value.flatMap(collectText)
+  if (typeof value === 'object') return Object.values(value).flatMap(collectText)
+  return []
 }
 
-const lineCount = source.split(/\r?\n/).length
-requireCondition(lineCount >= 5000, `Curriculum source must contain at least 5000 lines, got ${lineCount}.`)
+const { curriculumBlocks, flowTopics } = loadCurriculum()
 
-const { flowTopics } = loadFlowTopics()
-
+requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
-requireCondition(flowTopics.length >= 18, `Expected at least 18 topics, got ${flowTopics.length}.`)
+requireCondition(curriculumBlocks.length === 2, `Expected exactly 2 curriculum blocks, got ${curriculumBlocks.length}.`)
+requireCondition(flowTopics.length === 14, `Expected exactly 14 topics, got ${flowTopics.length}.`)
+
+const blockIds = curriculumBlocks.map((block) => block.id)
+requireCondition(blockIds.join(',') === 'intro-ai-ml,numpy-ml', `Unexpected block ids: ${blockIds.join(',')}.`)
+
+const topicIds = flowTopics.map((topic) => topic.id)
+requireCondition(topicIds.join(',') === [...expectedStepCounts.keys()].join(','), `Unexpected topic order: ${topicIds.join(',')}.`)
+
+const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
+requireCondition(totalSteps === 93, `Expected 93 total steps, got ${totalSteps}.`)
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`
-  const stepTypes = new Set((topic.steps ?? []).map((step) => step.type))
-  for (const type of ['theory', 'formula', 'code', 'quiz', 'practice', 'recap']) {
-    requireCondition(stepTypes.has(type), `${prefix} missing required step type ${type}.`)
+  const expectedCount = expectedStepCounts.get(topic.id)
+  requireCondition(topic.steps.length === expectedCount, `${prefix} expected ${expectedCount} steps, got ${topic.steps.length}.`)
+  requireCondition(topic.blockId === 'intro-ai-ml' || topic.blockId === 'numpy-ml', `${prefix} unexpected blockId ${topic.blockId}.`)
+  requireCondition(!['python-for-ai', 'data-prep'].includes(topic.blockId), `${prefix} old block id must not be displayed.`)
+
+  const stepTypes = topic.steps.map((step) => step.type)
+  requireCondition(stepTypes.includes('theory'), `${prefix} missing theory steps.`)
+  requireCondition(stepTypes.filter((type) => type === 'quiz').length >= 2, `${prefix} must contain at least two quiz steps.`)
+  if (topic.id !== 'intro-ai-ml-dl') {
+    requireCondition(stepTypes.includes('practice'), `${prefix} missing practice step.`)
+  } else {
+    requireCondition(!stepTypes.includes('practice'), `${prefix} conceptual intro topic should not contain artificial practice.`)
   }
 
-  const theoryStep = topic.steps.find((step) => step.type === 'theory')
-  const concepts = theoryStep?.conceptCards ?? []
-  requireCondition(concepts.length >= 3, `${prefix} theory step must contain at least 3 concept cards.`)
+  for (const step of topic.steps.filter((item) => item.type === 'theory')) {
+    const sections = step.sections ?? []
+    requireCondition(sections.length > 0, `${prefix} theory step ${step.id} must contain sections.`)
+    const text = collectText(sections).join(' ')
+    requireCondition(text.length >= 300, `${prefix} theory step ${step.id} is too short.`)
+  }
 
-  for (const concept of concepts) {
-    const conceptPrefix = `${topic.id}/${concept.id}:`
-    requireCondition(wordCount(concept.theory) >= 100, `${conceptPrefix} theory must be at least 100 words.`)
-    requireCondition(wordCount(concept.what) >= 30, `${conceptPrefix} what must be at least 30 words.`)
-    requireCondition(wordCount(concept.why) >= 30, `${conceptPrefix} why must be at least 30 words.`)
-    requireCondition(wordCount(concept.where) >= 30, `${conceptPrefix} where must be at least 30 words.`)
-    requireCondition(wordCount(concept.formula?.meaning ?? '') >= 30, `${conceptPrefix} formula meaning must be at least 30 words.`)
-    requireCondition(wordCount(concept.howToUse) >= 30, `${conceptPrefix} howToUse must be at least 30 words.`)
-    requireCondition((concept.params ?? []).length >= 3, `${conceptPrefix} params must contain at least 3 popular parameters.`)
-    requireCondition((concept.commonMistakes ?? []).length >= 5, `${conceptPrefix} must contain at least 5 common mistakes.`)
-    requireCondition(String(concept.codeExample?.code ?? '').split('\n').length >= 5, `${conceptPrefix} code example must be a full small snippet.`)
-    for (const mistake of concept.commonMistakes ?? []) {
-      requireCondition(wordCount(mistake.explanation) >= 30, `${conceptPrefix} mistake "${mistake.title}" must be at least 30 words.`)
+  for (const step of topic.steps.filter((item) => item.type === 'quiz')) {
+    const questions = step.quiz?.questions ?? []
+    requireCondition(questions.length >= 1, `${prefix} quiz step ${step.id} must contain questions.`)
+    for (const question of questions) {
+      const visibleText = [question.question, ...(question.options ?? []).map((option) => option.text), question.explanation].join(' ')
+      requireCondition(!/верн(ый|ого)\s+ответ|ответ:\s*[a-d]/i.test(visibleText), `${prefix} quiz ${question.id} reveals answer in visible text.`)
     }
   }
 
-  const quizStep = topic.steps.find((step) => step.type === 'quiz')
-  const questionCount = quizStep?.quiz?.questions?.length ?? 0
-  requireCondition(questionCount >= 5 && questionCount <= 10, `${prefix} quiz must contain 5-10 questions, got ${questionCount}.`)
-
-  const practiceStep = topic.steps.find((step) => step.type === 'practice')
-  const tasks = practiceStep?.practiceTasks ?? []
-  requireCondition(tasks.length >= 1, `${prefix} practice step must contain at least one task.`)
-  for (const task of tasks) {
-    requireCondition((task.sampleTests ?? []).length >= 1, `${prefix} task ${task.id} must contain sample tests.`)
-    requireCondition((task.hiddenTests ?? []).length >= 1, `${prefix} task ${task.id} must contain hidden tests.`)
-    requireCondition(Boolean(task.solution), `${prefix} task ${task.id} must contain a reference solution.`)
-    verifyPythonTaskSolution(topic.id, task)
+  for (const step of topic.steps.filter((item) => item.type === 'practice')) {
+    const tasks = step.practiceTasks ?? []
+    requireCondition(tasks.length === 1, `${prefix} practice step ${step.id} must contain one task.`)
+    for (const task of tasks) {
+      requireCondition((task.sampleTests ?? []).length >= 1, `${prefix} task ${task.id} must contain sample tests.`)
+      requireCondition((task.hiddenTests ?? []).length >= 1, `${prefix} task ${task.id} must contain hidden tests.`)
+      requireCondition(task.starterCode.includes('TODO'), `${prefix} task ${task.id} starter code must contain TODO markers.`)
+      requireCondition(normalizeOutput(task.starterCode) !== normalizeOutput(task.solution), `${prefix} task ${task.id} starter code must not equal solution.`)
+      requireCondition(!/\bprint\s*\(/.test(task.starterCode), `${prefix} task ${task.id} starter code should not contain ready output calls.`)
+      verifyPythonTaskSolution(topic.id, task)
+    }
   }
 }
 
@@ -105,4 +157,4 @@ if (errors.length > 0) {
   process.exit(1)
 }
 
-console.log(`Curriculum audit passed: ${flowTopics.length} topics, ${lineCount} source lines.`)
+console.log(`Curriculum audit passed: ${curriculumBlocks.length} blocks, ${flowTopics.length} topics, ${totalSteps} steps.`)
