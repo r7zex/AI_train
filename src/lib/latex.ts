@@ -70,10 +70,7 @@ function applyCommonMathReplacements(value: string) {
     .replace(/\bCE\b/g, '\\operatorname{CE}')
     .replace(/\bPR\b/g, 'P R')
     .replace(/([A-Za-z\\}])([₀₁₂₃₄₅₆₇₈₉ₖᵢв‚Ђв‚Ѓв‚‚в‚ѓв‚„в‚…в‚†в‚‡в‚€в‚‰в‚–бµў]+)/g, (_, base, sub) => `${base}${toSubscript(sub)}`)
-    .replace(/_([A-Za-z]\w+)/g, '_{$1}')
-    .replace(/_(\d{2,})/g, '_{$1}')
     .replace(/\^\(([^)]+)\)/g, '^{$1}')
-    .replace(/\^([A-Za-z]\w+)/g, '^{$1}')
 }
 
 export function looksLikeCodeFormula(value: string) {
