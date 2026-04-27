@@ -36,8 +36,34 @@ function applyCommonMathReplacements(value: string) {
     .replace(/\^\(([^)]+)\)/g, '^{$1}')
 }
 
+function applyReadableMathReplacements(value: string) {
+  return value
+    .replace(/∪/g, ' \\cup ')
+    .replace(/∩/g, ' \\cap ')
+    .replace(/∅/g, ' \\varnothing ')
+    .replace(/≈/g, ' \\approx ')
+    .replace(/≤/g, ' \\leq ')
+    .replace(/≥/g, ' \\geq ')
+    .replace(/≠/g, ' \\neq ')
+    .replace(/∫/g, ' \\int ')
+    .replace(/√/g, '\\sqrt')
+    .replace(/π/g, '\\pi')
+    .replace(/θ/g, '\\theta')
+    .replace(/λ/g, '\\lambda')
+    .replace(/α/g, '\\alpha')
+    .replace(/β/g, '\\beta')
+    .replace(/σ/g, '\\sigma')
+    .replace(/μ/g, '\\mu')
+    .replace(/\bsoftmax\b/g, '\\mathrm{softmax}')
+    .replace(/\blogits\b/g, '\\mathrm{logits}')
+    .replace(/\bloss\b/g, '\\mathrm{loss}')
+    .replace(/\bmean\b/g, '\\mathrm{mean}')
+    .replace(/\bmedian\b/g, '\\mathrm{median}')
+    .replace(/\bIQR\b/g, '\\mathrm{IQR}')
+}
+
 export function looksLikeCodeFormula(value: string) {
-  return /[:[\]{}]|\bdef\b|\bfor\b|\bif\b|\bprint\b|\binput\b|\.get\(|\.split\(|\.groupby\(|\.fillna\(|\(\)|=>/.test(value)
+  return /[:[\]]|\bdef\b|\bfor\b|\bif\b|\bprint\b|\binput\b|\.get\(|\.split\(|\.groupby\(|\.fillna\(|\(\)|=>/.test(value)
 }
 
 export function toLatex(value: string) {
@@ -45,7 +71,7 @@ export function toLatex(value: string) {
     return `\\texttt{${escapeLatexText(value)}}`
   }
 
-  const normalized = applyCommonMathReplacements(value)
+  const normalized = applyReadableMathReplacements(applyCommonMathReplacements(value))
     .replace(/\bTP\b/g, '\\mathrm{TP}')
     .replace(/\bFP\b/g, '\\mathrm{FP}')
     .replace(/\bFN\b/g, '\\mathrm{FN}')

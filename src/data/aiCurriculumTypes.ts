@@ -34,7 +34,7 @@ export interface PracticeTestCase {
 export interface PracticeTask {
   id: string
   title: string
-  kind: 'function' | 'stdin-stdout' | 'fill-in-code' | 'debugging' | 'structural'
+  kind: 'function' | 'stdin-stdout' | 'input-output' | 'fill-in-code' | 'debugging' | 'structural'
   language: 'javascript' | 'python'
   statement: string
   tips: string[]
@@ -79,6 +79,11 @@ export interface ConceptCodeExample {
 export interface ConceptCard {
   id: string
   title: string
+  shortTitle?: string
+  signature?: string
+  definition?: string
+  parametersIntro?: string
+  minimalExample?: ConceptCodeExample
   theory: string
   what: string
   why: string
