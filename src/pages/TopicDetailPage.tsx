@@ -21,7 +21,7 @@ import {
 import { useProgress } from '../hooks/useProgress'
 import { judgeTask, type JudgeRunResult } from '../lib/practiceEngine'
 
-const inlinePattern = /(pd\.read_csv|pd\.DataFrame|df\.head|df\.info|df\.describe|df\.columns|df\.isna|value_counts|groupby|np\.array|model\.fit|model\.predict|train_test_split|fit_transform|predict_proba|OneHotEncoder|OrdinalEncoder|SimpleImputer|StandardScaler|MinMaxScaler|RobustScaler|ColumnTransformer|Pipeline|LogisticRegression|LinearRegression|RandomForestClassifier|XGBClassifier|CatBoostClassifier|CrossEntropyLoss|BCEWithLogitsLoss|DataLoader|Conv2d|Transformer|random_state|learning_rate|weight_decay|n_estimators|max_depth|early_stopping_rounds|sparse_output|class_weight|batch_size|test_size|stratify|shuffle|n_splits|kernel_size|padding|num_heads|d_model|validation|precision|recall|accuracy|logits|loss|leakage|dropout|shape|ndim|dtype|target|features|loc|iloc|fit|transform|predict|train|validate|AdamW|Adam|SGD|RMSprop|MAE|MSE|RMSE|F1|TP|FP|FN|[A-Za-z_][A-Za-z0-9_]*(?=\())/
+const inlinePattern = /(pd\.read_csv|pd\.DataFrame|df\.head|df\.info|df\.describe|df\.columns|df\.isna|value_counts|groupby|np\.array|np\.zeros|np\.ones|np\.full|np\.arange|np\.linspace|np\.sum|np\.mean|np\.min|np\.max|np\.std|np\.median|np\.where|np\.random\.default_rng|rng\.integers|rng\.normal|rng\.permutation|model\.fit|model\.predict|train_test_split|fit_transform|predict_proba|OneHotEncoder|OrdinalEncoder|SimpleImputer|StandardScaler|MinMaxScaler|RobustScaler|ColumnTransformer|Pipeline|LogisticRegression|LinearRegression|RandomForestClassifier|XGBClassifier|CatBoostClassifier|CrossEntropyLoss|BCEWithLogitsLoss|DataLoader|Conv2d|Transformer|random_state|learning_rate|weight_decay|n_estimators|max_depth|early_stopping_rounds|sparse_output|class_weight|batch_size|test_size|stratify|shuffle|n_splits|kernel_size|padding|num_heads|d_model|validation|precision|recall|accuracy|logits|loss|leakage|dropout|ndarray|shape|ndim|dtype|axis|broadcasting|baseline|target|features|loc|iloc|fit|transform|predict|train|validate|AdamW|Adam|SGD|RMSprop|MAE|MSE|RMSE|F1|TP|FP|FN|[A-Za-z_][A-Za-z0-9_]*(?=\())/
 const richTokenPattern = /(`[^`]+`|\*\*[^*]+\*\*)/g
 
 function RichText({ text, className = '' }: { text: string; className?: string }) {
@@ -123,10 +123,10 @@ function StepButton({ step, index, topicId, active, done }: { step: FlowStep; in
 function CodeExampleBlock({ example, title = 'Пример кода' }: { example: ConceptCodeExample; title?: string }) {
   return (
     <section>
-      <h2 className="mb-3 text-[18px] font-bold leading-7 text-[#111827]">{title}</h2>
+      <h2 className="mb-2 text-[18px] font-bold leading-6 text-[#111827]">{title}</h2>
       <CodeBlock code={example.code} language={example.language} output={example.output} />
       {example.explanation.length > 0 && (
-        <p className="mt-3 text-[15px] leading-7 text-[#111827]">
+        <p className="mt-2 text-[15px] leading-6 text-[#111827]">
           <RichText text={example.explanation[0]} />
         </p>
       )}
@@ -137,17 +137,17 @@ function CodeExampleBlock({ example, title = 'Пример кода' }: { exampl
 function FormulaCards({ cards }: { cards: FormulaCard[] }) {
   if (!cards.length) return null
   return (
-    <section className="space-y-7">
+    <section className="space-y-5">
       {cards.map((card) => (
-        <article key={`${card.label}-${card.expression}`} className="space-y-3">
-          <h2 className="text-[18px] font-bold leading-7 text-[#111827]">{card.label}</h2>
-          <div className="overflow-x-auto bg-[#f3f4f6] px-4 py-4 text-[18px] text-[#111827]">
+        <article key={`${card.label}-${card.expression}`} className="space-y-2">
+          <h2 className="text-[18px] font-bold leading-6 text-[#111827]">{card.label}</h2>
+          <div className="overflow-x-auto bg-[#f3f4f6] px-4 py-3 text-[18px] text-[#111827]">
             <Formula math={card.expression} block />
           </div>
-          <p className="text-[15px] leading-7 text-[#111827]">
+          <p className="text-[15px] leading-6 text-[#111827]">
             <RichText text={card.meaning} />
           </p>
-          <ul className="list-disc space-y-1 pl-6 text-[15px] leading-7 text-[#111827]">
+          <ul className="list-disc space-y-1 pl-6 text-[15px] leading-6 text-[#111827]">
             {card.notation.map((item, index) => (
               <li key={`${item}-${index}`}>
                 <NotationItem text={item} />
@@ -228,6 +228,12 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
   const [result, setResult] = useState<JudgeRunResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
 
+  useEffect(() => {
+    setCode(task.starterCode)
+    setResult(null)
+    setIsRunning(false)
+  }, [task.id, task.starterCode])
+
   const runJudge = async (includeHidden: boolean) => {
     setIsRunning(true)
     try {
@@ -240,13 +246,13 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
   }
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-4">
       <div className="space-y-2">
-        <h2 className="text-[22px] font-bold leading-8 text-[#111827]">{task.title}</h2>
-        <p className="text-[15px] leading-7 text-[#111827]">{task.statement}</p>
+        <h2 className="text-[21px] font-bold leading-7 text-[#111827]">{task.title}</h2>
+        <p className="text-[15px] leading-6 text-[#111827]">{task.statement}</p>
       </div>
 
-      <ul className="list-disc space-y-1 pl-6 text-[15px] leading-7 text-[#111827]">
+      <ul className="list-disc space-y-1 pl-6 text-[15px] leading-6 text-[#111827]">
         {task.tips.map((tip) => <li key={tip}>{tip}</li>)}
       </ul>
 
@@ -288,7 +294,10 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
           </button>
           <button
             type="button"
-            onClick={() => setCode(task.starterCode)}
+            onClick={() => {
+              setCode(task.starterCode)
+              setResult(null)
+            }}
             disabled={isRunning}
             className="border border-[#d1d5db] bg-white px-4 py-2 text-[14px] text-[#111827] hover:bg-[#f3f4f6]"
           >
@@ -334,22 +343,22 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
 
   return (
     <article className="bg-white">
-      <header className="mb-7">
-        <h1 className="text-[24px] font-bold leading-9 text-[#111827]">{step.title}</h1>
+      <header className="mb-5">
+        <h1 className="text-[24px] font-bold leading-8 text-[#111827]">{step.title}</h1>
         {step.summary && !primaryConcept && (
-          <p className="mt-4 text-[15px] leading-7 text-[#111827]">
+          <p className="mt-2 text-[15px] leading-6 text-[#111827]">
             <RichText text={step.summary} />
           </p>
         )}
       </header>
 
-      <div className="space-y-8">
+      <div className="space-y-6">
         {primaryConcept && <ConceptCardView concept={primaryConcept} />}
 
         {step.sections?.map((section) => (
           <section key={section.id}>
-            <h2 className="mb-3 text-[18px] font-bold leading-7 text-[#111827]">{section.title}</h2>
-            <div className="space-y-3 text-[15px] leading-7 text-[#111827]">
+            <h2 className="mb-2 text-[18px] font-bold leading-6 text-[#111827]">{section.title}</h2>
+            <div className="space-y-2 text-[15px] leading-6 text-[#111827]">
               {section.paragraphs.map((paragraph, index) => (
                 <p key={`${section.id}-${index}`}>
                   <RichText text={paragraph} />
@@ -357,7 +366,7 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
               ))}
             </div>
             {section.bullets && (
-              <ul className="mt-3 list-disc space-y-1 pl-6 text-[15px] leading-7 text-[#111827]">
+              <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-6 text-[#111827]">
                 {section.bullets.map((bullet) => (
                   <li key={bullet}>
                     <RichText text={bullet} />
@@ -366,7 +375,7 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
               </ul>
             )}
             {section.table && (
-              <div className="mt-4 overflow-x-auto border border-[#e5e7eb]">
+              <div className="mt-3 overflow-x-auto border border-[#e5e7eb]">
                 <table className="min-w-full border-collapse text-left text-[14px] leading-6 text-[#111827]">
                   <thead className="bg-[#f3f4f6]">
                     <tr>
@@ -407,8 +416,8 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
 
         {step.workedExample && (
           <section>
-            <h2 className="mb-3 text-[18px] font-bold leading-7 text-[#111827]">Как применять</h2>
-            <ul className="list-disc space-y-1 pl-6 text-[15px] leading-7 text-[#111827]">
+            <h2 className="mb-2 text-[18px] font-bold leading-6 text-[#111827]">Как применять</h2>
+            <ul className="list-disc space-y-1 pl-6 text-[15px] leading-6 text-[#111827]">
               {step.workedExample.map((item) => (
                 <li key={item.title}>
                   <strong>{item.title}</strong>: <RichText text={item.body} />
@@ -420,7 +429,7 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
 
         {step.bullets && (
           <section>
-            <ul className="list-disc space-y-1 pl-6 text-[15px] leading-7 text-[#111827]">
+            <ul className="list-disc space-y-1 pl-6 text-[15px] leading-6 text-[#111827]">
               {step.bullets.map((bullet) => (
                 <li key={bullet}>
                   <RichText text={bullet} />
@@ -432,7 +441,7 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
 
         {step.codeExample && <CodeExampleBlock example={step.codeExample} title="Примеры кода" />}
 
-        {step.quiz && <QuizWidget quiz={step.quiz} />}
+        {step.quiz && <QuizWidget key={`${step.id}-${step.quiz.id}`} quiz={step.quiz} />}
 
         {step.practiceTasks?.length ? <PracticeRunner task={step.practiceTasks[0]} onPassed={() => onStepComplete(step.id)} /> : null}
 
@@ -450,7 +459,7 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
         )}
       </div>
 
-      <footer className="mt-10 border-t border-[#e5e7eb] pt-4">
+      <footer className="mt-8 border-t border-[#e5e7eb] pt-4">
         <button
           type="button"
           onClick={() => onStepComplete(step.id)}
@@ -531,7 +540,7 @@ export default function TopicDetailPage() {
             </div>
           </div>
 
-          <div className="mx-auto max-w-[920px] px-4 py-11">
+          <div className="mx-auto max-w-[920px] px-4 py-9">
             <StepContent step={currentStep} isCompleted={progress.completedSteps.includes(currentStep.id)} onStepComplete={markStepCompleted} />
 
             <nav className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5e7eb] pt-4">

@@ -8,24 +8,42 @@ import * as ts from 'typescript'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
 const curriculumPath = path.join(root, 'src/data/aiCurriculum.ts')
-const source = fs.readFileSync(curriculumPath, 'utf8')
 const errors = []
 
 const expectedStepCounts = new Map([
   ['intro-ai-ml-dl', 6],
   ['programming-vs-ml', 6],
   ['ml-task-types', 8],
-  ['ml-project-components', 7],
-  ['numpy-ndarray', 6],
-  ['numpy-creation', 7],
+  ['data-features-target', 6],
+  ['ml-model-fit-predict-metric', 7],
+  ['numpy-why', 6],
+  ['numpy-array-creation', 7],
   ['numpy-shape-ndim-dtype', 7],
   ['numpy-indexing-slices', 7],
   ['numpy-vector-operations', 6],
-  ['numpy-aggregations', 7],
+  ['numpy-aggregations-statistics', 6],
   ['numpy-2d-axis', 7],
-  ['numpy-boolean-masks', 6],
+  ['numpy-masks-where', 6],
   ['numpy-broadcasting', 7],
-  ['numpy-random', 6],
+  ['numpy-random-reproducibility', 6],
+])
+
+const expectedQuizCounts = new Map([
+  ['intro-ai-ml-dl', 2],
+  ['programming-vs-ml', 2],
+  ['ml-task-types', 1],
+  ['data-features-target', 1],
+  ['ml-model-fit-predict-metric', 1],
+  ['numpy-why', 2],
+  ['numpy-array-creation', 2],
+  ['numpy-shape-ndim-dtype', 2],
+  ['numpy-indexing-slices', 2],
+  ['numpy-vector-operations', 2],
+  ['numpy-aggregations-statistics', 2],
+  ['numpy-2d-axis', 2],
+  ['numpy-masks-where', 2],
+  ['numpy-broadcasting', 2],
+  ['numpy-random-reproducibility', 2],
 ])
 
 function requireCondition(condition, message) {
@@ -36,9 +54,32 @@ function normalizeOutput(value) {
   return String(value ?? '').trim().replace(/\r\n/g, '\n')
 }
 
-function loadCurriculum() {
+function resolveTsModule(fromFile, specifier) {
+  if (!specifier.startsWith('.')) {
+    throw new Error(`Unsupported import in audit: ${specifier}`)
+  }
+
+  const basePath = path.resolve(path.dirname(fromFile), specifier)
+  const candidates = [
+    basePath,
+    `${basePath}.ts`,
+    `${basePath}.tsx`,
+    path.join(basePath, 'index.ts'),
+  ]
+  const resolved = candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile())
+  if (!resolved) throw new Error(`Cannot resolve ${specifier} from ${fromFile}`)
+  return resolved
+}
+
+const moduleCache = new Map()
+
+function loadTsModule(filePath) {
+  const resolvedPath = path.resolve(filePath)
+  if (moduleCache.has(resolvedPath)) return moduleCache.get(resolvedPath).exports
+
+  const source = fs.readFileSync(resolvedPath, 'utf8')
   const { outputText, diagnostics } = ts.transpileModule(source, {
-    fileName: curriculumPath,
+    fileName: resolvedPath,
     compilerOptions: {
       module: ts.ModuleKind.CommonJS,
       target: ts.ScriptTarget.ES2020,
@@ -52,13 +93,19 @@ function loadCurriculum() {
     requireCondition(false, `TypeScript transpile diagnostic: ${message}`)
   }
 
+  const module = { exports: {} }
+  moduleCache.set(resolvedPath, module)
   const context = {
-    exports: {},
-    module: { exports: {} },
+    exports: module.exports,
+    module,
+    require: (specifier) => loadTsModule(resolveTsModule(resolvedPath, specifier)),
   }
-  context.exports = context.module.exports
-  vm.runInNewContext(outputText, context, { filename: 'aiCurriculum.js' })
-  return context.module.exports
+  vm.runInNewContext(outputText, context, { filename: resolvedPath })
+  return module.exports
+}
+
+function loadCurriculum() {
+  return loadTsModule(curriculumPath)
 }
 
 function verifyPythonTaskSolution(topicId, task) {
@@ -94,7 +141,7 @@ const { curriculumBlocks, flowTopics } = loadCurriculum()
 requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
 requireCondition(curriculumBlocks.length === 2, `Expected exactly 2 curriculum blocks, got ${curriculumBlocks.length}.`)
-requireCondition(flowTopics.length === 14, `Expected exactly 14 topics, got ${flowTopics.length}.`)
+requireCondition(flowTopics.length === 15, `Expected exactly 15 topics, got ${flowTopics.length}.`)
 
 const blockIds = curriculumBlocks.map((block) => block.id)
 requireCondition(blockIds.join(',') === 'intro-ai-ml,numpy-ml', `Unexpected block ids: ${blockIds.join(',')}.`)
@@ -103,7 +150,7 @@ const topicIds = flowTopics.map((topic) => topic.id)
 requireCondition(topicIds.join(',') === [...expectedStepCounts.keys()].join(','), `Unexpected topic order: ${topicIds.join(',')}.`)
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 93, `Expected 93 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 98, `Expected 98 total steps, got ${totalSteps}.`)
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`
@@ -114,7 +161,7 @@ for (const topic of flowTopics) {
 
   const stepTypes = topic.steps.map((step) => step.type)
   requireCondition(stepTypes.includes('theory'), `${prefix} missing theory steps.`)
-  requireCondition(stepTypes.filter((type) => type === 'quiz').length >= 2, `${prefix} must contain at least two quiz steps.`)
+  requireCondition(stepTypes.filter((type) => type === 'quiz').length === expectedQuizCounts.get(topic.id), `${prefix} unexpected quiz step count.`)
   if (topic.id !== 'intro-ai-ml-dl') {
     requireCondition(stepTypes.includes('practice'), `${prefix} missing practice step.`)
   } else {
