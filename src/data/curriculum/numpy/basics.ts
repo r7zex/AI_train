@@ -1,4 +1,4 @@
-import { callout, code, makeStdinTask, numpyTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
+import { callout, code, functionSection, makeStdinTask, numpyTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
 
 
 
@@ -163,6 +163,51 @@ export const topicNumpyShape = numpyTopic(
       '`shape`, `ndim`, `size`',
       'Главные атрибуты показывают форму, размерность и число элементов.',
       [
+        functionSection(
+          'shape-attribute',
+          '`arr.shape`',
+          'arr.shape',
+          ['`arr` - массив NumPy'],
+          `
+            import numpy as np
+
+            arr = np.array([[1, 2, 3],
+                            [4, 5, 6]])
+            print(arr.shape)
+          `,
+          '(2, 3)',
+          '`shape` показывает: 2 строки и 3 столбца.',
+        ),
+        functionSection(
+          'ndim-attribute',
+          '`arr.ndim`',
+          'arr.ndim',
+          ['`arr` - массив NumPy'],
+          `
+            import numpy as np
+
+            arr = np.array([[1, 2, 3],
+                            [4, 5, 6]])
+            print(arr.ndim)
+          `,
+          '2',
+          '`ndim` показывает число измерений массива.',
+        ),
+        functionSection(
+          'size-attribute',
+          '`arr.size`',
+          'arr.size',
+          ['`arr` - массив NumPy'],
+          `
+            import numpy as np
+
+            arr = np.array([[1, 2, 3],
+                            [4, 5, 6]])
+            print(arr.size)
+          `,
+          '6',
+          '`size` показывает общее число элементов.',
+        ),
         section('definition', 'Атрибуты массива', [
           '`arr.shape` показывает форму массива: сколько элементов лежит вдоль каждой оси. `arr.ndim` показывает число измерений. `arr.size` показывает общее число элементов.',
           'Эти атрибуты читаются без скобок, потому что это свойства массива, а не функции. Они помогают быстро понять, что именно лежит в переменной и подходит ли форма для модели.',
@@ -187,6 +232,34 @@ export const topicNumpyShape = numpyTopic(
       '`dtype`',
       '`dtype` показывает тип данных элементов массива.',
       [
+        functionSection(
+          'dtype-attribute',
+          '`arr.dtype`',
+          'arr.dtype',
+          ['`arr` - массив NumPy'],
+          `
+            import numpy as np
+
+            x = np.array([1.0, 2.0, 3.0])
+            print(x.dtype)
+          `,
+          'float64',
+          '`dtype` показывает тип элементов массива.',
+        ),
+        functionSection(
+          'astype-method',
+          '`arr.astype()`',
+          'arr.astype(dtype)',
+          ['`dtype` - новый тип элементов, например `float` или `int`'],
+          `
+            import numpy as np
+
+            x = np.array([1, 2, 3])
+            print(x.astype(float))
+          `,
+          '[1. 2. 3.]',
+          '`astype()` вернул новый массив с другим типом данных.',
+        ),
         section('definition', 'Тип элементов', [
           '`dtype` показывает, как NumPy хранит элементы: например `int64`, `float64`, `bool`. Обычно внутри одного массива элементы приводятся к одному типу.',
           'Метод `.astype(new_dtype)` создаёт массив с другим типом. Это нужно, когда числа нужно явно сделать вещественными, целыми или булевыми перед дальнейшими вычислениями.',
