@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate:curriculum": "node scripts/generate-ai-curriculum.mjs",
+    "audit:curriculum": "node scripts/audit-curriculum.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
