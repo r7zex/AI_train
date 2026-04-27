@@ -1528,6 +1528,702 @@ function topicToFlowTopic(topic, index) {
   }
 }
 
+const signatureBySlug = {
+  'pure-function': 'def transform_features(data, columns):',
+  'type-hints': 'def normalize(values: list[float]) -> list[float]:',
+  assertions: 'assert condition, "message"',
+  'read-csv': 'pd.read_csv(filepath_or_buffer, sep=",", encoding=None, usecols=None)',
+  dataframe: 'pd.DataFrame(data, index=None, columns=None, dtype=None)',
+  'train-test-split': 'train_test_split(*arrays, test_size=None, random_state=None, stratify=None, shuffle=True)',
+  'random-state': 'random_state=42',
+  'simple-imputer': 'SimpleImputer(strategy="median", fill_value=None, add_indicator=False)',
+  'missing-indicator': 'MissingIndicator(features="missing-only")',
+  'iqr-clipping': 'np.clip(values, lower, upper)',
+  'one-hot-encoder': 'OneHotEncoder(handle_unknown="ignore", sparse_output=False)',
+  'ordinal-encoder': 'OrdinalEncoder(categories="auto", handle_unknown="error")',
+  'target-encoding': 'target_mean = train.groupby(category)[target].mean()',
+  'standard-scaler': 'StandardScaler(with_mean=True, with_std=True)',
+  'minmax-scaler': 'MinMaxScaler(feature_range=(0, 1), clip=False)',
+  'robust-scaler': 'RobustScaler(with_centering=True, quantile_range=(25, 75))',
+  pipeline: 'Pipeline(steps=[("prep", prep), ("model", model)])',
+  'column-transformer': 'ColumnTransformer(transformers=[("num", scaler, num_cols)])',
+  'data-leakage': 'fit only on train, evaluate on validation/test',
+  'dummy-classifier': 'DummyClassifier(strategy="most_frequent")',
+  'linear-regression': 'LinearRegression(fit_intercept=True)',
+  'logistic-regression': 'LogisticRegression(C=1.0, class_weight=None, max_iter=1000)',
+  'confusion-matrix': 'confusion_matrix(y_true, y_pred)',
+  'precision-recall-f1': 'precision_recall_fscore_support(y_true, y_pred)',
+  'roc-pr-auc': 'roc_auc_score(y_true, y_score), average_precision_score(y_true, y_score)',
+  'regression-metrics': 'mean_absolute_error(), mean_squared_error()',
+  kfold: 'KFold(n_splits=5, shuffle=True, random_state=42)',
+  'stratified-kfold': 'StratifiedKFold(n_splits=5, shuffle=True, random_state=42)',
+  'time-series-split': 'TimeSeriesSplit(n_splits=5, gap=0)',
+  'bootstrap-ci': 'resample(values, replace=True)',
+  'class-weight': 'class_weight="balanced"',
+  oversampling: 'resample(minority_class, replace=True)',
+  undersampling: 'resample(majority_class, replace=False)',
+  augmentation: 'transform(x) -> x_aug',
+  knn: 'KNeighborsClassifier(n_neighbors=5, weights="uniform")',
+  'naive-bayes': 'MultinomialNB(alpha=1.0)',
+  'svm-margin': 'SVC(C=1.0, kernel="rbf", gamma="scale")',
+  'decision-tree': 'DecisionTreeClassifier(max_depth=None, min_samples_leaf=1)',
+  'random-forest': 'RandomForestClassifier(n_estimators=100, max_depth=None)',
+  'gradient-boosting': 'GradientBoostingClassifier(n_estimators=100, learning_rate=0.1)',
+  'xgb-classifier': 'XGBClassifier(n_estimators=300, learning_rate=0.05, max_depth=4)',
+  'catboost-classifier': 'CatBoostClassifier(iterations=300, depth=6, learning_rate=0.05)',
+  'early-stopping-boosting': 'early_stopping_rounds=50',
+  'logits-softmax': 'softmax(logits)',
+  'cross-entropy-loss': 'nn.CrossEntropyLoss(weight=None, label_smoothing=0.0)',
+  'bce-with-logits': 'nn.BCEWithLogitsLoss(pos_weight=None)',
+  'regression-losses': 'nn.MSELoss(), nn.L1Loss()',
+  'linear-layer': 'nn.Linear(in_features, out_features)',
+  'relu-gelu': 'nn.ReLU(), nn.GELU()',
+  'dataloader-batches': 'DataLoader(dataset, batch_size=32, shuffle=True)',
+  'mlp-architecture': 'nn.Sequential(nn.Linear(...), nn.ReLU(), nn.Linear(...))',
+  'train-sklearn': 'model.fit(X_train, y_train)',
+  'train-epoch-torch': 'model.train(); loss.backward(); optimizer.step()',
+  'validate-epoch-torch': 'model.eval(); with torch.no_grad():',
+  'train-and-validate': 'for epoch in range(epochs): train(); validate()',
+  'train-boosting-template': 'model.fit(X_train, y_train, eval_set=[(X_val, y_val)])',
+  sgd: 'torch.optim.SGD(params, lr=0.01, momentum=0)',
+  momentum: 'torch.optim.SGD(params, lr=0.01, momentum=0.9)',
+  rmsprop: 'torch.optim.RMSprop(params, lr=0.001, alpha=0.99)',
+  adam: 'torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999))',
+  adamw: 'torch.optim.AdamW(params, lr=0.001, weight_decay=0.01)',
+  'lr-scheduler': 'scheduler.step()',
+  'l1-regularization': 'loss + lambda_l1 * abs(weights).sum()',
+  'l2-weight-decay': 'weight_decay=0.01',
+  dropout: 'nn.Dropout(p=0.5)',
+  'batch-norm': 'nn.BatchNorm1d(num_features)',
+  'early-stopping': 'stop if validation_metric does not improve',
+  convolution: 'nn.Conv2d(in_channels, out_channels, kernel_size, padding=0)',
+  pooling: 'nn.MaxPool2d(kernel_size=2), nn.AdaptiveAvgPool2d(1)',
+  'cnn-classifier': 'Conv2d -> ReLU -> Pool -> Linear',
+  'transfer-learning': 'freeze backbone; train classifier head',
+  embeddings: 'nn.Embedding(num_embeddings, embedding_dim)',
+  attention: 'Attention(Q, K, V) = softmax(QK^T / sqrt(d_k)) V',
+  'transformer-block': 'MultiHeadAttention + FeedForward + LayerNorm',
+  'responsible-ai': 'model card + monitoring + rollback plan',
+}
+
+const shortTitleBySlug = {
+  'read-csv': 'pd.read_csv()',
+  dataframe: 'pd.DataFrame()',
+  'train-test-split': 'train_test_split()',
+  'random-state': 'random_state',
+  'simple-imputer': 'SimpleImputer()',
+  'missing-indicator': 'MissingIndicator()',
+  'one-hot-encoder': 'OneHotEncoder()',
+  'ordinal-encoder': 'OrdinalEncoder()',
+  'standard-scaler': 'StandardScaler()',
+  'minmax-scaler': 'MinMaxScaler()',
+  'robust-scaler': 'RobustScaler()',
+  pipeline: 'Pipeline()',
+  'column-transformer': 'ColumnTransformer()',
+  'dummy-classifier': 'DummyClassifier()',
+  'linear-regression': 'LinearRegression()',
+  'logistic-regression': 'LogisticRegression()',
+  'confusion-matrix': 'confusion_matrix()',
+  'precision-recall-f1': 'precision/recall/F1',
+  'roc-pr-auc': 'roc_auc_score()',
+  'regression-metrics': 'MAE / RMSE',
+  kfold: 'KFold()',
+  'stratified-kfold': 'StratifiedKFold()',
+  'time-series-split': 'TimeSeriesSplit()',
+  knn: 'KNeighborsClassifier()',
+  'naive-bayes': 'Naive Bayes',
+  'decision-tree': 'DecisionTreeClassifier()',
+  'random-forest': 'RandomForestClassifier()',
+  'gradient-boosting': 'GradientBoostingClassifier()',
+  'xgb-classifier': 'XGBClassifier()',
+  'catboost-classifier': 'CatBoostClassifier()',
+  'logits-softmax': 'softmax()',
+  'cross-entropy-loss': 'CrossEntropyLoss()',
+  'bce-with-logits': 'BCEWithLogitsLoss()',
+  'regression-losses': 'MSELoss() / L1Loss()',
+  'linear-layer': 'nn.Linear()',
+  'relu-gelu': 'ReLU() / GELU()',
+  'dataloader-batches': 'DataLoader()',
+  'mlp-architecture': 'MLP',
+  sgd: 'SGD',
+  momentum: 'SGD(momentum)',
+  rmsprop: 'RMSprop',
+  adam: 'Adam',
+  adamw: 'AdamW',
+  'lr-scheduler': 'Scheduler',
+  'l1-regularization': 'L1',
+  'l2-weight-decay': 'L2 / weight_decay',
+  dropout: 'Dropout()',
+  'batch-norm': 'BatchNorm()',
+  'early-stopping': 'EarlyStopping',
+  convolution: 'Conv2d()',
+  pooling: 'Pooling',
+  embeddings: 'Embedding()',
+  attention: 'Attention',
+}
+
+function stripTopicNumber(title) {
+  return title.replace(/^\d+(\.\d+)?\s+/, '')
+}
+
+function conceptShortTitle(c) {
+  return shortTitleBySlug[c.slug] ?? c.title
+}
+
+function conceptSignature(c) {
+  return signatureBySlug[c.slug] ?? `${conceptShortTitle(c)}(...)`
+}
+
+function firstSentence(value) {
+  return toRuntimeString(value).split(/(?<=[.!?])\s+/u)[0]?.trim() ?? ''
+}
+
+const briefParamDescriptions = {
+  filepath: 'путь к CSV-файлу или файловый объект. С этого источника pandas считывает строки таблицы.',
+  filepath_or_buffer: 'путь к CSV-файлу, URL или файловый объект, из которого нужно прочитать таблицу.',
+  sep: 'символ-разделитель столбцов. Для CSV обычно запятая, для TSV используют "\\t".',
+  encoding: 'кодировка файла. Нужна, если русские символы или спецзнаки читаются некорректно.',
+  usecols: 'список столбцов, которые нужно загрузить. Уменьшает память и сразу отсекает лишние признаки.',
+  data: 'словарь, список строк или массив, из которого создаётся таблица.',
+  index: 'метки строк. Если не задать, pandas создаст обычные индексы 0, 1, 2, ...',
+  columns: 'названия и порядок столбцов в DataFrame.',
+  dtype: 'тип данных для столбцов. Помогает заранее задать float, int, category или string.',
+  test_size: 'доля или число объектов, которые уйдут в validation/test.',
+  random_state: 'фиксирует случайность, чтобы split, sampling или модель повторялись при новом запуске.',
+  stratify: 'сохраняет доли классов в train и validation. Особенно важно при дисбалансе.',
+  shuffle: 'перемешивает объекты перед split или fold. Для временных рядов обычно отключают.',
+  seed: 'число, с которого начинается псевдослучайная последовательность.',
+  strategy: 'способ заполнения пропусков: mean, median, most_frequent или constant.',
+  fill_value: 'значение, которым заполняют пропуски при strategy="constant".',
+  add_indicator: 'добавляет бинарный признак: был ли пропуск в исходном столбце.',
+  features: 'столбцы, для которых строится индикатор пропуска или преобразование.',
+  error_on_new: 'вызывает ошибку, если на transform появился новый столбец с пропусками.',
+  threshold: 'граница, после которой объект, класс или значение считают положительным/аномальным.',
+  method: 'конкретный способ вычисления или преобразования внутри шага.',
+  factor: 'коэффициент, который расширяет или сужает допустимый диапазон.',
+  handle_unknown: 'что делать с категорией, которой не было на train.',
+  drop: 'какую категорию удалить, чтобы избежать лишней линейной зависимости.',
+  sparse_output: 'возвращать ли разреженную матрицу вместо обычного плотного массива.',
+  sparse: 'возвращать ли результат в разреженном формате.',
+  min_frequency: 'минимальная частота категории, ниже которой её объединяют с редкими.',
+  categories: 'явный список категорий и их порядок для каждого признака.',
+  unknown_value: 'число, которым кодируют неизвестную категорию при ordinal encoding.',
+  smoothing: 'сглаживает target encoding, чтобы редкие категории не переобучались.',
+  cv: 'число fold или объект cross-validation, через который считают устойчивую оценку.',
+  min_samples_leaf: 'минимум объектов в листе дерева или группе; снижает переобучение на редких случаях.',
+  with_mean: 'вычитать ли среднее в StandardScaler. Для sparse-матриц обычно ставят False.',
+  with_std: 'делить ли на стандартное отклонение, чтобы признаки получили сравнимый масштаб.',
+  copy: 'создавать ли копию данных вместо изменения входного объекта.',
+  feature_range: 'нижняя и верхняя границы после MinMaxScaler, например (0, 1).',
+  clip: 'обрезать ли новые значения, если на transform они вышли за обученный диапазон.',
+  with_centering: 'вычитать ли медиану в RobustScaler.',
+  with_scaling: 'делить ли на межквартильный размах или другую устойчивую шкалу.',
+  quantile_range: 'пара квантилей, по которым считают устойчивый диапазон, обычно (25, 75).',
+  remainder: 'что делать со столбцами, которые не попали ни в один transformer.',
+  sparse_threshold: 'порог, при котором ColumnTransformer оставляет результат разреженным.',
+  transformers: 'список именованных преобразований: имя, transformer и набор столбцов.',
+  memory: 'кеш для промежуточных шагов Pipeline.',
+  steps: 'последовательность шагов Pipeline: preprocessing, модель и другие операции.',
+  fit_on_train: 'напоминает, что fit делают только на train, а validation используют только для проверки.',
+  split_first: 'требует сначала разделить данные, а уже потом обучать preprocessing.',
+  fit_intercept: 'добавлять ли свободный член b в линейную модель.',
+  positive: 'заставляет коэффициенты линейной модели быть неотрицательными.',
+  copy_X: 'копировать ли матрицу признаков перед обучением линейной модели.',
+  C: 'обратная сила регуляризации в LogisticRegression: меньше C означает сильнее штраф.',
+  penalty: 'тип регуляризации: l1, l2, elasticnet или отсутствие штрафа.',
+  solver: 'алгоритм оптимизации коэффициентов; должен поддерживать выбранный penalty.',
+  class_weight: 'веса классов. balanced помогает, когда редкий класс важен.',
+  max_iter: 'максимальное число итераций обучения или оптимизации.',
+  n_splits: 'число частей в cross-validation.',
+  gap: 'зазор между train и validation во временных рядах.',
+  max_train_size: 'максимальный размер train-окна во временной cross-validation.',
+  average: 'способ усреднения метрики: binary, macro, micro или weighted.',
+  zero_division: 'что вернуть, если precision или recall делит на ноль.',
+  labels: 'классы и их порядок при расчёте метрик.',
+  normalize: 'как нормировать confusion matrix: по строкам, столбцам, всей матрице или никак.',
+  pos_label: 'какой класс считать положительным в binary-метрике.',
+  y_score: 'оценки вероятности или score модели до превращения в классы.',
+  max_fpr: 'ограничение false positive rate для частичного ROC AUC.',
+  sample_weight: 'вес каждого объекта при расчёте метрики или обучении.',
+  squared: 'возвращать MSE или RMSE в зависимости от значения параметра.',
+  multioutput: 'как объединять ошибки по нескольким target.',
+  confidence_level: 'уровень доверия для интервала, например 0.95.',
+  n_resamples: 'число bootstrap-повторов для оценки разброса.',
+  replacement: 'делать ли выборку с возвращением.',
+  n_neighbors: 'сколько ближайших объектов учитывать.',
+  sampling_strategy: 'какие классы и до какого размера пересэмплировать.',
+  k_neighbors: 'сколько соседей использовать для синтетических объектов.',
+  alpha: 'коэффициент сглаживания, регуляризации или накопления статистики.',
+  balanced: 'использовать ли балансировку классов.',
+  probability: 'нужно ли обучать модель выдавать вероятности.',
+  kernel: 'тип ядра или окна, через которое модель сравнивает объекты.',
+  gamma: 'параметр масштаба для kernel-методов или scheduler.',
+  n_estimators: 'число деревьев, моделей или boosting-итераций.',
+  max_depth: 'максимальная глубина дерева. Ограничивает сложность модели.',
+  max_features: 'сколько признаков можно рассматривать при split дерева.',
+  bootstrap: 'строить ли деревья на bootstrap-выборках.',
+  criterion: 'функция качества split или loss, по которой выбирают улучшение.',
+  learning_rate: 'размер шага в boosting или нейросетевой оптимизации.',
+  subsample: 'доля объектов, используемая на одной boosting-итерации.',
+  eval_set: 'validation-набор, по которому boosting следит за качеством во время обучения.',
+  eval_metric: 'метрика, которую библиотека считает на eval_set.',
+  early_stopping_rounds: 'сколько итераций ждать улучшения перед остановкой.',
+  cat_features: 'какие столбцы считать категориальными в CatBoost.',
+  iterations: 'число boosting-итераций или шагов обучения.',
+  depth: 'глубина деревьев в CatBoost или похожей модели.',
+  use_best_model: 'оставлять ли лучшую итерацию по validation-метрике.',
+  dim: 'ось, вдоль которой считают softmax или нормализацию.',
+  axis: 'ось массива или tensor, по которой выполняется операция.',
+  temperature: 'делит logits перед softmax: выше температура делает распределение мягче.',
+  weight: 'вес классов, признаков или loss-компонент.',
+  ignore_index: 'метка, которую loss пропускает при обучении.',
+  label_smoothing: 'сглаживает one-hot target, чтобы модель меньше переуверялась.',
+  reduction: 'как объединять loss по batch: mean, sum или none.',
+  pos_weight: 'усиливает положительный класс в BCEWithLogitsLoss.',
+  delta: 'порог Huber loss между квадратичной и линейной ошибкой.',
+  lr: 'learning rate: размер шага, с которым optimizer обновляет веса.',
+  weight_decay: 'штраф на большие веса. В AdamW применяется отдельно от адаптивного шага.',
+  maximize: 'переключает optimizer с минимизации на максимизацию целевой функции.',
+  momentum: 'накапливает направление прошлых градиентов для ускорения SGD.',
+  nesterov: 'использует Nesterov momentum: градиент считается с упреждением.',
+  dampening: 'ослабляет вклад нового градиента в momentum.',
+  betas: 'коэффициенты сглаживания первого и второго моментов в Adam/AdamW.',
+  eps: 'малое число для численной стабильности, обычно чтобы не делить на ноль.',
+  step_size: 'через сколько эпох scheduler меняет learning rate.',
+  patience: 'сколько проверок ждать улучшения перед остановкой или снижением lr.',
+  mode: 'направление улучшения метрики: min для loss, max для score.',
+  lambda: 'сила регуляризации или штрафа.',
+  strength: 'насколько сильно применять регуляризацию, аугментацию или преобразование.',
+  p: 'вероятность dropout или другого случайного события.',
+  inplace: 'изменять ли tensor на месте.',
+  affine: 'обучать ли масштаб и сдвиг в normalization-слое.',
+  num_features: 'число каналов или признаков, которые нормализует слой.',
+  input_size: 'размер входного вектора или последовательности.',
+  hidden_layer_sizes: 'размеры скрытых слоёв MLP.',
+  activation: 'функция активации между линейными слоями.',
+  batch_size: 'число объектов в одном mini-batch.',
+  epochs: 'сколько полных проходов по train сделать.',
+  device: 'где выполнять вычисления: cpu, cuda или mps.',
+  training: 'режим слоя: train включает dropout/statistics update, eval отключает.',
+  freeze_backbone: 'замораживает feature extractor, чтобы обучать только голову модели.',
+  checkpoint: 'файл или состояние, куда сохраняют веса и optimizer state.',
+  loader: 'DataLoader или iterable, который отдаёт batch-и.',
+  drop_last: 'отбрасывать ли последний неполный batch.',
+  num_workers: 'число процессов загрузки данных в DataLoader.',
+  kernel_size: 'размер окна свёртки или pooling.',
+  stride: 'шаг перемещения окна по изображению или sequence.',
+  padding: 'сколько значений добавить по краям входа.',
+  ceil_mode: 'округлять ли размер pooling-выхода вверх.',
+  in_channels: 'число каналов на входе свёртки.',
+  out_channels: 'число каналов после свёртки.',
+  out_features: 'размер выходного вектора линейного слоя.',
+  in_features: 'размер входного вектора линейного слоя.',
+  num_classes: 'число классов, которые должна предсказывать модель.',
+  transforms: 'набор преобразований изображения или текста перед моделью.',
+  shape: 'ожидаемая форма tensor или массива.',
+  channels: 'число каналов изображения или feature map.',
+  return_type: 'формат результата: tensor, numpy, probabilities, labels и т.п.',
+  query: 'вектор запроса в attention: что текущий токен ищет в других токенах.',
+  key: 'вектор ключа в attention: по нему сравнивают токены.',
+  value: 'вектор значения в attention: информация, которую attention смешивает после softmax.',
+  mask: 'запрещает attention смотреть на padding или будущие токены.',
+  dropout: 'вероятность случайно отключить часть связей или attention-весов.',
+  num_embeddings: 'размер словаря: сколько разных id можно закодировать.',
+  embedding_dim: 'размер вектора embedding.',
+  padding_idx: 'id padding-токена, embedding которого не обучают.',
+  d_model: 'размер скрытого представления Transformer.',
+  num_heads: 'число attention-heads.',
+  ffn_dim: 'размер внутреннего слоя feed-forward блока.',
+  model_card: 'краткое описание назначения, данных, метрик и ограничений модели.',
+  data_card: 'описание происхождения, состава и рисков датасета.',
+  monitoring: 'что отслеживать после запуска: качество, drift, ошибки и задержки.',
+  fairness_checks: 'проверки качества по важным группам и сегментам.',
+}
+
+function cleanParamMeaning(name, c) {
+  if (briefParamDescriptions[name]) return briefParamDescriptions[name]
+
+  if (name.startsWith('max_')) return `верхняя граница для ${name.replace(/^max_/, '').replaceAll('_', ' ')}. Ограничивает сложность или размер шага.`
+  if (name.startsWith('min_')) return `нижняя граница для ${name.replace(/^min_/, '').replaceAll('_', ' ')}. Отсекает слишком редкие или нестабильные случаи.`
+  if (name.startsWith('n_') || name.startsWith('num_')) return `количество элементов в настройке ${name}. Чем больше значение, тем выше стоимость вычислений.`
+  if (name.startsWith('with_')) return `включает или отключает часть поведения ${conceptShortTitle(c)}.`
+  if (name.startsWith('return_')) return `задаёт, в каком формате ${conceptShortTitle(c)} вернёт результат.`
+  if (name.endsWith('_size')) return `размер части данных, окна или слоя для ${conceptShortTitle(c)}.`
+  if (name.endsWith('_weight')) return `вес, который усиливает или ослабляет вклад класса, объекта или ошибки.`
+
+  const raw = firstSentence(paramMeaning(name, c))
+    .replace(new RegExp(`^Параметр ${name} в .+? `), '')
+    .replace(new RegExp(`^Параметр ${name} `), '')
+  return raw || `краткая настройка ${conceptShortTitle(c)}, которая меняет вход, ограничение или формат результата.`
+}
+
+const briefDefinitionsBySlug = {
+  dataframe: 'таблица pandas: строки хранят объекты, столбцы хранят признаки или target.',
+  'read-csv': 'читает CSV-файл и возвращает DataFrame, с которым дальше работает ML-пайплайн.',
+  'train-test-split': 'делит данные на train и validation/test, чтобы качество проверялось честно.',
+  'random-state': 'фиксирует случайность эксперимента: split, sampling и модель можно повторить.',
+  'confusion-matrix': 'строит таблицу ошибок классификации: TP, FP, FN и TN.',
+  'precision-recall-f1': 'считает точность, полноту и F1, чтобы отдельно видеть ложные срабатывания и пропуски.',
+  'roc-pr-auc': 'оценивает качество ранжирования по score или вероятностям, а не по одному порогу.',
+  'regression-metrics': 'измеряет ошибку численного прогноза: абсолютную, квадратичную или корневую.',
+  'logits-softmax': 'превращает logits в вероятности классов; сумма вероятностей по классам равна 1.',
+  'cross-entropy-loss': 'loss для классификации: штрафует малую вероятность правильного класса.',
+  'bce-with-logits': 'loss для бинарной или multilabel классификации, который принимает logits без отдельного sigmoid.',
+  'regression-losses': 'loss для численного прогноза: сравнивает prediction и target как расстояние.',
+  sgd: 'optimizer, который двигает веса против градиента loss с фиксированным learning rate.',
+  momentum: 'вариант SGD, который накапливает направление прошлых градиентов.',
+  rmsprop: 'optimizer, который делит шаг на сглаженную величину недавних квадратов градиента.',
+  adam: 'адаптивный optimizer, который хранит средний градиент и средний квадрат градиента.',
+  adamw: 'Adam с отдельным weight_decay, поэтому регуляризация весов работает предсказуемее.',
+  'lr-scheduler': 'правило, которое меняет learning rate по эпохам или по validation-метрике.',
+  attention: 'механизм, который смешивает value-векторы по похожести query и key.',
+}
+
+function briefDefinition(topic, c) {
+  const profile = familyProfile(c)
+  const api = conceptShortTitle(c)
+  if (briefDefinitionsBySlug[c.slug]) return briefDefinitionsBySlug[c.slug]
+  if (c.kind === 'preprocess') return 'преобразует признаки перед моделью; все обучаемые статистики считают только на train.'
+  if (c.kind === 'model') return 'модель sklearn: её обучают через fit(), затем проверяют на validation/test.'
+  if (c.kind === 'validation') return 'правило проверки качества: данные делят так, чтобы метрика не видела обучение.'
+  if (c.kind === 'metrics') return 'метрика качества: превращает ошибки предсказаний в число для сравнения моделей.'
+  if (c.kind === 'torch-loss') return 'функция потерь: сравнивает выход нейросети с target и возвращает loss.'
+  if (c.kind === 'torch-layer') return 'слой нейросети: принимает tensor и возвращает новое представление.'
+  if (c.kind === 'optimizer') return 'optimizer: обновляет веса модели по градиенту loss.'
+  if (c.kind === 'transformer') return 'блок современных моделей: превращает id, токены или признаки в контекстные векторы.'
+  return `${api} — практический приём для задач ${c.domain}: ${profile.practice}.`
+}
+
+function briefWhy(c) {
+  if (['read-csv', 'dataframe'].includes(c.slug)) return 'Без понятной таблицы нельзя проверить признаки, target и пропуски до обучения модели.'
+  if (c.slug.includes('split') || c.kind === 'validation') return 'Разделение данных защищает от самообмана: модель нельзя оценивать на том, по чему её настраивали.'
+  if (c.kind === 'metrics') return 'Метрика переводит ошибки модели в число, по которому можно сравнивать варианты.'
+  if (c.kind.includes('torch') || c.kind === 'optimizer') return 'Этот блок влияет на обучение сети: скорость, стабильность и качество на validation.'
+  return `Нужен, чтобы шаг ${conceptShortTitle(c)} был воспроизводимым и проверялся отдельно.`
+}
+
+function briefWhere(c) {
+  if (c.kind === 'pandas') return 'Используют в notebooks, ETL и первом шаге табличного ML.'
+  if (c.kind === 'preprocess') return 'Используют перед моделью, обычно внутри Pipeline или ColumnTransformer.'
+  if (c.kind === 'metrics') return 'Используют на validation/test после предсказаний модели.'
+  if (c.kind.includes('torch') || c.kind === 'optimizer') return 'Используют в training loop нейросети.'
+  return `Используют в задачах ${c.domain}, где важны воспроизводимость и контроль качества.`
+}
+
+function formulaMeaningBrief(c) {
+  return `Запись показывает идею ${conceptShortTitle(c)}: что берём на вход, что настраиваем и какой результат ожидаем.`
+}
+
+function formulaNotationBrief(c) {
+  const notes = []
+  const formula = c.formula
+  if (c.slug === 'read-csv') {
+    return [
+      'D — таблица данных после чтения файла.',
+      'x_i — признаки i-го объекта; y_i — его target.',
+      'n — число строк в датасете.',
+    ]
+  }
+  if (c.slug === 'dataframe') {
+    return [
+      'rows — объекты наблюдения: клиенты, заявки, изображения или тексты.',
+      'columns — признаки и target, по которым строится ML-задача.',
+      'D — готовая таблица, которую дальше можно делить и обучать.',
+    ]
+  }
+  if (c.slug === 'logits-softmax') {
+    return [
+      'z_i — logit i-го класса до преобразования в вероятность.',
+      'p_i — вероятность i-го класса после softmax.',
+      'Σ exp(z_j) — сумма по всем классам, из-за которой вероятности дают 1.',
+    ]
+  }
+  if (c.slug === 'cross-entropy-loss') {
+    return [
+      'y_i — правильная метка или one-hot target.',
+      'p_i — вероятность класса, которую дала модель.',
+      'CE растёт, когда модель даёт малую вероятность правильному классу.',
+    ]
+  }
+  if (c.slug === 'bce-with-logits') {
+    return [
+      'y — правильная бинарная метка: 0 или 1.',
+      'z — logit модели до sigmoid.',
+      'σ(z) — вероятность положительного класса после sigmoid.',
+    ]
+  }
+  if (c.slug === 'attention') {
+    return [
+      'Q — query: что текущий токен ищет.',
+      'K — key: с чем сравнивают query.',
+      'V — value: информация, которую attention смешивает по найденным весам.',
+    ]
+  }
+  if (/TP|FP|FN/.test(formula)) {
+    notes.push('TP — верно найденные положительные объекты.')
+    notes.push('FP — ложные срабатывания; FN — пропущенные положительные объекты.')
+    notes.push('P и R — precision и recall; F1 объединяет их в одну оценку.')
+  } else if (/D_train|D_val|D_test|train/i.test(formula)) {
+    notes.push('D_train — данные, на которых разрешено обучать и подбирать параметры.')
+    notes.push('D_val или D_test — отложенная часть для проверки качества.')
+    notes.push('Пересечение частей должно быть пустым, иначе появляется leakage.')
+  } else if (/w\^T|logit|softmax|loss|CrossEntropy|BCE/i.test(formula)) {
+    notes.push('w и b — обучаемые веса и смещение модели.')
+    notes.push('logits — сырые выходы модели до вероятностей.')
+    notes.push('loss — число, которое optimizer минимизирует на train.')
+  } else if (/QK\^T|Attention|softmax\(.+sqrt/i.test(formula)) {
+    notes.push('Q — query: что текущий токен ищет.')
+    notes.push('K — key: с чем сравнивают query.')
+    notes.push('V — value: информация, которую attention смешивает по найденным весам.')
+  } else if (/w_\{?t|v_t|m_t|s_t|AdamStep|schedule|η|∇/i.test(formula)) {
+    notes.push('w_t — веса модели на текущем шаге обучения.')
+    notes.push('η — learning rate, размер шага optimizer.')
+    notes.push('∇L или g_t — градиент loss по весам.')
+  } else if (/mean|std|median|IQR|sigma|mu|scaled|z/i.test(formula)) {
+    notes.push('x — исходное значение признака.')
+    notes.push('Статистики вроде mean, std, median или IQR считаются только на train.')
+    notes.push('x_scaled или z — преобразованное значение после scaling.')
+  } else {
+    notes.push(`${conceptShortTitle(c)} — обозначение текущего шага или вызова.`)
+    notes.push(`${c.params.slice(0, 3).join(', ')} — основные параметры, которые меняют поведение.`)
+    notes.push('validation/test — данные для проверки, не для подгонки.')
+  }
+  return notes
+}
+
+function minimalCode(c) {
+  const snippets = {
+    dataframe: `
+import pandas as pd
+
+df = pd.DataFrame({
+    "feature": [0.1, 0.2, 0.3],
+    "target": [0, 1, 1],
+})
+print(df.shape)
+`,
+    'read-csv': `
+import pandas as pd
+
+df = pd.read_csv("train.csv", usecols=["feature", "target"])
+print(df.head())
+`,
+    'train-test-split': `
+from sklearn.model_selection import train_test_split
+
+X_train, X_val, y_train, y_val = train_test_split(
+    X, y, test_size=0.25, random_state=42, stratify=y
+)
+`,
+    'random-state': `
+from sklearn.model_selection import train_test_split
+
+split_1 = train_test_split(X, y, random_state=42)
+split_2 = train_test_split(X, y, random_state=42)
+`,
+  }
+  if (snippets[c.slug]) return C(snippets[c.slug])
+  const specific = specificCode(c)
+  if (specific) return C(specific)
+  return codeLines(c)
+}
+
+function minimalOutput(c) {
+  if (c.slug === 'dataframe') return C('(3, 2)')
+  return exampleOutput(c)
+}
+
+function briefMistakes(c) {
+  return [
+    {
+      title: 'Нарушить train/validation границу',
+      explanation: `Для ${conceptShortTitle(c)} сначала фиксируют split, потом fit делают только на train.`,
+    },
+    {
+      title: 'Не проверить вход',
+      explanation: `Перед применением ${conceptShortTitle(c)} проверьте shape, типы колонок и смысл target.`,
+    },
+  ]
+}
+
+function buildBriefConcept(topic, c) {
+  const definition = briefDefinition(topic, c)
+  return {
+    id: `${topic.id}-${c.slug}`,
+    title: c.title,
+    shortTitle: conceptShortTitle(c),
+    signature: conceptSignature(c),
+    definition,
+    parametersIntro: `Основные параметры ${conceptShortTitle(c)}:`,
+    theory: definition,
+    what: definition,
+    why: briefWhy(c),
+    where: briefWhere(c),
+    formula: {
+      label: conceptShortTitle(c),
+      expression: c.formula,
+      meaning: formulaMeaningBrief(c),
+      notation: formulaNotationBrief(c),
+    },
+    howToUse: `Сначала задайте параметры ${c.params.slice(0, 3).join(', ')}, затем примените вызов на правильной части данных и проверьте результат.`,
+    params: c.params.map((name) => ({
+      name,
+      meaning: cleanParamMeaning(name, c),
+    })),
+    codeExample: {
+      language: 'python',
+      code: minimalCode(c),
+      output: minimalOutput(c),
+      explanation: [`Минимальный пример применения ${conceptShortTitle(c)} после разбора сигнатуры и параметров.`],
+    },
+    minimalExample: {
+      language: 'python',
+      code: minimalCode(c),
+      output: minimalOutput(c),
+      explanation: [`Минимальный пример применения ${conceptShortTitle(c)}.`],
+    },
+    commonMistakes: briefMistakes(c),
+  }
+}
+
+function rawConceptsForBriefTopic(topic) {
+  if (topic.id !== 'data-ingestion-splits') return topic.concepts
+  const dataframe = concept('dataframe', 'Создание таблицы через pd.DataFrame', 'D = table(rows, columns)', ['data', 'index', 'columns', 'dtype'], 'pandas', 'табличных данных')
+  const result = []
+  for (const item of topic.concepts) {
+    result.push(item)
+    if (item.slug === 'read-csv') result.push(dataframe)
+  }
+  return result
+}
+
+function practiceInput(topic) {
+  const slug = topic.id.replace(/-/g, '_')
+  return {
+    id: `task-${topic.id}`,
+    title: `Автопрактика: ${topic.title}`,
+    kind: 'input-output',
+    language: 'python',
+    statement: 'Через input() считайте три числа: TP FP FN. Выведите F1 с точностью до 6 знаков.',
+    tips: [
+      'Сначала вычислите precision и recall с защитой от деления на ноль.',
+      'Ввод: одна строка с тремя числами, например 8 2 2.',
+      `Имя темы для самопроверки: ${slug}.`,
+    ],
+    starterCode: [
+      'tp, fp, fn = map(float, input().split())',
+      '',
+      '# вычислите precision, recall и f1',
+      '',
+      'print(f"{f1:.6f}")',
+      '',
+    ].join('\n'),
+    sampleTests: [
+      { id: `${topic.id}-s1`, description: 'Сбалансированный пример', input: '8 2 2', expectedOutput: '0.800000' },
+      { id: `${topic.id}-s2`, description: 'Идеальная классификация', input: '5 0 0', expectedOutput: '1.000000' },
+    ],
+    hiddenTests: [
+      { id: `${topic.id}-h1`, description: 'Нет найденных положительных', input: '0 0 4', expectedOutput: '0.000000' },
+      { id: `${topic.id}-h2`, description: 'Неидеальный recall', input: '9 3 6', expectedOutput: '0.666667' },
+      { id: `${topic.id}-h3`, description: 'Малые значения', input: '1 1 0', expectedOutput: '0.666667' },
+    ],
+    structuralChecks: ['input(', 'print(', '/'],
+    solution: [
+      'tp, fp, fn = map(float, input().split())',
+      'precision = tp / (tp + fp) if (tp + fp) else 0.0',
+      'recall = tp / (tp + fn) if (tp + fn) else 0.0',
+      'f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0',
+      'print(f"{f1:.6f}")',
+      '',
+    ].join('\n'),
+  }
+}
+
+function topicToFlowTopicBrief(topic, index) {
+  const concepts = rawConceptsForBriefTopic(topic).map((item) => buildBriefConcept(topic, item))
+  const theorySteps = concepts.map((item, conceptIndex) => ({
+    id: conceptIndex === 0 ? `${topic.id}-theory` : `${item.id}-theory`,
+    type: 'theory',
+    title: item.shortTitle,
+    summary: item.definition,
+    conceptCards: [item],
+  }))
+
+  return {
+    id: topic.id,
+    title: topic.title,
+    order: index + 1,
+    summary: topic.summary,
+    blockId: topic.blockId,
+    blockTitle: topic.blockTitle,
+    blockIcon: topic.blockIcon,
+    subblockId: topic.subblockId,
+    subblockTitle: topic.subblockTitle,
+    level: topic.level,
+    simpleExplanation: `${stripTopicNumber(topic.title)}: короткие определения, параметры, формулы, код и практика.`,
+    terminology: concepts.map((item) => item.shortTitle ?? item.title),
+    formulas: concepts.map((item) => item.formula.expression),
+    themeCheatsheet: concepts.flatMap((item) => [
+      `${item.shortTitle}: ${item.definition}`,
+      `Параметры: ${item.params.map((param) => param.name).join(', ')}`,
+    ]),
+    sources: sourceLinks,
+    steps: [
+      ...theorySteps,
+      {
+        id: `${topic.id}-formulas`,
+        type: 'formula',
+        title: 'Формулы и обозначения',
+        summary: 'Короткая математическая запись и расшифровка переменных.',
+        formulaCards: concepts.map((item) => item.formula),
+      },
+      {
+        id: `${topic.id}-code`,
+        type: 'code',
+        title: 'Минимальные примеры кода',
+        summary: 'Код идёт после сигнатуры и параметров.',
+        workedExample: concepts.map((item) => ({
+          title: item.shortTitle ?? item.title,
+          body: item.howToUse,
+        })),
+        codeExample: {
+          language: 'python',
+          code: concepts.map((item) => `# ${item.shortTitle ?? item.title}\n${toRuntimeString(item.codeExample.code)}`).join('\n\n'),
+          output: concepts.map((item) => `# ${item.shortTitle ?? item.title}\n${toRuntimeString(item.codeExample.output)}`).join('\n\n'),
+          explanation: concepts.map((item) => `${item.shortTitle ?? item.title}: ${item.codeExample.explanation[0]}`),
+        },
+      },
+      {
+        id: `${topic.id}-quiz`,
+        type: 'quiz',
+        title: 'Тест на понимание',
+        summary: '5 вопросов проверяют смысл, параметры и риски.',
+        quiz: quiz(topic, concepts),
+      },
+      {
+        id: `${topic.id}-practice`,
+        type: 'practice',
+        title: 'Практика с input()',
+        summary: 'Считайте данные через input(), выведите ответ через print().',
+        practiceTasks: [practiceInput(topic)],
+      },
+      {
+        id: `${topic.id}-recap`,
+        type: 'recap',
+        title: 'Шпаргалка',
+        summary: 'Короткое повторение функций, параметров и типичных ошибок.',
+        formulaCards: concepts.map((item) => item.formula),
+        bullets: concepts.flatMap((item) => [
+          `${item.shortTitle}: ${item.definition}`,
+          `Параметры: ${item.params.map((param) => param.name).join(', ')}`,
+          `Ошибка: ${item.commonMistakes[0].title}.`,
+        ]),
+        sources: sourceLinks,
+      },
+    ],
+  }
+}
+
 function emit(value, indent = 0, key = '') {
   const pad = ' '.repeat(indent)
   const next = ' '.repeat(indent + 2)
@@ -1551,7 +2247,7 @@ function emit(value, indent = 0, key = '') {
   throw new Error(`Unsupported value for ${key}`)
 }
 
-const flowTopics = topics.map(topicToFlowTopic)
+const flowTopics = topics.map(topicToFlowTopicBrief)
 const out = [
   "import type { FlowTopic } from './aiCurriculumTypes'",
   '',

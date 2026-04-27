@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import katex from 'katex'
+import 'katex/dist/katex.min.css'
+import { toLatex } from '../lib/latex'
 
 interface FormulaProps {
   math: string
@@ -12,7 +14,7 @@ export default function Formula({ math, block = false, className = '' }: Formula
   useEffect(() => {
     if (ref.current) {
       try {
-        katex.render(math, ref.current, { displayMode: block, throwOnError: false, output: 'html' })
+        katex.render(toLatex(math), ref.current, { displayMode: block, throwOnError: false, output: 'html' })
       } catch {
         if (ref.current) ref.current.textContent = math
       }

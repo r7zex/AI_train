@@ -215,12 +215,12 @@ export async function judgeTask(task: PracticeTask, code: string, includeHidden:
   const structuralFeedback = getStructuralFeedback(code, task)
 
   try {
-    const sampleResults = task.kind === 'stdin-stdout'
+    const sampleResults = task.kind === 'stdin-stdout' || task.kind === 'input-output'
       ? await runStdInCases(task, code, task.sampleTests)
       : task.sampleTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
 
     const hiddenResults = includeHidden
-      ? task.kind === 'stdin-stdout'
+      ? task.kind === 'stdin-stdout' || task.kind === 'input-output'
         ? await runStdInCases(task, code, task.hiddenTests)
         : task.hiddenTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
       : []
