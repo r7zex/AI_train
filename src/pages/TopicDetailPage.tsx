@@ -21,21 +21,39 @@ import {
 import { useProgress } from '../hooks/useProgress'
 import { judgeTask, type JudgeRunResult } from '../lib/practiceEngine'
 
-const inlinePattern = /(pd\.read_csv|pd\.DataFrame|train_test_split|fit_transform|predict_proba|OneHotEncoder|OrdinalEncoder|SimpleImputer|StandardScaler|MinMaxScaler|RobustScaler|ColumnTransformer|Pipeline|LogisticRegression|RandomForestClassifier|XGBClassifier|CatBoostClassifier|CrossEntropyLoss|BCEWithLogitsLoss|DataLoader|Conv2d|Transformer|random_state|learning_rate|weight_decay|n_estimators|max_depth|early_stopping_rounds|sparse_output|class_weight|batch_size|test_size|stratify|shuffle|n_splits|kernel_size|padding|num_heads|d_model|validation|precision|recall|accuracy|logits|loss|leakage|dropout|fit|transform|predict|train|validate|AdamW|Adam|SGD|RMSprop|MAE|MSE|RMSE|F1|TP|FP|FN|[A-Za-z_][A-Za-z0-9_]*(?=\())/
+const inlinePattern = /(pd\.read_csv|pd\.DataFrame|df\.head|df\.info|df\.describe|df\.columns|df\.isna|value_counts|groupby|np\.array|model\.fit|model\.predict|train_test_split|fit_transform|predict_proba|OneHotEncoder|OrdinalEncoder|SimpleImputer|StandardScaler|MinMaxScaler|RobustScaler|ColumnTransformer|Pipeline|LogisticRegression|LinearRegression|RandomForestClassifier|XGBClassifier|CatBoostClassifier|CrossEntropyLoss|BCEWithLogitsLoss|DataLoader|Conv2d|Transformer|random_state|learning_rate|weight_decay|n_estimators|max_depth|early_stopping_rounds|sparse_output|class_weight|batch_size|test_size|stratify|shuffle|n_splits|kernel_size|padding|num_heads|d_model|validation|precision|recall|accuracy|logits|loss|leakage|dropout|shape|ndim|dtype|target|features|loc|iloc|fit|transform|predict|train|validate|AdamW|Adam|SGD|RMSprop|MAE|MSE|RMSE|F1|TP|FP|FN|[A-Za-z_][A-Za-z0-9_]*(?=\())/
+const richTokenPattern = /(`[^`]+`|\*\*[^*]+\*\*)/g
 
 function RichText({ text, className = '' }: { text: string; className?: string }) {
+  const renderAutoCode = (value: string, keyPrefix: string) => (
+    value.split(inlinePattern).map((part, index) => {
+      if (!part) return null
+      if (inlinePattern.test(part)) {
+        return (
+          <code key={`${keyPrefix}-${part}-${index}`} className="rounded border border-[#e1e5ea] bg-[#f3f4f6] px-1 py-0.5 font-mono text-[0.92em] text-[#111827]">
+            {part}
+          </code>
+        )
+      }
+      return <span key={`${keyPrefix}-${part}-${index}`}>{part}</span>
+    })
+  )
+
   return (
     <span className={className}>
-      {text.split(inlinePattern).map((part, index) => {
+      {text.split(richTokenPattern).map((part, index) => {
         if (!part) return null
-        if (inlinePattern.test(part)) {
+        if (part.startsWith('`') && part.endsWith('`')) {
           return (
             <code key={`${part}-${index}`} className="rounded border border-[#e1e5ea] bg-[#f3f4f6] px-1 py-0.5 font-mono text-[0.92em] text-[#111827]">
-              {part}
+              {part.slice(1, -1)}
             </code>
           )
         }
-        return <span key={`${part}-${index}`}>{part}</span>
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={`${part}-${index}`}>{renderAutoCode(part.slice(2, -2), `strong-${index}`)}</strong>
+        }
+        return renderAutoCode(part, `text-${index}`)
       })}
     </span>
   )
@@ -347,6 +365,41 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
                 ))}
               </ul>
             )}
+            {section.table && (
+              <div className="mt-4 overflow-x-auto border border-[#e5e7eb]">
+                <table className="min-w-full border-collapse text-left text-[14px] leading-6 text-[#111827]">
+                  <thead className="bg-[#f3f4f6]">
+                    <tr>
+                      {section.table.headers.map((header) => (
+                        <th key={header} className="border-b border-[#e5e7eb] px-3 py-2 font-bold">
+                          <RichText text={header} />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {section.table.rows.map((row, rowIndex) => (
+                      <tr key={`${section.id}-row-${rowIndex}`} className="border-t border-[#e5e7eb]">
+                        {row.map((cell, cellIndex) => (
+                          <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-3 py-2 align-top">
+                            <RichText text={cell} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {section.codeExamples?.map((example, index) => (
+              <CodeBlock
+                key={`${section.id}-code-${index}`}
+                code={example.code}
+                language={example.language}
+                output={example.output}
+                explanation={example.explanation[0]}
+              />
+            ))}
           </section>
         ))}
 

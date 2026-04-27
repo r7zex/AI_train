@@ -28,6 +28,7 @@ declare global {
 
 interface PyodideApi {
   runPythonAsync: (code: string) => Promise<unknown>
+  loadPackage?: (packages: string | string[]) => Promise<void>
   globals: {
     set: (name: string, value: unknown) => void
     get: (name: string) => unknown
@@ -129,8 +130,23 @@ async function loadPyodideApi() {
   return pyodidePromise
 }
 
+async function ensurePythonPackages(pyodide: PyodideApi, code: string) {
+  if (!pyodide.loadPackage) return
+
+  const packages = new Set<string>()
+  if (/\b(import|from)\s+numpy\b/.test(code)) packages.add('numpy')
+  if (/\b(import|from)\s+pandas\b/.test(code)) packages.add('pandas')
+  if (/\b(import|from)\s+matplotlib\b/.test(code)) packages.add('matplotlib')
+  if (/\b(import|from)\s+sklearn\b/.test(code)) packages.add('scikit-learn')
+
+  if (packages.size > 0) {
+    await pyodide.loadPackage([...packages])
+  }
+}
+
 async function runPythonStdInCase(code: string, test: PracticeTestCase): Promise<JudgeCaseResult> {
   const pyodide = await loadPyodideApi()
+  await ensurePythonPackages(pyodide, code)
   pyodide.globals.set('__judge_input__', test.input ?? '')
   pyodide.globals.set('__user_code__', code)
 
