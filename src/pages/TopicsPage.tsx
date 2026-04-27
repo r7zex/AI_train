@@ -8,10 +8,7 @@ export default function TopicsPage() {
     (sum, block) => sum + block.subblocks.reduce((inner, subblock) => inner + subblock.themes.reduce((acc, topic) => acc + topic.steps.length, 0), 0),
     0,
   )
-  const totalConcepts = flowTopics.reduce((sum, topic) => {
-    const theory = topic.steps.find((step) => step.type === 'theory')
-    return sum + (theory?.conceptCards?.length ?? 0)
-  }, 0)
+  const totalTheorySteps = flowTopics.reduce((sum, topic) => sum + topic.steps.filter((step) => step.type === 'theory').length, 0)
   const totalPractice = flowTopics.reduce((sum, topic) => sum + topic.steps.filter((step) => step.practiceTasks?.length).length, 0)
 
   const sideNav = [
@@ -29,7 +26,7 @@ export default function TopicsPage() {
           <div className="border-b border-[#e2e6eb] bg-[#1f2329] px-5 py-5 text-white">
             <div className="inline-flex h-9 w-9 items-center justify-center bg-[#45b96a] text-[12px] font-bold text-[#0d2313]">AI</div>
             <h1 className="mt-4 text-[20px] font-semibold tracking-[-0.02em]">AI Train</h1>
-            <div className="mt-2 text-[13px] leading-6 text-[#d3dde7]">Полный русскоязычный курс по AI/ML: теория, формулы, код, тесты и автопрактика.</div>
+            <div className="mt-2 text-[13px] leading-6 text-[#d3dde7]">Stepik-like курс по первым двум блокам: введение в ИИ/ML и NumPy для машинного обучения.</div>
           </div>
 
           <div className="border-b border-[#e2e6eb] px-5 py-5">
@@ -54,8 +51,8 @@ export default function TopicsPage() {
               <div className="text-[11px] text-[#687481]">тем</div>
             </div>
             <div className="border-r border-[#edf1f5] px-2 py-3">
-              <div className="text-[18px] font-semibold text-[#1f252c]">{totalConcepts}</div>
-              <div className="text-[11px] text-[#687481]">функций</div>
+              <div className="text-[18px] font-semibold text-[#1f252c]">{totalTheorySteps}</div>
+              <div className="text-[11px] text-[#687481]">теорий</div>
             </div>
             <div className="px-2 py-3">
               <div className="text-[18px] font-semibold text-[#1f252c]">{totalPractice}</div>
@@ -79,9 +76,9 @@ export default function TopicsPage() {
         <section className="border border-[#d9dee4] bg-white">
           <header className="border-b border-[#e2e6eb] px-6 py-5">
             <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#2f7a46]">Учебная траектория</div>
-            <h2 className="mt-2 text-[26px] font-semibold tracking-[-0.02em] text-[#1e2329]">От Python и данных до CNN, Transformer overview и production AI</h2>
+            <h2 className="mt-2 text-[26px] font-semibold tracking-[-0.02em] text-[#1e2329]">От базовых понятий ИИ/ML к NumPy для машинного обучения</h2>
             <p className="mt-2 max-w-4xl text-[14px] leading-7 text-[#566273]">
-              Каждый урок построен по одному контракту: что это, зачем нужно, где применяют, формула, применение, параметры, код, частые ошибки, тест из 5 вопросов и практика с hidden tests.
+              Концептуальные темы объясняются без искусственного кода, а технические темы NumPy разбиты на функции, примеры, тесты и практику с hidden tests.
             </p>
           </header>
 
@@ -89,10 +86,7 @@ export default function TopicsPage() {
             {flowCourseBlocks.map((block) => {
               const blockProgress = Math.round(getBlockProgress(block.id) * 100)
               const blockTopics = block.subblocks.flatMap((subblock) => subblock.themes)
-              const blockConcepts = blockTopics.reduce((sum, topic) => {
-                const theory = topic.steps.find((step) => step.type === 'theory')
-                return sum + (theory?.conceptCards?.length ?? 0)
-              }, 0)
+              const blockStepCount = blockTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
 
               return (
                 <article key={block.id} className="px-6 py-5">
@@ -109,7 +103,7 @@ export default function TopicsPage() {
                     <div className="min-w-[180px] border border-[#e2e8f0] bg-[#fbfcfe] px-4 py-3">
                       <div className="flex items-center justify-between text-[12px] text-[#637083]">
                         <span>{blockTopics.length} тем</span>
-                        <span>{blockConcepts} функций</span>
+                        <span>{blockStepCount} шагов</span>
                       </div>
                       <div className="mt-2 text-[16px] font-semibold text-[#1f2c3a]">{blockProgress}%</div>
                       <div className="mt-2 h-1.5 bg-[#e8edf3]">
@@ -129,9 +123,8 @@ export default function TopicsPage() {
                           {subblock.themes.map((topic) => {
                             const href = getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)
                             const topicProgress = Math.round(getTopicProgress(topic.id) * 100)
-                            const theory = topic.steps.find((step) => step.type === 'theory')
-                            const conceptCount = theory?.conceptCards?.length ?? 0
-                            const questionCount = topic.steps.find((step) => step.type === 'quiz')?.quiz?.questions.length ?? 0
+                            const theoryCount = topic.steps.filter((step) => step.type === 'theory').length
+                            const questionCount = topic.steps.reduce((sum, step) => sum + (step.quiz?.questions.length ?? 0), 0)
 
                             return (
                               <Link key={topic.id} to={href} className="grid gap-3 px-4 py-4 transition hover:bg-[#f8fafc] md:grid-cols-[minmax(0,1fr),170px]">
@@ -139,8 +132,9 @@ export default function TopicsPage() {
                                   <div className="text-[15px] font-semibold text-[#25303d]">{topic.title}</div>
                                   <p className="mt-1 text-[13px] leading-6 text-[#667381]">{topic.summary}</p>
                                   <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-[#697687]">
-                                    <span>{conceptCount} функций/методов</span>
+                                    <span>{theoryCount} теорий</span>
                                     <span>{questionCount} вопросов</span>
+                                    <span>{topic.steps.length} шагов</span>
                                     <span>practice + hidden tests</span>
                                   </div>
                                 </div>
