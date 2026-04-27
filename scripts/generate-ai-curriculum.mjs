@@ -411,36 +411,183 @@ function padText(parts, minWords, title, purpose) {
   return result
 }
 
+function familyProfile(c) {
+  if (['simple-imputer', 'missing-indicator', 'iqr-clipping'].includes(c.slug)) {
+    return {
+      object: 'грязную таблицу с пропусками, выбросами и неоднородными колонками',
+      mechanism: 'обучаемую или вычисляемую статистику очистки, которая сохраняется после fit и затем одинаково применяется к validation, test и будущим данным',
+      risk: 'утечка validation-статистики, потеря информации о самом факте пропуска и агрессивное удаление редких, но важных наблюдений',
+      practice: 'сначала разделить данные, затем fit очистки только на train, после этого transform для остальных частей и контроль распределений до и после обработки',
+    }
+  }
+  if (['one-hot-encoder', 'ordinal-encoder', 'target-encoding'].includes(c.slug)) {
+    return {
+      object: 'категориальные значения, которые нельзя напрямую подать в большинство численных алгоритмов',
+      mechanism: 'кодировку категории в числовое представление: бинарный вектор, ранговое число или статистику целевой переменной внутри train-fold',
+      risk: 'ложный порядок категорий, взрыв размерности, неизвестные категории на inference и leakage при target encoding без cross-fitting',
+      practice: 'обрабатывать категории через ColumnTransformer или Pipeline, явно настроить неизвестные значения и проверять размерность матрицы после transform',
+    }
+  }
+  if (['standard-scaler', 'minmax-scaler', 'robust-scaler'].includes(c.slug)) {
+    return {
+      object: 'числовые признаки с разными единицами измерения, диапазонами и чувствительностью к выбросам',
+      mechanism: 'преобразование масштаба через среднее и стандартное отклонение, минимум и максимум или медиану и межквартильный размах',
+      risk: 'fit scaler на всём датасете, неправильная работа со sparse-матрицами и слепое масштабирование признаков, для которых абсолютный масштаб несёт смысл',
+      practice: 'выбирать scaler под модель и распределение, считать статистики только на train и сохранять объект scaler внутри общего Pipeline',
+    }
+  }
+  if (['pipeline', 'column-transformer', 'data-leakage'].includes(c.slug)) {
+    return {
+      object: 'полный путь данных от сырых колонок до предсказания модели',
+      mechanism: 'единый fit/transform/predict контракт, где разные колонки получают разные преобразования, а порядок операций фиксируется кодом',
+      risk: 'разрозненный notebook-код, ручной preprocessing validation/test, несовпадение колонок в production и незаметная data leakage',
+      practice: 'собирать preprocessing и estimator в Pipeline, валидировать весь объект через cross-validation и сохранять именно pipeline, а не только модель',
+    }
+  }
+  if (['confusion-matrix', 'precision-recall-f1', 'roc-pr-auc', 'regression-metrics'].includes(c.slug)) {
+    return {
+      object: 'числовое описание качества модели относительно истинных ответов и стоимости ошибок',
+      mechanism: 'сводку ошибок, пороговых решений, ранжирования или величины остатка между y и предсказанием',
+      risk: 'выбор красивой, но неподходящей метрики: accuracy при дисбалансе, ROC-AUC при редких позитивных событиях или RMSE при сильных выбросах',
+      practice: 'выбрать primary metric до эксперимента, считать дополнительные диагностические метрики и смотреть ошибки по сегментам данных',
+    }
+  }
+  if (['kfold', 'stratified-kfold', 'time-series-split', 'bootstrap-ci'].includes(c.slug)) {
+    return {
+      object: 'процедуру оценки, которая показывает устойчивость качества, а не только один удачный split',
+      mechanism: 'несколько train/validation разбиений или повторные выборки с возвращением, чтобы увидеть среднее качество и разброс',
+      risk: 'перемешивание временных данных, потеря редкого класса в fold, подбор гиперпараметров по test и игнорирование доверительного интервала',
+      practice: 'подобрать схему split под природу данных, логировать scores по fold и принимать решение по среднему, разбросу и худшим сегментам',
+    }
+  }
+  if (['class-weight', 'oversampling', 'undersampling', 'augmentation'].includes(c.slug)) {
+    return {
+      object: 'несбалансированную или слишком маленькую обучающую выборку',
+      mechanism: 'изменение веса ошибок, частоты объектов или создание допустимых вариантов исходного примера без изменения целевого класса',
+      risk: 'дублирование validation, переобучение на копии меньшинства, потеря полезного большинства и augmentation, который меняет смысл метки',
+      practice: 'применять sampling только внутри train-fold, сравнивать с class_weight и проверять не только F1, но и precision/recall отдельно',
+    }
+  }
+  if (['dummy-classifier', 'linear-regression', 'logistic-regression', 'knn', 'naive-bayes', 'svm-margin', 'decision-tree', 'random-forest', 'gradient-boosting'].includes(c.slug)) {
+    return {
+      object: 'семейство классических моделей, которое связывает признаки с целевой переменной через понятное правило предсказания',
+      mechanism: 'линейную функцию, вероятностную модель, локальное голосование, геометрический margin, дерево решений или ансамбль деревьев',
+      risk: 'сложная модель без baseline, переобучение глубины, неверное масштабирование признаков и отсутствие проверки на validation',
+      practice: 'начать с простого baseline, затем усложнять модель и сравнивать качество, стабильность и интерпретируемость на одинаковом split',
+    }
+  }
+  if (['xgb-classifier', 'catboost-classifier', 'early-stopping-boosting'].includes(c.slug)) {
+    return {
+      object: 'градиентный бустинг над деревьями, который последовательно исправляет ошибки предыдущих деревьев',
+      mechanism: 'добавление слабых деревьев к ансамблю с learning rate, регуляризацией и контролем качества на eval_set',
+      risk: 'слишком много деревьев без early stopping, leakage через encoding категорий, неправильный eval_set и бесконтрольный подбор depth/learning_rate',
+      practice: 'выделить validation, передать eval_set, включить early stopping и сохранять best_iteration или use_best_model для финального inference',
+    }
+  }
+  if (['logits-softmax', 'cross-entropy-loss', 'bce-with-logits', 'regression-losses'].includes(c.slug)) {
+    return {
+      object: 'число ошибки, по которому нейросеть получает градиент для изменения весов',
+      mechanism: 'сравнение logits или численного прогноза с правильной меткой через вероятностную или регрессионную функцию потерь',
+      risk: 'двойной softmax перед CrossEntropyLoss, неправильный dtype target, несоответствие формы logits и меток, а также неверный reduction',
+      practice: 'проверять shape logits, dtype target, диапазон меток и использовать loss, который математически соответствует задаче и выходу модели',
+    }
+  }
+  if (['linear-layer', 'relu-gelu', 'dataloader-batches', 'mlp-architecture'].includes(c.slug)) {
+    return {
+      object: 'полносвязную нейросеть и поток mini-batch данных, из которых строится базовый deep learning baseline',
+      mechanism: 'линейные слои, нелинейные активации и разбиение датасета на батчи для стабильного градиентного обучения',
+      risk: 'неверные размеры входа, слишком большой batch, отсутствие shuffle на train, отсутствие eval режима и слабая регуляризация',
+      practice: 'сначала проверить один forward pass, затем shapes батчей, затем короткое обучение на малом наборе и только после этого полный эксперимент',
+    }
+  }
+  if (['train-sklearn', 'train-epoch-torch', 'validate-epoch-torch', 'train-and-validate', 'train-boosting-template'].includes(c.slug)) {
+    return {
+      object: 'функцию эксперимента, которая отделяет обновление параметров от измерения качества',
+      mechanism: 'явный контракт train, validate и train_and_validate с history, метриками, режимами модели и early stopping',
+      risk: 'обновление весов во время validation, отсутствие zero_grad, смешение train/test и потеря best checkpoint',
+      practice: 'писать отдельные функции для обучения и проверки, возвращать словарь метрик и хранить history по эпохам или итерациям',
+    }
+  }
+  if (['sgd', 'momentum', 'rmsprop', 'adam', 'adamw', 'lr-scheduler'].includes(c.slug)) {
+    return {
+      object: 'правило изменения весов нейросети на основании градиента loss-функции',
+      mechanism: 'шаг в сторону уменьшения loss с учётом learning rate, накопленного импульса, адаптивных вторых моментов или расписания шага',
+      risk: 'слишком большой learning rate, путаница Adam и AdamW, отсутствие scheduler, забытый zero_grad и weight_decay не там, где он нужен',
+      practice: 'начать с AdamW или SGD baseline, смотреть train/validation loss, подбирать learning rate и фиксировать optimizer state вместе с моделью',
+    }
+  }
+  if (['l1-regularization', 'l2-weight-decay', 'dropout', 'batch-norm', 'early-stopping'].includes(c.slug)) {
+    return {
+      object: 'механизм ограничения переобучения, который заставляет модель обобщать, а не запоминать train',
+      mechanism: 'штраф на веса, случайное отключение нейронов, нормализацию активаций или остановку обучения по validation-сигналу',
+      risk: 'слишком сильный штраф, dropout в eval, BatchNorm на маленьких батчах и early stopping по шумной метрике',
+      practice: 'добавлять регуляризацию постепенно, сравнивать кривые train/validation и проверять, что режимы model.train/model.eval выставлены правильно',
+    }
+  }
+  if (['convolution', 'pooling', 'cnn-classifier', 'transfer-learning'].includes(c.slug)) {
+    return {
+      object: 'модель для изображений, которая учитывает локальную структуру пикселей и повторяемость визуальных паттернов',
+      mechanism: 'свёрточные ядра, pooling, feature extractor и классификационную голову, которая переводит признаки изображения в logits',
+      risk: 'неверный порядок каналов, слишком сильная augmentation, неправильная нормализация картинок и fine-tuning с большим learning rate',
+      practice: 'проверить размер тензора, нормализацию, несколько картинок после augmentation и только затем обучать CNN или transfer learning модель',
+    }
+  }
+  if (['embeddings', 'attention', 'transformer-block'].includes(c.slug)) {
+    return {
+      object: 'векторные представления токенов и механизм, который позволяет элементам последовательности учитывать контекст друг друга',
+      mechanism: 'таблицу embedding-векторов, query-key-value attention и residual blocks с нормализацией и feed-forward сетью',
+      risk: 'неверная маска padding, слишком маленький context window, путаница batch/sequence axes и обучение большой модели без baseline',
+      practice: 'начать с маленьких embedding и attention shapes, проверить mask, затем масштабировать размер модели и контролировать validation loss',
+    }
+  }
+  if (c.slug === 'responsible-ai') {
+    return {
+      object: 'набор инженерных документов и проверок, которые описывают ограничения модели до её применения на людях или бизнес-процессах',
+      mechanism: 'model card, data card, мониторинг drift, анализ сегментов, описание рисков и процедуры отката',
+      risk: 'запуск модели без контекста, скрытые смещения данных, отсутствие мониторинга и невозможность объяснить пользователю ошибочное решение',
+      practice: 'заполнять model card вместе с экспериментом, фиксировать known risks, метрики по сегментам и владельца мониторинга после релиза',
+    }
+  }
+  return {
+    object: 'важный блок AI-пайплайна с входами, параметрами и проверяемым результатом',
+    mechanism: 'формальную операцию, которую можно описать математически, реализовать кодом и проверить на validation',
+    risk: 'ошибки split, неверные параметры, отсутствие автотеста и слишком оптимистичную оценку качества',
+    practice: 'встроить блок в pipeline, проверить sample и hidden cases, затем сравнить validation-метрики с baseline',
+  }
+}
+
 function buildLongFields(topic, c) {
+  const profile = familyProfile(c)
   const theory = padText([
-    `${c.title} рассматривается как практическая функция или метод внутри полного AI-пайплайна: данные проходят подготовку, модель получает признаки, затем качество проверяется на отложенной выборке.`,
-    `Научная идея здесь состоит в том, что ${c.title} задаёт воспроизводимое преобразование или правило оптимизации, которое можно формально описать, проверить на тестах и встроить в эксперимент без ручных догадок.`,
-    `В реальных проектах по ${c.domain} этот блок редко живёт отдельно: он связан с split, метрикой, параметрами, логированием и контролем ошибок, поэтому его нужно понимать как часть системы, а не как одну строку кода.`,
+    `${c.title} в теме «${topic.title}» разбирается не как название из библиотеки, а как самостоятельный учебный подблок с входом, выходом, формулой, параметрами и проверкой результата.`,
+    `По сути он работает с объектом «${profile.object}» и реализует механизм: ${profile.mechanism}. Поэтому студент должен понимать не только синтаксис вызова, но и то, какую статистику, градиент, представление или правило принимает модель.`,
+    `Главная практическая опасность: ${profile.risk}. Если её не проговорить заранее, код может выглядеть правильным, но validation-метрика окажется завышенной, нестабильной или бесполезной для настоящего применения.`,
+    `Правильная учебная привычка: ${profile.practice}. Такой порядок соединяет научное понимание, инженерную дисциплину и автотесты, поэтому подблок можно переносить из учебной задачи в реальный эксперимент.`,
   ], 100, c.title, c.domain)
 
   const what = padText([
-    `${c.title} — это конкретный инструмент машинного обучения, который превращает абстрактную идею в проверяемую операцию над данными, признаками, ошибками или параметрами модели.`,
-    `Он имеет входы, выходы, настройки и математический смысл, поэтому его можно объяснять не только через код, но и через форму функции, ограничения и ожидаемое поведение на новых данных.`,
+    `${c.title} — это инструмент для работы с объектом «${profile.object}».`,
+    `Он задаёт не просто вызов функции, а конкретное правило поведения: что считается входом, какие параметры сохраняются после fit, какой результат должен получиться и какую проверку нужно выполнить на validation.`,
   ], 38, c.title, c.domain)
 
   const why = padText([
-    `${c.title} нужен, чтобы уменьшить неопределённость эксперимента и заменить интуитивное действие контролируемой процедурой.`,
-    `Без такого блока качество модели легко становится случайным: меняется split, масштаб признаков, порог классификации или learning rate, а разработчик не понимает, почему результат улучшился или сломался.`,
+    `${c.title} нужен, потому что в задачах ${c.domain} качество зависит не только от архитектуры модели, но и от дисциплины эксперимента.`,
+    `Он уменьшает случайность, делает шаг воспроизводимым и помогает понять, улучшилась ли модель из-за реальной закономерности, а не из-за leakage, неудачного split или случайной настройки.`,
   ], 38, c.title, c.domain)
 
   const where = padText([
-    `${c.title} применяют в задачах ${c.domain}, когда нужно построить не демонстрационный notebook, а повторяемый pipeline.`,
-    `Его используют в учебных экспериментах, соревнованиях, внутренних аналитических моделях и production-системах, где важно объяснить источник качества, проверить ошибки и повторить обучение через неделю или месяц.`,
+    `${c.title} применяют там, где возникает ${profile.object}: в учебных датасетах, соревнованиях, аналитических моделях и production-пайплайнах.`,
+    `Особенно часто он нужен, когда команда должна повторить эксперимент, объяснить метрику, найти источник ошибки и безопасно применить тот же код к новым данным.`,
   ], 38, c.title, c.domain)
 
   const formulaMeaning = padText([
-    `Формула ${c.formula} показывает минимальную математическую запись идеи: какие величины изменяются, что считается входом, что является результатом и где появляются обучаемые параметры или статистики train-выборки.`,
-    `Даже если в библиотеке всё вызывается одной функцией, эта запись помогает понять, почему нельзя смешивать train и validation и почему параметры должны храниться после fit.`,
+    `Формула ${c.formula} фиксирует математический смысл подблока: что является входом, что преобразуется, какая статистика или параметр участвует и где появляется результат.`,
+    `Даже когда библиотека скрывает вычисления за одним методом, формула помогает увидеть ограничения: что обучается на train, что только применяется на validation и что нельзя менять после финальной оценки.`,
   ], 38, c.title, c.domain)
 
   const howToUse = padText([
-    `Применять ${c.title} нужно после выбора цели эксперимента и до финальной оценки на тесте.`,
-    `Практический порядок простой: разделить данные, обучить или вычислить параметры только на train, применить к validation, измерить метрику, записать настройки и только затем переносить решение в общий pipeline.`,
+    `Применять ${c.title} нужно по явному протоколу: определить задачу, подготовить split, выполнить fit или вычисление только в разрешённой части данных и проверить результат на отложенной выборке.`,
+    `На практике это означает: ${profile.practice}. После этого параметры фиксируют в коде или конфиге, а сам шаг покрывают маленьким автотестом.`,
   ], 38, c.title, c.domain)
 
   return { theory, what, why, where, formulaMeaning, howToUse }
@@ -449,55 +596,367 @@ function buildLongFields(topic, c) {
 function paramCards(params, c) {
   return params.map((name) => ({
     name,
-    meaning: S(
-      `Параметр ${name} управляет поведением ${c.title} и задаёт важное инженерное ограничение.`,
-      `Его нужно выбирать не наугад, а по размеру данных, типу задачи, стабильности validation-метрики и тому, насколько модель должна быть простой, устойчивой или быстрой.`
-    ),
+    meaning: paramMeaning(name, c),
   }))
 }
 
+function paramMeaning(name, c) {
+  const descriptions = {
+    test_size: 'задаёт долю данных, которая уйдёт в validation или test. Чем меньше датасет, тем аккуратнее нужно выбирать это число, чтобы в отложенной части остались все важные классы и редкие случаи.',
+    random_state: 'фиксирует псевдослучайность split, sampling или модели. Он не улучшает качество сам по себе, но делает эксперимент воспроизводимым и позволяет сравнивать изменения кода честно.',
+    stratify: 'сохраняет распределение классов при разбиении. Этот параметр особенно важен при дисбалансе, потому что без него validation может случайно потерять редкий класс.',
+    handle_unknown: 'определяет поведение encoder на категории, которой не было в train. В production это критично, потому что новые города, товары или источники трафика появляются постоянно.',
+    strategy: 'выбирает способ заполнения пропусков: среднее, медиану, наиболее частое значение или константу. Его выбирают по типу признака и чувствительности модели к выбросам.',
+    fill_value: 'задаёт явную константу для заполнения. Он полезен, когда пропуск означает отдельное состояние, например неизвестный город или отсутствие истории покупок.',
+    add_indicator: 'добавляет бинарный признак факта пропуска. Это помогает модели использовать сам факт отсутствия значения как сигнал, а не просто терять его при заполнении.',
+    with_mean: 'разрешает вычитать среднее в StandardScaler. Для dense-матриц это обычно нормально, но для sparse-признаков может разрушить разреженность и резко увеличить память.',
+    with_std: 'разрешает делить на стандартное отклонение. Если отключить его, признаки только центрируются, но остаются с разным масштабом, что влияет на линейные модели и оптимизацию.',
+    feature_range: 'задаёт нижнюю и верхнюю границы MinMaxScaler. Его используют, когда модель или downstream-логика ожидает конкретный диапазон, например от 0 до 1.',
+    n_splits: 'задаёт число fold в cross-validation. Больше fold даёт больше обучающих данных на каждом запуске, но повышает стоимость вычислений и может увеличить разброс на маленьких данных.',
+    shuffle: 'перемешивает объекты перед split или fold. Для iid-таблиц это часто полезно, но для временных рядов перемешивание разрушает причинный порядок и создаёт leakage.',
+    n_estimators: 'задаёт число деревьев или итераций ансамбля. Малое значение недообучает модель, слишком большое без early stopping часто ведёт к переобучению и долгому inference.',
+    learning_rate: 'задаёт размер вклада каждого шага обучения. Малый шаг требует больше итераций, большой может перескочить минимум loss или сделать обучение нестабильным.',
+    max_depth: 'ограничивает глубину дерева. Чем глубже дерево, тем сложнее правила и выше риск переобучения, особенно на небольших или шумных табличных данных.',
+    eval_set: 'передаёт validation-данные в XGBoost или CatBoost. По нему считают метрику во время обучения и принимают решение об early stopping.',
+    early_stopping_rounds: 'останавливает обучение, если validation-метрика не улучшается заданное число итераций. Это защищает бустинг от лишних деревьев и ускоряет подбор.',
+    cat_features: 'указывает CatBoost, какие колонки являются категориальными. Это позволяет использовать встроенную обработку категорий вместо ручного OHE или target encoding.',
+    lr: 'задаёт learning rate оптимизатора. Это один из самых важных параметров нейросети: он определяет размер шага весов после вычисления градиента.',
+    momentum: 'накапливает направление прошлых градиентов. Он помогает SGD быстрее проходить длинные узкие долины loss и меньше дёргаться от шума mini-batch.',
+    betas: 'задают скорости сглаживания первого и второго моментов в Adam/AdamW. Обычно значения по умолчанию хороши, но на нестандартных задачах их меняют осторожно.',
+    weight_decay: 'добавляет штраф на большие веса. В AdamW он отделён от адаптивного шага и чаще ведёт себя понятнее, чем классическая L2 внутри Adam.',
+    batch_size: 'определяет число объектов в одном mini-batch. Большой batch стабильнее, но требует больше памяти; маленький шумнее, зато иногда лучше обобщает.',
+    num_workers: 'задаёт число процессов загрузки данных в DataLoader. Он ускоряет input pipeline, но слишком большое значение может перегрузить диск или систему.',
+    p: 'задаёт вероятность dropout. Чем выше p, тем сильнее регуляризация и тем выше риск недообучения, если сеть или датасет маленькие.',
+    kernel_size: 'определяет размер окна свёртки или pooling. Малое ядро ловит локальные детали, большое видит более широкий контекст, но увеличивает вычисления.',
+    padding: 'добавляет границы вокруг изображения или feature map. Он помогает сохранить spatial-размер и контролировать, как свёртка работает у краёв картинки.',
+    num_heads: 'задаёт число attention-heads. Несколько голов позволяют модели смотреть на разные типы связей, но увеличивают память и вычислительную стоимость.',
+    d_model: 'задаёт размерность скрытого представления в Transformer. Она влияет на ёмкость модели, память, скорость и совместимость attention-блоков.',
+  }
+  return descriptions[name]
+    ? S(`Параметр ${name} в ${c.title} ${descriptions[name]}`)
+    : S(
+      `Параметр ${name} управляет поведением ${c.title} и задаёт важное инженерное ограничение.`,
+      `Его выбирают по размеру данных, типу задачи, стабильности validation-метрики и тому, насколько модель должна быть простой, устойчивой или быстрой.`
+    )
+}
+
 function mistakes(c) {
+  const profile = familyProfile(c)
   return [
     {
-      title: 'Обучать преобразование на всём датасете',
+      title: c.kind.includes('torch') || c.kind === 'optimizer' ? 'Путать train и eval режимы' : 'Обучать шаг на всём датасете',
       explanation: S(
-        `Самая опасная ошибка при использовании ${c.title} — вычислить статистики, параметры или пороги до разделения на train и validation.`,
-        'Так validation перестаёт быть честной проверкой, потому что модель уже получила часть информации о будущих примерах, и итоговая метрика становится слишком оптимистичной.'
+        `Первая частая ошибка в ${c.title} связана с тем, что разработчик забывает границу между train и validation.`,
+        `Для этой темы риск особенно понятен: ${profile.risk}. Если нарушить протокол, модель получает лишнюю информацию или обновляет параметры там, где должна только измерять качество.`
       ),
     },
     {
-      title: 'Выбирать параметры только по train-качеству',
+      title: 'Подбирать параметры по красивому train-результату',
       explanation: S(
-        `Если настраивать ${c.title} только по train-метрике, почти всегда можно получить более красивое число, но не более надёжную модель.`,
-        'Train показывает способность запомнить доступные примеры, а validation показывает переносимость закономерности на новые объекты, поэтому решение принимают по отложенной оценке.'
+        `Для ${c.title} легко подобрать параметры так, чтобы train-метрика стала лучше, но это не означает реального улучшения.`,
+        'Train отражает запоминание доступных объектов, а validation показывает переносимость закономерности. Поэтому решение принимают по отложенной метрике, разбросу и ошибкам на важных сегментах.'
       ),
     },
     {
-      title: 'Игнорировать масштаб и тип признаков',
+      title: 'Не проверять форму входа и смысл признаков',
       explanation: S(
-        `${c.title} может вести себя неправильно, если числовые, категориальные, текстовые или sparse-признаки подаются как одинаковые.`,
-        'Перед применением нужно явно проверить типы колонок, диапазоны значений, пропуски и форму матрицы, иначе ошибка проявится позже как нестабильная метрика или странные коэффициенты.'
+        `${c.title} работает корректно только тогда, когда форма входа, типы колонок, размерности tensors и смысл признаков совпадают с ожиданиями метода.`,
+        'Одна переставленная колонка, неправильный dtype target, неизвестная категория или неверная размерность batch могут дать ошибку поздно и выглядеть как проблема модели.'
       ),
     },
     {
-      title: 'Считать одну метрику абсолютной правдой',
+      title: 'Смотреть только одну итоговую метрику',
       explanation: S(
-        `Оценивать ${c.title} одной метрикой удобно, но часто недостаточно.`,
-        'В классификации accuracy может скрыть провал на редком классе, в регрессии RMSE может резко реагировать на выбросы, а без доверительного интервала невозможно понять устойчивость результата.'
+        `Оценивать ${c.title} одним числом удобно, но опасно, потому что разные ошибки имеют разную цену.`,
+        'В классификации нужно смотреть precision и recall отдельно, в регрессии сравнивать MAE и RMSE, а в cross-validation учитывать среднее качество и разброс по fold.'
       ),
     },
     {
-      title: 'Оставлять код без маленького автотеста',
+      title: 'Не превращать объяснение в проверяемый код',
       explanation: S(
-        `Даже если ${c.title} кажется простым, его легко сломать изменением порядка колонок, формата входа или обработки крайних случаев.`,
-        'Минимальный автотест с sample и hidden cases фиксирует ожидаемый контракт, помогает быстрее находить регрессии и заставляет формулировать поведение функции явно.'
+        `Даже если ${c.title} понятен теоретически, навык появляется только после маленькой реализации и автотеста.`,
+        'Sample cases показывают ожидаемый формат, hidden cases ловят крайние ситуации, а эталонное решение помогает понять, была ли ошибка в математике, коде или обработке входа.'
       ),
     },
   ]
 }
 
+function specificCode(c) {
+  const snippets = {
+    'one-hot-encoder': `
+from sklearn.preprocessing import OneHotEncoder
+
+cities = [["Moscow"], ["Kazan"], ["Moscow"], ["Sochi"]]
+encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+encoder.fit(cities)
+encoded = encoder.transform([["Kazan"], ["Unknown"]])
+print(encoder.get_feature_names_out(["city"]).tolist())
+print(encoded.tolist())
+`,
+    'ordinal-encoder': `
+from sklearn.preprocessing import OrdinalEncoder
+
+sizes = [["low"], ["medium"], ["high"], ["medium"]]
+encoder = OrdinalEncoder(categories=[["low", "medium", "high"]])
+encoded = encoder.fit_transform(sizes)
+print(encoded.ravel().tolist())
+`,
+    'target-encoding': `
+import pandas as pd
+from sklearn.model_selection import KFold
+
+df = pd.DataFrame({"city": ["A", "A", "B", "B"], "target": [1, 0, 1, 1]})
+global_mean = df["target"].mean()
+encoded = pd.Series(index=df.index, dtype=float)
+for train_idx, val_idx in KFold(n_splits=2, shuffle=True, random_state=42).split(df):
+    means = df.iloc[train_idx].groupby("city")["target"].mean()
+    encoded.iloc[val_idx] = df.iloc[val_idx]["city"].map(means).fillna(global_mean)
+print(encoded.round(3).tolist())
+`,
+    'simple-imputer': `
+import numpy as np
+from sklearn.impute import SimpleImputer
+
+X_train = np.array([[1.0, np.nan], [2.0, 10.0], [3.0, 12.0]])
+X_val = np.array([[np.nan, 11.0]])
+imputer = SimpleImputer(strategy="median", add_indicator=True)
+imputer.fit(X_train)
+print(imputer.transform(X_val))
+`,
+    'missing-indicator': `
+import numpy as np
+from sklearn.impute import MissingIndicator
+
+X = np.array([[1.0, np.nan], [np.nan, 3.0], [2.0, 4.0]])
+indicator = MissingIndicator(features="all")
+mask = indicator.fit_transform(X)
+print(mask.astype(int).tolist())
+`,
+    'iqr-clipping': `
+import numpy as np
+
+def clip_iqr(values, multiplier=1.5):
+    q1, q3 = np.percentile(values, [25, 75])
+    iqr = q3 - q1
+    low, high = q1 - multiplier * iqr, q3 + multiplier * iqr
+    return np.clip(values, low, high)
+
+print(clip_iqr(np.array([10, 11, 12, 13, 200])).tolist())
+`,
+    'standard-scaler': `
+from sklearn.preprocessing import StandardScaler
+
+X_train = [[10.0, 100.0], [12.0, 110.0], [14.0, 120.0]]
+X_val = [[16.0, 130.0]]
+scaler = StandardScaler()
+scaler.fit(X_train)
+print(scaler.transform(X_val).round(3).tolist())
+`,
+    'minmax-scaler': `
+from sklearn.preprocessing import MinMaxScaler
+
+X_train = [[10.0], [20.0], [30.0]]
+scaler = MinMaxScaler(feature_range=(0, 1), clip=True)
+scaler.fit(X_train)
+print(scaler.transform([[25.0], [100.0]]).round(3).ravel().tolist())
+`,
+    'robust-scaler': `
+from sklearn.preprocessing import RobustScaler
+
+X_train = [[10.0], [11.0], [12.0], [13.0], [200.0]]
+scaler = RobustScaler(quantile_range=(25, 75))
+scaler.fit(X_train)
+print(scaler.transform([[12.0], [200.0]]).round(3).ravel().tolist())
+`,
+    kfold: `
+from sklearn.model_selection import KFold
+
+X = list(range(8))
+cv = KFold(n_splits=4, shuffle=True, random_state=42)
+for fold, (train_idx, val_idx) in enumerate(cv.split(X), start=1):
+    print(fold, train_idx.tolist(), val_idx.tolist())
+`,
+    'stratified-kfold': `
+from sklearn.model_selection import StratifiedKFold
+
+X = list(range(8))
+y = [0, 0, 0, 0, 1, 1, 1, 1]
+cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
+for train_idx, val_idx in cv.split(X, y):
+    print([y[i] for i in val_idx])
+`,
+    'time-series-split': `
+from sklearn.model_selection import TimeSeriesSplit
+
+X = list(range(10))
+cv = TimeSeriesSplit(n_splits=3, test_size=2, gap=1)
+for train_idx, val_idx in cv.split(X):
+    print("train", train_idx.tolist(), "val", val_idx.tolist())
+`,
+    'bootstrap-ci': `
+import numpy as np
+
+scores = np.array([0.71, 0.76, 0.73, 0.80, 0.77])
+rng = np.random.default_rng(42)
+means = [rng.choice(scores, size=len(scores), replace=True).mean() for _ in range(1000)]
+low, high = np.quantile(means, [0.025, 0.975])
+print(round(low, 3), round(high, 3))
+`,
+    'xgb-classifier': `
+from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+
+X_train, X_val, y_train, y_val = train_test_split(X, y, stratify=y, random_state=42)
+model = XGBClassifier(n_estimators=800, learning_rate=0.03, max_depth=4, eval_metric="logloss", early_stopping_rounds=40)
+model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False)
+print(model.best_iteration, model.score(X_val, y_val))
+`,
+    'catboost-classifier': `
+from catboost import CatBoostClassifier
+
+model = CatBoostClassifier(iterations=500, depth=6, learning_rate=0.05, loss_function="Logloss", verbose=False)
+model.fit(X_train, y_train, cat_features=["city", "device"], eval_set=(X_val, y_val), use_best_model=True)
+print(model.get_best_iteration())
+`,
+    'early-stopping-boosting': `
+model.fit(
+    X_train,
+    y_train,
+    eval_set=[(X_val, y_val)],
+    verbose=False,
+)
+best_round = model.best_iteration
+val_score = model.score(X_val, y_val)
+print(best_round, round(val_score, 4))
+`,
+    sgd: `
+import torch
+import torch.nn as nn
+
+model = nn.Linear(10, 2)
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=0.05)
+x = torch.randn(16, 10)
+y = torch.randint(0, 2, (16,))
+loss = criterion(model(x), y)
+loss.backward()
+optimizer.step()
+optimizer.zero_grad()
+`,
+    momentum: `
+import torch
+import torch.nn as nn
+
+model = nn.Linear(10, 2)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.03, momentum=0.9, nesterov=True)
+loss = nn.CrossEntropyLoss()(model(torch.randn(16, 10)), torch.randint(0, 2, (16,)))
+loss.backward()
+optimizer.step()
+optimizer.zero_grad()
+`,
+    rmsprop: `
+import torch
+import torch.nn as nn
+
+model = nn.Linear(10, 2)
+optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-3, alpha=0.99, eps=1e-8)
+loss = nn.CrossEntropyLoss()(model(torch.randn(16, 10)), torch.randint(0, 2, (16,)))
+loss.backward()
+optimizer.step()
+optimizer.zero_grad()
+`,
+    adam: `
+import torch
+import torch.nn as nn
+
+model = nn.Linear(10, 2)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-8)
+loss = nn.CrossEntropyLoss()(model(torch.randn(16, 10)), torch.randint(0, 2, (16,)))
+loss.backward()
+optimizer.step()
+optimizer.zero_grad()
+`,
+    adamw: `
+import torch
+import torch.nn as nn
+
+model = nn.Linear(10, 2)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+loss = nn.CrossEntropyLoss()(model(torch.randn(16, 10)), torch.randint(0, 2, (16,)))
+loss.backward()
+optimizer.step()
+optimizer.zero_grad()
+`,
+    'lr-scheduler': `
+import torch
+
+model = torch.nn.Linear(10, 2)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+for epoch in range(10):
+    train_loss = 1.0 / (epoch + 1)
+    scheduler.step()
+    print(epoch, optimizer.param_groups[0]["lr"], train_loss)
+`,
+    'cross-entropy-loss': `
+import torch
+import torch.nn as nn
+
+logits = torch.tensor([[2.0, -1.0, 0.1], [0.2, 1.5, -0.3]])
+target = torch.tensor([0, 1], dtype=torch.long)
+loss = nn.CrossEntropyLoss(label_smoothing=0.05)(logits, target)
+print(round(loss.item(), 4))
+`,
+    'bce-with-logits': `
+import torch
+import torch.nn as nn
+
+logits = torch.tensor([0.2, -1.0, 2.5])
+target = torch.tensor([1.0, 0.0, 1.0])
+loss = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([2.0]))(logits, target)
+print(round(loss.item(), 4))
+`,
+    'regression-losses': `
+import torch
+import torch.nn as nn
+
+pred = torch.tensor([2.5, 3.0, 10.0])
+target = torch.tensor([2.0, 4.0, 6.0])
+mse = nn.MSELoss()(pred, target)
+huber = nn.HuberLoss(delta=1.0)(pred, target)
+print(round(mse.item(), 3), round(huber.item(), 3))
+`,
+    'train-sklearn': `
+from sklearn.metrics import f1_score
+
+def train_validate_sklearn(model, X_train, y_train, X_val, y_val):
+    model.fit(X_train, y_train)
+    pred = model.predict(X_val)
+    return {"val_f1": f1_score(y_val, pred)}
+`,
+    'validate-epoch-torch': `
+import torch
+
+def validate_epoch(model, loader, criterion, device="cpu"):
+    model.eval()
+    total, correct, count = 0.0, 0, 0
+    with torch.no_grad():
+        for x, y in loader:
+            x, y = x.to(device), y.to(device)
+            logits = model(x)
+            total += criterion(logits, y).item()
+            correct += (logits.argmax(1) == y).sum().item()
+            count += y.numel()
+    return {"val_loss": total / max(len(loader), 1), "val_acc": correct / max(count, 1)}
+`,
+  }
+  return snippets[c.slug] ?? null
+}
+
 function codeLines(c) {
   const titleVar = c.slug.replace(/-/g, '_')
+  const specific = specificCode(c)
+  if (specific) return C(specific)
   if (c.kind === 'python') {
     return C(`
 from typing import Iterable
