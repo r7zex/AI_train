@@ -1,4 +1,4 @@
-import { code, makeStdinTask, numpyTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
+import { code, functionSection, makeStdinTask, numpyTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
 
 
 
@@ -62,6 +62,20 @@ export const topicNumpyMasks = numpyTopic(
       '`np.where`',
       '`np.where()` выбирает значения по условию.',
       [
+        functionSection(
+          'where-function',
+          '`np.where()`',
+          'np.where(condition, x, y)',
+          ['`condition` - булева маска', '`x` - что взять, если условие True', '`y` - что взять, если условие False'],
+          `
+            import numpy as np
+
+            x = np.array([5, 12, 7, 20])
+            print(np.where(x > 10, "big", "small"))
+          `,
+          "['small' 'big' 'small' 'big']",
+          '`np.where()` сохранил форму массива и выбрал метку для каждого элемента.',
+        ),
         section('syntax', 'Условная замена', [
           '`np.where(condition, value_if_true, value_if_false)` возвращает массив той же формы, где для `True` берётся первое значение, а для `False` - второе.',
           'Это удобно для быстрых меток, ограничений, замены выбросов и простых rule-based признаков. В отличие от фильтрации, `np.where` обычно не удаляет элементы, а заменяет их.',
@@ -84,6 +98,34 @@ export const topicNumpyMasks = numpyTopic(
       '`np.any` и `np.all`',
       '`np.any` проверяет хотя бы одно True, `np.all` - все True.',
       [
+        functionSection(
+          'any-function',
+          '`np.any()`',
+          'np.any(mask)',
+          ['`mask` - булев массив'],
+          `
+            import numpy as np
+
+            mask = np.array([False, True, False])
+            print(np.any(mask))
+          `,
+          'True',
+          '`np.any()` вернул True, потому что в маске есть хотя бы одно True.',
+        ),
+        functionSection(
+          'all-function',
+          '`np.all()`',
+          'np.all(mask)',
+          ['`mask` - булев массив'],
+          `
+            import numpy as np
+
+            mask = np.array([False, True, False])
+            print(np.all(mask))
+          `,
+          'False',
+          '`np.all()` вернул False, потому что не все значения равны True.',
+        ),
         section('checks', 'Проверка маски целиком', [
           '`np.any(mask)` отвечает, есть ли в маске хотя бы одно `True`. `np.all(mask)` отвечает, все ли значения равны `True`.',
           'Эти функции полезны для проверок качества данных: есть ли выбросы, все ли значения положительные, все ли элементы прошли фильтр, остались ли подходящие строки после условия.',
@@ -263,6 +305,76 @@ export const topicNumpyRandom = numpyTopic(
       'Основные методы random',
       'Близкие методы random лучше изучать вместе.',
       [
+        functionSection(
+          'rng-integers-function',
+          '`rng.integers()`',
+          'rng.integers(low, high, size)',
+          ['`low` - нижняя граница', '`high` - верхняя граница, не включается', '`size` - сколько чисел нужно получить'],
+          `
+            import numpy as np
+
+            rng = np.random.default_rng(42)
+            print(rng.integers(0, 10, size=3))
+          `,
+          '[0 7 6]',
+          '`rng.integers()` сгенерировал три целых числа от 0 до 9.',
+        ),
+        functionSection(
+          'rng-normal-function',
+          '`rng.normal()`',
+          'rng.normal(loc, scale, size)',
+          ['`loc` - среднее распределения', '`scale` - стандартное отклонение', '`size` - форма результата'],
+          `
+            import numpy as np
+
+            rng = np.random.default_rng(42)
+            print(np.round(rng.normal(0, 1, size=3), 2))
+          `,
+          '[ 0.3  -1.04  0.75]',
+          '`rng.normal()` сгенерировал значения около среднего 0.',
+        ),
+        functionSection(
+          'rng-uniform-function',
+          '`rng.uniform()`',
+          'rng.uniform(low, high, size)',
+          ['`low` - нижняя граница', '`high` - верхняя граница', '`size` - форма результата'],
+          `
+            import numpy as np
+
+            rng = np.random.default_rng(42)
+            print(np.round(rng.uniform(0, 1, size=3), 2))
+          `,
+          '[0.77 0.44 0.86]',
+          '`rng.uniform()` сгенерировал числа между 0 и 1.',
+        ),
+        functionSection(
+          'rng-permutation-function',
+          '`rng.permutation()`',
+          'rng.permutation(x)',
+          ['`x` - массив, список или число элементов'],
+          `
+            import numpy as np
+
+            rng = np.random.default_rng(42)
+            print(rng.permutation([1, 2, 3, 4]))
+          `,
+          '[4 3 2 1]',
+          '`rng.permutation()` вернул перемешанную копию значений.',
+        ),
+        functionSection(
+          'rng-choice-function',
+          '`rng.choice()`',
+          'rng.choice(x, size)',
+          ['`x` - набор возможных значений', '`size` - сколько элементов выбрать'],
+          `
+            import numpy as np
+
+            rng = np.random.default_rng(42)
+            print(rng.choice(["train", "test"], size=4))
+          `,
+          "['train' 'test' 'test' 'train']",
+          '`rng.choice()` выбрал случайные элементы из заданных меток.',
+        ),
         section('functions', 'Пять частых методов', [
           '`rng.integers(low, high, size)` генерирует целые числа. `rng.normal(loc, scale, size)` - нормальное распределение. `rng.uniform(low, high, size)` - равномерные числа. `rng.permutation(x)` перемешивает элементы. `rng.choice(x, size)` выбирает элементы из набора.',
           'Не нужно выносить каждый метод в отдельный урок: все они отвечают на один вопрос - какой случайный объект нужен прямо сейчас.',

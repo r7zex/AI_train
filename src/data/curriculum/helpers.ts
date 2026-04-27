@@ -79,6 +79,24 @@ export const callout = (
   tone,
 })
 
+export const functionSection = (
+  id: string,
+  title: string,
+  signature: string,
+  params: string[],
+  exampleCode: string,
+  output: string,
+  explanation: string,
+) => section(id, title, [
+  `**Синтаксис:** \`${signature}\``,
+  `**Параметры:** ${params.join('; ')}.`,
+  '**Пример:** только эта функция, без соседних функций из группы.',
+], {
+  codeExamples: [
+    code('python', exampleCode, output, explanation),
+  ],
+})
+
 export const theoryStep = (id: string, title: string, summary: string, sections: LessonSection[]): FlowStep => ({
   id,
   type: 'theory',

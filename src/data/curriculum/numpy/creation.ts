@@ -1,4 +1,4 @@
-import { callout, code, makeStdinTask, numpyTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
+import { callout, code, functionSection, makeStdinTask, numpyTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
 
 
 
@@ -39,6 +39,45 @@ export const topicNumpyCreation = numpyTopic(
       'Массивы-заготовки: `zeros`, `ones`, `full`',
       'Похожие функции создают массивы одной формы, заполненные одним значением.',
       [
+        functionSection(
+          'zeros-function',
+          '`np.zeros()`',
+          'np.zeros(shape)',
+          ['`shape` - длина массива или tuple формы, например `(2, 3)`'],
+          `
+            import numpy as np
+
+            print(np.zeros(3))
+          `,
+          '[0. 0. 0.]',
+          '`np.zeros()` создал одномерный массив из трёх нулей.',
+        ),
+        functionSection(
+          'ones-function',
+          '`np.ones()`',
+          'np.ones(shape)',
+          ['`shape` - длина массива или tuple формы, например `(2, 3)`'],
+          `
+            import numpy as np
+
+            print(np.ones((2, 3)))
+          `,
+          '[[1. 1. 1.]\n [1. 1. 1.]]',
+          '`np.ones()` создал матрицу 2 на 3, заполненную единицами.',
+        ),
+        functionSection(
+          'full-function',
+          '`np.full()`',
+          'np.full(shape, fill_value)',
+          ['`shape` - форма массива', '`fill_value` - значение, которым нужно заполнить массив'],
+          `
+            import numpy as np
+
+            print(np.full((2, 2), 7))
+          `,
+          '[[7 7]\n [7 7]]',
+          '`np.full()` заполнил всю матрицу выбранным числом.',
+        ),
         section('functions', 'Три функции-заготовки', [
           '`np.zeros(shape)` создаёт нули, `np.ones(shape)` создаёт единицы, `np.full(shape, fill_value)` создаёт массив с выбранным значением. Все три функции удобно изучать вместе: меняется только значение заполнения.',
           'Параметр `shape` задаёт форму. Если нужна матрица, передают tuple, например `(2, 3)`. `np.empty()` существует, но новичку лучше не использовать его как основной способ: он создаёт массив без понятного начального значения.',
@@ -60,6 +99,32 @@ export const topicNumpyCreation = numpyTopic(
       'Последовательности: `arange`, `linspace`',
       '`arange` удобен для шага, `linspace` - для количества точек.',
       [
+        functionSection(
+          'arange-function',
+          '`np.arange()`',
+          'np.arange(start, stop, step)',
+          ['`start` - первое значение', '`stop` - граница, которая не включается', '`step` - шаг'],
+          `
+            import numpy as np
+
+            print(np.arange(0, 10, 2))
+          `,
+          '[0 2 4 6 8]',
+          '`np.arange()` идёт с шагом 2 и не включает правую границу 10.',
+        ),
+        functionSection(
+          'linspace-function',
+          '`np.linspace()`',
+          'np.linspace(start, stop, num)',
+          ['`start` - первое значение', '`stop` - последнее значение, обычно включается', '`num` - сколько точек нужно получить'],
+          `
+            import numpy as np
+
+            print(np.linspace(0, 1, 5))
+          `,
+          '[0.   0.25 0.5  0.75 1.  ]',
+          '`np.linspace()` дал ровно 5 точек от 0 до 1.',
+        ),
         section('compare', 'Два способа создать последовательность', [
           '`np.arange(start, stop, step)` создаёт значения с заданным шагом и не включает `stop`. Эта функция удобна, когда важен именно шаг: индексы, диапазоны, номера объектов.',
           '`np.linspace(start, stop, num)` создаёт ровно `num` точек между `start` и `stop`. Эта функция удобна, когда важно количество точек, например для сетки значений или графика.',

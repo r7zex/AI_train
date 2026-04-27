@@ -1,4 +1,4 @@
-import { callout, code, makeStdinTask, numpyTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
+import { callout, code, functionSection, makeStdinTask, numpyTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
 
 
 
@@ -17,6 +17,62 @@ export const topicNumpyAggregations = numpyTopic(
       'Базовые агрегаты: `sum`, `mean`, `min`, `max`',
       '`np.sum`, `np.mean`, `np.min`, `np.max` дают базовое описание массива.',
       [
+        functionSection(
+          'sum-function',
+          '`np.sum()`',
+          'np.sum(x, axis=None)',
+          ['`x` - массив или список чисел', '`axis` - ось агрегации; если не указан, считаются все элементы'],
+          `
+            import numpy as np
+
+            x = np.array([10, 20, 30])
+            print(np.sum(x))
+          `,
+          '60',
+          '`np.sum()` сложил все элементы массива.',
+        ),
+        functionSection(
+          'mean-function',
+          '`np.mean()`',
+          'np.mean(x, axis=None)',
+          ['`x` - массив или список чисел', '`axis` - ось агрегации; если не указан, среднее считается по всему массиву'],
+          `
+            import numpy as np
+
+            x = np.array([10, 20, 30])
+            print(np.mean(x))
+          `,
+          '20.0',
+          '`np.mean()` вернул среднее значение массива.',
+        ),
+        functionSection(
+          'min-function',
+          '`np.min()`',
+          'np.min(x, axis=None)',
+          ['`x` - массив или список чисел', '`axis` - ось агрегации; если не указан, ищется минимум по всему массиву'],
+          `
+            import numpy as np
+
+            x = np.array([10, 20, 30])
+            print(np.min(x))
+          `,
+          '10',
+          '`np.min()` нашёл самое маленькое значение.',
+        ),
+        functionSection(
+          'max-function',
+          '`np.max()`',
+          'np.max(x, axis=None)',
+          ['`x` - массив или список чисел', '`axis` - ось агрегации; если не указан, ищется максимум по всему массиву'],
+          `
+            import numpy as np
+
+            x = np.array([10, 20, 30])
+            print(np.max(x))
+          `,
+          '30',
+          '`np.max()` нашёл самое большое значение.',
+        ),
         section('functions', 'Сумма, среднее и границы', [
           '`np.sum(x)` считает сумму, `np.mean(x)` - среднее, `np.min(x)` - минимум, `np.max(x)` - максимум. Эти функции быстро отвечают на первые вопросы о числовом признаке.',
           'Если `axis` не указан, массив обычно сворачивается в одно число. Если `axis` указан, статистика считается по строкам или столбцам.',
@@ -40,6 +96,34 @@ export const topicNumpyAggregations = numpyTopic(
       'Разброс: `std`, `var`',
       '`np.var` и `np.std` описывают разброс значений.',
       [
+        functionSection(
+          'var-function',
+          '`np.var()`',
+          'np.var(x, axis=None)',
+          ['`x` - массив чисел', '`axis` - ось агрегации; если не указан, дисперсия считается по всем значениям'],
+          `
+            import numpy as np
+
+            x = np.array([2, 4, 4, 4, 5, 5, 7, 9])
+            print(np.var(x))
+          `,
+          '4.0',
+          '`np.var()` показывает средний квадрат отклонения от среднего.',
+        ),
+        functionSection(
+          'std-function',
+          '`np.std()`',
+          'np.std(x, axis=None)',
+          ['`x` - массив чисел', '`axis` - ось агрегации; если не указан, стандартное отклонение считается по всем значениям'],
+          `
+            import numpy as np
+
+            x = np.array([2, 4, 4, 4, 5, 5, 7, 9])
+            print(np.std(x))
+          `,
+          '2.0',
+          '`np.std()` возвращает разброс в масштабе исходных значений.',
+        ),
         section('spread', 'Дисперсия и стандартное отклонение', [
           '`np.var(x)` считает дисперсию, а `np.std(x)` - стандартное отклонение. Обе функции описывают разброс значений вокруг среднего.',
           'Стандартное отклонение легче интерпретировать, потому что оно возвращается в масштабе исходных данных. Если признак измеряется в рублях, `std` тоже читается в рублях.',
@@ -62,6 +146,48 @@ export const topicNumpyAggregations = numpyTopic(
       'Медиана, квантили, процентили',
       '`median`, `quantile`, `percentile` помогают читать распределение.',
       [
+        functionSection(
+          'median-function',
+          '`np.median()`',
+          'np.median(x, axis=None)',
+          ['`x` - массив чисел', '`axis` - ось агрегации; если не указан, медиана считается по всему массиву'],
+          `
+            import numpy as np
+
+            x = np.array([10, 20, 30, 40])
+            print(np.median(x))
+          `,
+          '25.0',
+          '`np.median()` вернул центральное значение между 20 и 30.',
+        ),
+        functionSection(
+          'quantile-function',
+          '`np.quantile()`',
+          'np.quantile(x, q)',
+          ['`x` - массив чисел', '`q` - квантиль от 0 до 1'],
+          `
+            import numpy as np
+
+            x = np.array([10, 20, 30, 40])
+            print(np.quantile(x, 0.25))
+          `,
+          '17.5',
+          '`np.quantile()` показал нижний квартиль массива.',
+        ),
+        functionSection(
+          'percentile-function',
+          '`np.percentile()`',
+          'np.percentile(x, q)',
+          ['`x` - массив чисел', '`q` - процентиль от 0 до 100'],
+          `
+            import numpy as np
+
+            x = np.array([10, 20, 30, 40])
+            print(np.percentile(x, 75))
+          `,
+          '32.5',
+          '`np.percentile()` показал 75-й процентиль массива.',
+        ),
         section('quantiles', 'Центр и пороги распределения', [
           '`np.median(x)` возвращает медиану - центральное значение. `np.quantile(x, q)` возвращает квантиль от 0 до 1. `np.percentile(x, p)` делает похожее, но `p` задаётся от 0 до 100.',
           'Медиана и квантили полезны, когда есть выбросы. Они помогают описать не только среднее, но и то, где находится нижняя, центральная и верхняя часть данных.',
@@ -78,6 +204,76 @@ export const topicNumpyAggregations = numpyTopic(
             `, 'median: 25.0\nq25: 17.5\np75: 32.5', 'Вывод показывает центр, нижний квартиль и верхний квартиль массива.'),
           ],
         }),
+        functionSection(
+          'sort-function',
+          '`np.sort()`',
+          'np.sort(x)',
+          ['`x` - массив или список значений'],
+          `
+            import numpy as np
+
+            x = np.array([30, 10, 20, 10])
+            print(np.sort(x))
+          `,
+          '[10 10 20 30]',
+          '`np.sort()` вернул отсортированную копию массива.',
+        ),
+        functionSection(
+          'argsort-function',
+          '`np.argsort()`',
+          'np.argsort(x)',
+          ['`x` - массив или список значений'],
+          `
+            import numpy as np
+
+            x = np.array([30, 10, 20, 10])
+            print(np.argsort(x))
+          `,
+          '[1 3 2 0]',
+          '`np.argsort()` вернул индексы элементов в порядке сортировки.',
+        ),
+        functionSection(
+          'unique-function',
+          '`np.unique()`',
+          'np.unique(x)',
+          ['`x` - массив или список значений'],
+          `
+            import numpy as np
+
+            x = np.array([30, 10, 20, 10])
+            print(np.unique(x))
+          `,
+          '[10 20 30]',
+          '`np.unique()` оставил только разные значения.',
+        ),
+        functionSection(
+          'argmax-function',
+          '`np.argmax()`',
+          'np.argmax(x)',
+          ['`x` - массив или список значений'],
+          `
+            import numpy as np
+
+            x = np.array([30, 10, 20, 10])
+            print(np.argmax(x))
+          `,
+          '0',
+          '`np.argmax()` вернул индекс первого максимального значения.',
+        ),
+        functionSection(
+          'argmin-function',
+          '`np.argmin()`',
+          'np.argmin(x)',
+          ['`x` - массив или список значений'],
+          `
+            import numpy as np
+
+            x = np.array([30, 10, 20, 10])
+            print(np.argmin(x))
+          `,
+          '1',
+          '`np.argmin()` вернул индекс первого минимального значения.',
+        ),
         section('sorting', 'Сортировка, уникальные и arg-функции', [
           'Для анализа массива рядом со статистиками часто нужны `np.sort`, `np.argsort`, `np.unique`, `np.argmax`, `np.argmin`. Их не нужно выносить в отдельные уроки: это маленькие инструменты для порядка, уникальных значений и индексов экстремумов.',
         ], {
@@ -265,6 +461,50 @@ export const topicNumpyAxis = numpyTopic(
       '`reshape`',
       '`reshape()` меняет форму массива без изменения значений.',
       [
+        functionSection(
+          'reshape-function',
+          '`arr.reshape()`',
+          'arr.reshape(new_shape)',
+          ['`new_shape` - новая форма массива', '`-1` - размер, который NumPy должен посчитать автоматически'],
+          `
+            import numpy as np
+
+            x = np.arange(6)
+            print(x.reshape(2, 3))
+          `,
+          '[[0 1 2]\n [3 4 5]]',
+          '`reshape()` поменял форму, но значения остались теми же.',
+        ),
+        functionSection(
+          'transpose-attribute',
+          '`arr.T`',
+          'arr.T',
+          ['`arr` - двумерный массив'],
+          `
+            import numpy as np
+
+            X = np.array([[1, 2, 3],
+                          [4, 5, 6]])
+            print(X.T)
+          `,
+          '[[1 4]\n [2 5]\n [3 6]]',
+          '`.T` поменял строки и столбцы местами.',
+        ),
+        functionSection(
+          'flatten-function',
+          '`arr.flatten()`',
+          'arr.flatten()',
+          ['`arr` - массив любой формы'],
+          `
+            import numpy as np
+
+            X = np.array([[1, 2, 3],
+                          [4, 5, 6]])
+            print(X.flatten())
+          `,
+          '[1 2 3 4 5 6]',
+          '`flatten()` превратил матрицу в плоский одномерный массив.',
+        ),
         section('syntax', 'Новая форма', [
           '`x.reshape(new_shape)` меняет форму массива, но не меняет значения. Главное условие: общее число элементов должно совпадать. Массив из 6 элементов можно превратить в `(2, 3)` или `(3, 2)`, но нельзя в `(4, 2)`.',
           '`-1` означает “посчитай этот размер автоматически”. Ещё рядом полезно знать `.T` для транспонирования и `.flatten()` или `.ravel()` для превращения массива в плоский вектор.',
