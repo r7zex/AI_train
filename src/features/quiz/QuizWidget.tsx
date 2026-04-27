@@ -130,6 +130,10 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
     setFinished(false)
   }, [])
 
+  useEffect(() => {
+    resetAttempt()
+  }, [quiz.id, resetAttempt])
+
   const answeredCount = Object.keys(submitted).length
   const score = useMemo(() => questions.reduce((acc, question) => {
     if (!submitted[question.id]) return acc
@@ -571,7 +575,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium leading-snug text-gray-800">{index + 1}. {question.question}</p>
                   <p className="mt-1 text-xs text-gray-600">
-                    {ok ? 'Ответ засчитан.' : `Правильный ответ: ${formatCorrectAnswer(question)}`}
+                    {ok ? 'Ответ засчитан.' : 'Ответ не засчитан. Правильный ответ можно найти в объяснении.'}
                   </p>
                 </div>
               </div>
