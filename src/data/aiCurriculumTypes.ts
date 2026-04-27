@@ -72,6 +72,7 @@ export interface CommonMistake {
 export interface ConceptCodeExample {
   language: string
   code: string
+  output?: string
   explanation: string[]
 }
 

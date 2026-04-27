@@ -19,6 +19,12 @@ function findCurrentBlock(activeTopicId?: string) {
   return ''
 }
 
+function firstTopicHref(themes: Array<{ id: string; steps: Array<{ id: string }> }>, progress: ProgressState) {
+  const topic = themes[0]
+  if (!topic) return '/topics'
+  return getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)
+}
+
 export default function CourseSidebar({ activeTopicId, progress, getTopicProgress, getSubblockProgress, getBlockProgress }: CourseSidebarProps) {
   const totalSteps = flowCourseBlocks.reduce(
     (sum, block) => sum + block.subblocks.reduce((inner, subblock) => inner + subblock.themes.reduce((acc, topic) => acc + topic.steps.length, 0), 0),
@@ -28,7 +34,7 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
   const currentBlock = findCurrentBlock(activeTopicId)
 
   return (
-    <aside className="hidden h-[calc(100vh-96px)] w-[340px] shrink-0 overflow-y-auto border-r border-[#2e343c] bg-[#252b32] text-[#d9e1ea] lg:block">
+    <aside className="sticky top-[88px] hidden h-[calc(100vh-88px)] w-[320px] shrink-0 self-start overflow-y-auto border-r border-[#2e343c] bg-[#22272e] text-[#d9e1ea] lg:block">
       <div className="border-b border-[#343b44] px-5 py-4">
         <Link to="/topics" className="flex items-center gap-3">
           <span className="inline-flex h-8 w-8 items-center justify-center bg-[#45b96a] text-[11px] font-bold text-[#0d2313]">AI</span>
@@ -56,7 +62,7 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
 
           return (
             <section key={block.id} className="border-b border-[#303740] px-3 py-3">
-              <div className="px-2 py-1">
+              <Link to={firstTopicHref(block.subblocks.flatMap((subblock) => subblock.themes), progress)} className="block px-2 py-1 transition hover:bg-[#2e3640]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-[12px] font-semibold leading-5 text-[#e8eef5]">{block.order}. {block.title}</div>
@@ -67,7 +73,7 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
                 <div className="mt-2 h-1 bg-[#1f242a]">
                   <div className="h-1 bg-[#44bb66]" style={{ width: `${blockProgress}%` }} />
                 </div>
-              </div>
+              </Link>
 
               {expanded && (
                 <div className="mt-2 space-y-2">
@@ -75,9 +81,9 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
                     const subblockProgress = Math.round(getSubblockProgress(subblock.id) * 100)
                     return (
                       <div key={subblock.id}>
-                        <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#7f8c9d]">
+                        <Link to={firstTopicHref(subblock.themes, progress)} className="block px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#91a0b2] transition hover:bg-[#2e3640] hover:text-[#dbe7f3]">
                           {subblock.title} · {subblockProgress}%
-                        </div>
+                        </Link>
                         <div className="space-y-0.5">
                           {subblock.themes.map((topic) => {
                             const href = getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)
