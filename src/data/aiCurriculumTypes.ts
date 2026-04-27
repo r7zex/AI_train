@@ -100,6 +100,11 @@ export interface LessonSection {
   title: string
   paragraphs: string[]
   bullets?: string[]
+  table?: {
+    headers: string[]
+    rows: string[][]
+  }
+  codeExamples?: ConceptCodeExample[]
 }
 
 export interface FlowStep {
