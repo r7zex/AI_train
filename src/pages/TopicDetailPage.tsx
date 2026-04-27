@@ -21,7 +21,7 @@ import {
 import { useProgress } from '../hooks/useProgress'
 import { judgeTask, type JudgeRunResult } from '../lib/practiceEngine'
 
-const inlinePattern = /(pd\.read_csv|pd\.DataFrame|df\.head|df\.info|df\.describe|df\.columns|df\.isna|value_counts|groupby|np\.array|np\.zeros|np\.ones|np\.full|np\.arange|np\.linspace|np\.sum|np\.mean|np\.min|np\.max|np\.std|np\.median|np\.where|np\.random\.default_rng|rng\.integers|rng\.normal|rng\.permutation|model\.fit|model\.predict|train_test_split|fit_transform|predict_proba|OneHotEncoder|OrdinalEncoder|SimpleImputer|StandardScaler|MinMaxScaler|RobustScaler|ColumnTransformer|Pipeline|LogisticRegression|LinearRegression|RandomForestClassifier|XGBClassifier|CatBoostClassifier|CrossEntropyLoss|BCEWithLogitsLoss|DataLoader|Conv2d|Transformer|random_state|learning_rate|weight_decay|n_estimators|max_depth|early_stopping_rounds|sparse_output|class_weight|batch_size|test_size|stratify|shuffle|n_splits|kernel_size|padding|num_heads|d_model|validation|precision|recall|accuracy|logits|loss|leakage|dropout|ndarray|shape|ndim|dtype|axis|broadcasting|baseline|target|features|loc|iloc|fit|transform|predict|train|validate|AdamW|Adam|SGD|RMSprop|MAE|MSE|RMSE|F1|TP|FP|FN|[A-Za-z_][A-Za-z0-9_]*(?=\())/
+const inlinePattern = /(pd\.read_csv|pd\.DataFrame|df\.head|df\.info|df\.describe|df\.columns|df\.isna|value_counts|groupby|np\.array|np\.zeros|np\.ones|np\.full|np\.arange|np\.linspace|np\.sum|np\.mean|np\.min|np\.max|np\.std|np\.var|np\.median|np\.quantile|np\.percentile|np\.where|np\.any|np\.all|np\.sort|np\.argsort|np\.unique|np\.argmax|np\.argmin|np\.random\.default_rng|rng\.integers|rng\.normal|rng\.uniform|rng\.permutation|rng\.choice|model\.fit|model\.predict|train_test_split|fit_transform|predict_proba|OneHotEncoder|OrdinalEncoder|SimpleImputer|StandardScaler|MinMaxScaler|RobustScaler|ColumnTransformer|Pipeline|LogisticRegression|LinearRegression|RandomForestClassifier|XGBClassifier|CatBoostClassifier|CrossEntropyLoss|BCEWithLogitsLoss|DataLoader|Conv2d|Transformer|random_state|learning_rate|weight_decay|n_estimators|max_depth|early_stopping_rounds|sparse_output|class_weight|batch_size|test_size|stratify|shuffle|n_splits|kernel_size|padding|num_heads|d_model|validation|precision|recall|accuracy|logits|loss|leakage|dropout|ndarray|shape|ndim|size|dtype|astype|axis|reshape|ravel|flatten|broadcasting|baseline|target|features|loc|iloc|fit|transform|predict|train|validate|AdamW|Adam|SGD|RMSprop|MAE|MSE|RMSE|R²|F1|TP|FP|FN|[A-Za-z_][A-Za-z0-9_]*(?=\())/
 const richTokenPattern = /(`[^`]+`|\*\*[^*]+\*\*)/g
 
 function RichText({ text, className = '' }: { text: string; className?: string }) {
@@ -131,6 +131,25 @@ function CodeExampleBlock({ example, title = 'Пример кода' }: { exampl
         </p>
       )}
     </section>
+  )
+}
+
+function CalloutBlock({ title, body, tone }: { title: string; body: string; tone: 'important' | 'summary' | 'example' | 'remember' | 'schema' }) {
+  const toneClass = {
+    important: 'border-[#f4c542] bg-[#fff9e8]',
+    summary: 'border-[#65d36f] bg-[#eefaf1]',
+    example: 'border-[#93c5fd] bg-[#eff6ff]',
+    remember: 'border-[#c4b5fd] bg-[#f5f3ff]',
+    schema: 'border-[#d1d5db] bg-[#f8f8f8]',
+  }[tone]
+
+  return (
+    <div className={`mt-2 border-l-4 px-3 py-2 text-[14px] leading-5 text-[#111827] ${toneClass}`}>
+      <div className="mb-0.5 text-[12px] font-bold uppercase tracking-[0.06em] text-[#374151]">{title}</div>
+      <div className={tone === 'schema' ? 'whitespace-pre-line text-[14px]' : 'whitespace-pre-line'}>
+        <RichText text={body} />
+      </div>
+    </div>
   )
 }
 
@@ -344,7 +363,9 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
   return (
     <article className="bg-white">
       <header className="mb-5">
-        <h1 className="text-[24px] font-bold leading-8 text-[#111827]">{step.title}</h1>
+        <h1 className="text-[24px] font-bold leading-8 text-[#111827]">
+          <RichText text={step.title} />
+        </h1>
         {step.summary && !primaryConcept && (
           <p className="mt-2 text-[15px] leading-6 text-[#111827]">
             <RichText text={step.summary} />
@@ -352,13 +373,15 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
         )}
       </header>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {primaryConcept && <ConceptCardView concept={primaryConcept} />}
 
         {step.sections?.map((section) => (
           <section key={section.id}>
-            <h2 className="mb-2 text-[18px] font-bold leading-6 text-[#111827]">{section.title}</h2>
-            <div className="space-y-2 text-[15px] leading-6 text-[#111827]">
+            <h2 className="mb-1.5 text-[18px] font-bold leading-6 text-[#111827]">
+              <RichText text={section.title} />
+            </h2>
+            <div className="space-y-1.5 text-[15px] leading-[1.55] text-[#111827]">
               {section.paragraphs.map((paragraph, index) => (
                 <p key={`${section.id}-${index}`}>
                   <RichText text={paragraph} />
@@ -366,7 +389,7 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
               ))}
             </div>
             {section.bullets && (
-              <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-6 text-[#111827]">
+              <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-[1.55] text-[#111827]">
                 {section.bullets.map((bullet) => (
                   <li key={bullet}>
                     <RichText text={bullet} />
@@ -374,13 +397,16 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
                 ))}
               </ul>
             )}
+            {section.callouts?.map((item) => (
+              <CalloutBlock key={`${section.id}-${item.title}-${item.body}`} title={item.title} body={item.body} tone={item.tone} />
+            ))}
             {section.table && (
-              <div className="mt-3 overflow-x-auto border border-[#e5e7eb]">
-                <table className="min-w-full border-collapse text-left text-[14px] leading-6 text-[#111827]">
+              <div className="mt-2 overflow-x-auto border border-[#e5e7eb]">
+                <table className="min-w-full border-collapse text-left text-[14px] leading-5 text-[#111827]">
                   <thead className="bg-[#f3f4f6]">
                     <tr>
                       {section.table.headers.map((header) => (
-                        <th key={header} className="border-b border-[#e5e7eb] px-3 py-2 font-bold">
+                        <th key={header} className="border-b border-[#e5e7eb] px-2.5 py-1.5 font-bold">
                           <RichText text={header} />
                         </th>
                       ))}
@@ -390,7 +416,7 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
                     {section.table.rows.map((row, rowIndex) => (
                       <tr key={`${section.id}-row-${rowIndex}`} className="border-t border-[#e5e7eb]">
                         {row.map((cell, cellIndex) => (
-                          <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-3 py-2 align-top">
+                          <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-2.5 py-1.5 align-top">
                             <RichText text={cell} />
                           </td>
                         ))}

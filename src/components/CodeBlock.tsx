@@ -55,9 +55,9 @@ export function ReadOnlyCodeCell({
           margin: 0,
           borderRadius: 0,
           background: '#f3f4f6',
-          fontSize: compact ? '0.88rem' : '0.92rem',
-          lineHeight: compact ? '1.4' : '1.48',
-          padding: compact ? '8px 14px' : showHeader ? '10px 14px 14px' : '10px 14px',
+          fontSize: compact ? '0.84rem' : '0.9rem',
+          lineHeight: compact ? '1.35' : '1.44',
+          padding: compact ? '7px 12px' : showHeader ? '8px 12px 12px' : '8px 12px',
         }}
         codeTagProps={{ style: { fontFamily: 'Source Code Pro, Consolas, Menlo, monospace' } }}
       >
@@ -69,7 +69,7 @@ export function ReadOnlyCodeCell({
 
 export default function CodeBlock({ code, language = 'python', output, outputLanguage = 'text', explanation }: CodeBlockProps) {
   return (
-    <div className="my-3 overflow-hidden bg-[#f3f4f6]">
+    <div className="my-2 overflow-hidden bg-[#f3f4f6]">
       <ReadOnlyCodeCell code={code} language={language} label={language} showCopy />
       {output && (
         <div className="border-t border-[#e5e7eb]">
@@ -77,7 +77,7 @@ export default function CodeBlock({ code, language = 'python', output, outputLan
         </div>
       )}
       {explanation && (
-        <div className="border-t border-[#e5e7eb] bg-white px-4 py-3 text-[14px] leading-6 text-[#374151]">
+        <div className="border-t border-[#e5e7eb] bg-white px-3 py-2 text-[13px] leading-5 text-[#374151]">
           {explanation}
         </div>
       )}

@@ -108,7 +108,7 @@ const difficultyColor: Record<string, string> = {
   hard: 'text-red-600 bg-red-50',
 }
 
-const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
+const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({})
   const [submitted, setSubmitted] = useState<Record<string, boolean>>({})
@@ -129,10 +129,6 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
     setShowAll(false)
     setFinished(false)
   }, [])
-
-  useEffect(() => {
-    resetAttempt()
-  }, [quiz.id, resetAttempt])
 
   const answeredCount = Object.keys(submitted).length
   const score = useMemo(() => questions.reduce((acc, question) => {
@@ -575,7 +571,7 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium leading-snug text-gray-800">{index + 1}. {question.question}</p>
                   <p className="mt-1 text-xs text-gray-600">
-                    {ok ? 'Ответ засчитан.' : 'Ответ не засчитан. Правильный ответ можно найти в объяснении.'}
+                    {ok ? 'Ответ засчитан.' : 'Ответ не засчитан. Откройте объяснение в вопросе, чтобы увидеть разбор.'}
                   </p>
                 </div>
               </div>
@@ -650,6 +646,10 @@ const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
       )}
     </div>
   )
+}
+
+const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
+  return <QuizAttempt key={quiz.id} quiz={quiz} />
 }
 
 export default QuizWidget

@@ -100,6 +100,11 @@ export interface LessonSection {
   title: string
   paragraphs: string[]
   bullets?: string[]
+  callouts?: Array<{
+    title: string
+    body: string
+    tone: 'important' | 'summary' | 'example' | 'remember' | 'schema'
+  }>
   table?: {
     headers: string[]
     rows: string[][]
