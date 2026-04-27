@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import CodeBlock from '../components/CodeBlock'
+import CodeBlock, { ReadOnlyCodeCell } from '../components/CodeBlock'
 import CodeEditor from '../components/CodeEditor'
 import CourseSidebar from '../components/CourseSidebar'
 import Formula from '../components/Formula'
@@ -38,6 +38,40 @@ function RichText({ text, className = '' }: { text: string; className?: string }
         return <span key={`${part}-${index}`}>{part}</span>
       })}
     </span>
+  )
+}
+
+function isMathNotation(value: string) {
+  return /[A-Za-z_Σσμθλπη∇]|[A-Z]{1,3}/.test(value) && !/[а-яА-ЯёЁ]/.test(value)
+}
+
+function NotationHead({ value }: { value: string }) {
+  return (
+    <>
+      {value.split(/(\s+(?:или|и)\s+)/u).map((part, index) => {
+        const trimmed = part.trim()
+        if (!trimmed) return <span key={`${part}-${index}`}>{part}</span>
+        if (trimmed === 'или' || trimmed === 'и') return <span key={`${part}-${index}`}>{part}</span>
+        if (isMathNotation(trimmed)) return <Formula key={`${part}-${index}`} math={trimmed} className="inline-block align-baseline" />
+        return <span key={`${part}-${index}`}>{part}</span>
+      })}
+    </>
+  )
+}
+
+function NotationItem({ text }: { text: string }) {
+  const separatorIndex = text.indexOf('—')
+  if (separatorIndex === -1) return <RichText text={text} />
+
+  const head = text.slice(0, separatorIndex).trim()
+  const body = text.slice(separatorIndex + 1).trim()
+
+  return (
+    <>
+      <NotationHead value={head} />
+      <span> — </span>
+      <RichText text={body} />
+    </>
   )
 }
 
@@ -98,7 +132,7 @@ function FormulaCards({ cards }: { cards: FormulaCard[] }) {
           <ul className="list-disc space-y-1 pl-6 text-[15px] leading-7 text-[#111827]">
             {card.notation.map((item, index) => (
               <li key={`${item}-${index}`}>
-                <RichText text={item} />
+                <NotationItem text={item} />
               </li>
             ))}
           </ul>
@@ -122,9 +156,7 @@ function ConceptCardView({ concept }: { concept: ConceptCard }) {
           </strong>{' '}
           — <RichText text={concept.definition ?? concept.what} />
         </p>
-        <div className="bg-[#f3f4f6] px-4 py-3 font-mono text-[14px] leading-6 text-[#111827]">
-          {concept.signature ?? `${concept.shortTitle ?? concept.title}(...)`}
-        </div>
+        <ReadOnlyCodeCell code={concept.signature ?? `${concept.shortTitle ?? concept.title}(...)`} language="python" compact showHeader={false} />
         <p className="text-[15px] leading-7 text-[#111827]">
           <RichText text={concept.why} />
         </p>
@@ -151,7 +183,7 @@ function ConceptCardView({ concept }: { concept: ConceptCard }) {
         <ul className="mt-3 list-disc space-y-1 pl-6 text-[15px] leading-7 text-[#111827]">
           {concept.formula.notation.map((item, index) => (
             <li key={`${item}-${index}`}>
-              <RichText text={item} />
+              <NotationItem text={item} />
             </li>
           ))}
         </ul>
@@ -401,9 +433,9 @@ export default function TopicDetailPage() {
 
   return (
     <div className="min-h-screen bg-white text-[#111827]">
-      <header className="sticky top-0 z-50 h-[42px] border-b border-[#3a3a3a] bg-[#202020] text-white">
+      <header className="sticky top-0 z-50 h-[48px] border-b border-[#3a3a3a] bg-[#202020] text-white">
         <div className="flex h-full items-center gap-4 px-4">
-          <Link to="/topics" className="flex h-full w-[216px] shrink-0 items-center gap-2">
+          <Link to="/topics" className="flex h-full w-[232px] shrink-0 items-center gap-2">
             <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[13px] font-bold leading-none">AI</span>
             <span className="text-[25px] font-normal leading-none">Train</span>
           </Link>
