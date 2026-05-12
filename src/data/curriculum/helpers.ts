@@ -23,6 +23,13 @@ export const curriculumBlocks = [
     description: 'DataFrame, Series, чтение CSV, просмотр таблиц, фильтрация, группировка, пропуски и базовая очистка данных.',
     order: 3,
   },
+  {
+    id: 'ml-foundations',
+    title: 'Основы машинного обучения',
+    icon: '04',
+    description: 'Данные, признаки, target, модель, обучение, train/test, baseline, метрики и полный цикл ML-проекта.',
+    order: 4,
+  },
 ]
 
 export const commonSources = [
@@ -386,6 +393,33 @@ export const pandasTopic = (
   'pandas-eda',
   'Pandas и первичный анализ данных',
   '03',
+  `${id}-subblock`,
+  title,
+  simpleExplanation,
+  terminology,
+  formulas,
+  themeCheatsheet,
+  steps,
+)
+
+export const mlFoundationsTopic = (
+  id: string,
+  title: string,
+  order: number,
+  summary: string,
+  simpleExplanation: string,
+  terminology: string[],
+  formulas: string[],
+  themeCheatsheet: string[],
+  steps: FlowStep[],
+) => topicBase(
+  id,
+  title,
+  order,
+  summary,
+  'ml-foundations',
+  'Основы машинного обучения',
+  '04',
   `${id}-subblock`,
   title,
   simpleExplanation,
