@@ -70,10 +70,22 @@ export const topicPandasSelection = pandasTopic(
           'df.loc[row_labels, column_labels]',
           ['первая часть выбирает строки по меткам или маске', 'вторая часть выбирает столбцы по именам'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+            })
+
             expensive = df.loc[df["price"] > 10_000_000, ["area", "price"]]
             print(expensive)
           `,
-          'Строки с дорогими квартирами и два выбранных столбца.',
+          `
+               area     price
+            2    80  18400000
+            3    40  12000000
+          `,
           '`loc` соединяет фильтр по строкам и выбор столбцов по именам.',
         ),
         section('loc', 'Выбор по меткам', [
@@ -82,9 +94,21 @@ export const topicPandasSelection = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80, 40],
+                  "rooms": [1, 2, 3, 1],
+                  "price": [8200000, 9100000, 18400000, 12000000],
+              })
+
               expensive = df.loc[df["price"] > 10_000_000, ["area", "price"]]
               print(expensive)
-            `, 'Строки с дорогими квартирами и два выбранных столбца.', '`loc` читабельно соединяет условие по строкам и список столбцов.'),
+            `, `
+                 area     price
+              2    80  18400000
+              3    40  12000000
+            `, '`loc` читабельно соединяет условие по строкам и список столбцов.'),
           ],
         }),
       ],
@@ -100,10 +124,23 @@ export const topicPandasSelection = pandasTopic(
           'df.iloc[row_positions, column_positions]',
           ['первая часть выбирает строки по номерам', 'вторая часть выбирает столбцы по номерам'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+            })
+
             preview = df.iloc[:3, :2]
             print(preview)
           `,
-          'Первые 3 строки и первые 2 столбца таблицы.',
+          `
+               area  rooms
+            0    35      1
+            1    52      2
+            2    80      3
+          `,
           '`iloc` работает с позициями, а не с названиями.',
         ),
         section('iloc', 'Выбор по позициям', [
@@ -112,9 +149,22 @@ export const topicPandasSelection = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80, 40],
+                  "rooms": [1, 2, 3, 1],
+                  "price": [8200000, 9100000, 18400000, 12000000],
+              })
+
               preview = df.iloc[:3, :2]
               print(preview)
-            `, 'Первые 3 строки и первые 2 столбца таблицы.', '`iloc` не знает названий колонок в выражении: он работает только с позициями.'),
+            `, `
+                 area  rooms
+              0    35      1
+              1    52      2
+              2    80      3
+            `, '`iloc` не знает названий колонок в выражении: он работает только с позициями.'),
           ],
         }),
       ],
@@ -131,9 +181,21 @@ export const topicPandasSelection = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80, 40],
+                  "rooms": [1, 2, 3, 1],
+                  "price": [8200000, 9100000, 18400000, 12000000],
+              })
+
               expensive = df[df["price"] > 10_000_000]
               print(expensive[["area", "price"]])
-            `, 'Только строки, где `price` больше 10 000 000, и два выбранных столбца.', 'Маска применяется ко всей таблице сразу, без ручного цикла по строкам.'),
+            `, `
+                 area     price
+              2    80  18400000
+              3    40  12000000
+            `, 'Маска применяется ко всей таблице сразу, без ручного цикла по строкам.'),
           ],
           callouts: [
             callout('Запомнить', 'Условие в pandas работает не с одной строкой, а сразу со всем столбцом.', 'remember'),

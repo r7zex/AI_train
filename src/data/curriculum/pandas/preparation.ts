@@ -25,9 +25,20 @@ export const topicPandasTypesAndPreparation = pandasTopic(
           'df.dtypes',
           ['`df` - таблица pandas'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "rooms": ["1", "2", "3"],
+                "area": [35, 52, 80],
+            })
+
             print(df.dtypes)
           `,
-          'Тип данных для каждого столбца.',
+          `
+            rooms    object
+            area      int64
+            dtype: object
+          `,
           '`dtypes` помогает заметить числа, прочитанные как строки.',
         ),
         functionSection(
@@ -36,6 +47,13 @@ export const topicPandasTypesAndPreparation = pandasTopic(
           'df["col"].astype(dtype)',
           ['`dtype` - новый тип, например `int`, `float` или `"category"`'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "rooms": ["1", "2", "3"],
+                "area": [35, 52, 80],
+            })
+
             df["rooms"] = df["rooms"].astype(int)
             print(df["rooms"].dtype)
           `,
@@ -48,9 +66,22 @@ export const topicPandasTypesAndPreparation = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "rooms": ["1", "2", "3"],
+                  "area": [35, 52, 80],
+              })
+
               print(df.dtypes)
               df["rooms"] = df["rooms"].astype(int)
-            `, 'Типы проверены, столбец `rooms` приведён к целому типу.', 'Перед `astype()` нужно убедиться, что в столбце нет несовместимых значений.'),
+              print(df["rooms"].dtype)
+            `, `
+              rooms    object
+              area      int64
+              dtype: object
+              int64
+            `, 'Перед `astype()` нужно убедиться, что в столбце нет несовместимых значений.'),
           ],
         }),
       ],
@@ -66,10 +97,23 @@ export const topicPandasTypesAndPreparation = pandasTopic(
           'pd.get_dummies(df, columns=[...])',
           ['`df` - исходная таблица', '`columns` - список категориальных столбцов', '`drop_first` - удалять ли одну категорию из набора'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80],
+                "district": ["Center", "North", "Center"],
+                "price": [8, 9, 18],
+            })
+
             df_encoded = pd.get_dummies(df, columns=["district"], drop_first=False)
             print(df_encoded.head())
           `,
-          'Вместо `district` появились столбцы вида `district_Center`, `district_North`.',
+          `
+               area  price  district_Center  district_North
+            0    35      8             True           False
+            1    52      9            False            True
+            2    80     18             True           False
+          `,
           '`get_dummies()` превращает категории в 0/1-столбцы.',
         ),
         section('categories', 'Почему строки нужно кодировать', [
@@ -78,9 +122,22 @@ export const topicPandasTypesAndPreparation = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80],
+                  "district": ["Center", "North", "Center"],
+                  "price": [8, 9, 18],
+              })
+
               df_encoded = pd.get_dummies(df, columns=["district"], drop_first=False)
               print(df_encoded.head())
-            `, 'Вместо `district` появились столбцы вида `district_Center`, `district_North`.', 'Так модель получает числовые индикаторы категорий.'),
+            `, `
+                 area  price  district_Center  district_North
+              0    35      8             True           False
+              1    52      9            False            True
+              2    80     18             True           False
+            `, 'Так модель получает числовые индикаторы категорий.'),
           ],
         }),
       ],
@@ -97,13 +154,30 @@ export const topicPandasTypesAndPreparation = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80],
+                  "rooms": [1, 2, 3],
+                  "price": [8, 9, 18],
+              })
+
               feature_cols = ["area", "rooms"]
               X = df[feature_cols]
               y = df["price"]
 
               print(X.head())
               print(y.head())
-            `, 'Сначала выводятся признаки, затем целевой столбец.', '`price` не входит в `X`, потому что это ответ, который модель должна научиться предсказывать.'),
+            `, `
+                 area  rooms
+              0    35      1
+              1    52      2
+              2    80      3
+              0     8
+              1     9
+              2    18
+              Name: price, dtype: int64
+            `, '`price` не входит в `X`, потому что это ответ, который модель должна научиться предсказывать.'),
           ],
           callouts: [
             callout('Важно', 'Target внутри признаков почти всегда приводит к утечке данных и нереалистично высокой оценке качества.', 'important'),
@@ -123,6 +197,15 @@ export const topicPandasTypesAndPreparation = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80],
+                  "rooms": [1, 2, 3],
+                  "district": ["Center", "North", "Center"],
+                  "price": [8, 9, 18],
+              })
+
               df_encoded = pd.get_dummies(df, columns=["district"], dtype=int)
 
               feature_cols = ["area", "rooms", "district_Center", "district_North"]

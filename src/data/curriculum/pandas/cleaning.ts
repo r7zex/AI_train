@@ -25,9 +25,22 @@ export const topicPandasMissingDuplicates = pandasTopic(
           'df.isna()',
           ['параметры не нужны'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "age": [20, None, 40],
+                "city": ["Moscow", None, "Kazan"],
+                "price": [8, 9, 18],
+            })
+
             print(df.isna())
           `,
-          'Таблица такого же размера со значениями `True` и `False`.',
+          `
+                 age   city  price
+            0  False  False  False
+            1   True   True  False
+            2  False  False  False
+          `,
           '`isna()` показывает, в каких ячейках есть пропуски.',
         ),
         functionSection(
@@ -74,10 +87,18 @@ export const topicPandasMissingDuplicates = pandasTopic(
           'df.dropna(subset=None, how="any")',
           ['`subset` - столбцы, где проверять пропуски', '`how` - правило удаления строк'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "age": [20, None, 40],
+                "city": ["Moscow", None, "Kazan"],
+                "price": [8, 9, 18],
+            })
+
             clean = df.dropna(subset=["price"])
             print(clean.shape)
           `,
-          'Размер таблицы после удаления строк с пропуском в `price`.',
+          '(3, 3)',
           '`dropna()` удаляет строки или столбцы с пропусками.',
         ),
         section('dropna', 'Когда удалять строки', [
@@ -101,9 +122,22 @@ export const topicPandasMissingDuplicates = pandasTopic(
           'df.fillna(value)',
           ['`value` - значение для замены пропусков'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "age": [20, None, 40],
+                "city": ["Moscow", None, "Kazan"],
+                "price": [8, 9, 18],
+            })
+
             print(df.fillna(0))
           `,
-          'Таблица, где пропуски заменены нулями.',
+          `
+                age    city  price
+            0  20.0  Moscow      8
+            1   0.0       0      9
+            2  40.0   Kazan     18
+          `,
           '`fillna()` заменяет пропуски заданным значением.',
         ),
         functionSection(
@@ -112,9 +146,23 @@ export const topicPandasMissingDuplicates = pandasTopic(
           'df["col"].fillna(df["col"].median())',
           ['`median()` - медиана числового столбца'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "age": [20, None, 40],
+                "city": ["Moscow", None, "Kazan"],
+                "price": [8, 9, 18],
+            })
+
             df["age"] = df["age"].fillna(df["age"].median())
+            print(df)
           `,
-          'Пропуски в `age` заменены медианой.',
+          `
+                age    city  price
+            0  20.0  Moscow      8
+            1  30.0    None      9
+            2  40.0   Kazan     18
+          `,
           'Медиана часто устойчивее среднего, если есть выбросы.',
         ),
         functionSection(
@@ -123,9 +171,23 @@ export const topicPandasMissingDuplicates = pandasTopic(
           'df["col"].fillna(df["col"].mode()[0])',
           ['`mode()` возвращает самые частые значения', '`[0]` берёт первое из них'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "age": [20, None, 40],
+                "city": ["Moscow", None, "Kazan"],
+                "price": [8, 9, 18],
+            })
+
             df["city"] = df["city"].fillna(df["city"].mode()[0])
+            print(df)
           `,
-          'Пропуски в `city` заменены самой частой категорией.',
+          `
+                age    city  price
+            0  20.0  Moscow      8
+            1   NaN   Kazan      9
+            2  40.0   Kazan     18
+          `,
           'Мода подходит для категориальных признаков.',
         ),
         section('fillna', 'Медиана, среднее, мода', [
@@ -134,9 +196,23 @@ export const topicPandasMissingDuplicates = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "age": [20, None, 40],
+                  "city": ["Moscow", None, "Kazan"],
+                  "price": [8, 9, 18],
+              })
+
               df["age"] = df["age"].fillna(df["age"].median())
               df["city"] = df["city"].fillna(df["city"].mode()[0])
-            `, 'Пропуски в `age` заменены медианой, в `city` - самой частой категорией.', 'Стратегия зависит от смысла столбца, а не только от типа данных.'),
+              print(df)
+            `, `
+                  age    city  price
+              0  20.0  Moscow      8
+              1  30.0   Kazan      9
+              2  40.0   Kazan     18
+            `, 'Стратегия зависит от смысла столбца, а не только от типа данных.'),
           ],
         }),
       ],
@@ -152,9 +228,16 @@ export const topicPandasMissingDuplicates = pandasTopic(
           'df.duplicated(subset=None)',
           ['`subset` - столбцы, по которым проверять повтор'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "name": ["Anna", "Boris", "Boris"],
+                "age": [20, 35, 35],
+            })
+
             print(df.duplicated().sum())
           `,
-          'Количество повторяющихся строк.',
+          '1',
           '`duplicated()` возвращает маску строк-дубликатов.',
         ),
         functionSection(
@@ -163,10 +246,17 @@ export const topicPandasMissingDuplicates = pandasTopic(
           'df.drop_duplicates(subset=None)',
           ['`subset` - столбцы, по которым определять одинаковые строки'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "name": ["Anna", "Boris", "Boris"],
+                "age": [20, 35, 35],
+            })
+
             df = df.drop_duplicates()
             print(df.shape)
           `,
-          'Размер таблицы после удаления дублей.',
+          '(2, 2)',
           '`drop_duplicates()` возвращает таблицу без повторяющихся строк.',
         ),
         section('duplicates', 'Повторы строк', [
