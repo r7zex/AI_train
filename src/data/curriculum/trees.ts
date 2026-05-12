@@ -1,5 +1,5 @@
 import type { FlowTopic } from '../aiCurriculumTypes'
-import { callout, code, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
+import { callout, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
 
 export const topicGiniImpurity: FlowTopic = introTopic(
   'gini-impurity',
@@ -33,14 +33,12 @@ export const topicGiniImpurity: FlowTopic = introTopic(
       [
         section('formula', 'Математическое определение', [
           'Для узла, где есть несколько классов, индекс Джини считается так:',
+          'Где **pᵢ** — доля объектов класса **i** в этом узле.',
+          'Пример для 2 классов (50/50): `Gini = 1 - (0.5² + 0.5²) = 1 - (0.25 + 0.25) = 0.5`.',
+          'Пример для 1 класса (100/0): `Gini = 1 - (1.0² + 0.0²) = 0`.',
         ], {
           callouts: [
             callout('Формула', 'Gini = 1 - (p₁² + p₂² + ... + pₖ²)', 'schema'),
-          ],
-          paragraphs: [
-            'Где **pᵢ** — доля объектов класса **i** в этом узле.',
-            'Пример для 2 классов (50/50): `Gini = 1 - (0.5² + 0.5²) = 1 - (0.25 + 0.25) = 0.5`.',
-            'Пример для 1 класса (100/0): `Gini = 1 - (1.0² + 0.0²) = 0`.',
           ],
         }),
       ],

@@ -1,5 +1,5 @@
 import type { FlowTopic } from '../aiCurriculumTypes'
-import { callout, code, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
+import { callout, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
 
 /**
  * TOPIC 1.3: ML Project Lifecycle
@@ -124,7 +124,11 @@ export const topicMetricsDeep: FlowTopic = introTopic(
           fp = int(input())
           fn = int(input())
           
-          # Ваш код здесь
+          # TODO: посчитайте precision
+
+          # TODO: посчитайте recall
+
+          # TODO: выведите precision и recall
         `,
         [
           { id: 's1', description: 'Тест 1', input: '10\n2\n3', expectedOutput: '0.83 0.77' },

@@ -1,5 +1,5 @@
 import type { FlowTopic } from '../aiCurriculumTypes'
-import { callout, code, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
+import { callout, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
 
 export const topicMetricsPrf: FlowTopic = introTopic(
   'precision-recall-f1',

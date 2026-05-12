@@ -11,11 +11,10 @@ const curriculumPath = path.join(root, 'src/data/aiCurriculum.ts')
 const errors = []
 
 const expectedStepCounts = new Map([
-  ['intro-ai-ml-dl', 6],
-  ['programming-vs-ml', 6],
-  ['ml-task-types', 8],
-  ['data-features-target', 6],
-  ['ml-model-fit-predict-metric', 9],
+  ['intro-ai-ml-dl-v2', 4],
+  ['ml-types', 4],
+  ['ml-project-lifecycle', 1],
+  ['metrics-deep', 4],
   ['numpy-why', 6],
   ['numpy-array-creation', 7],
   ['numpy-shape-ndim-dtype', 6],
@@ -26,14 +25,20 @@ const expectedStepCounts = new Map([
   ['numpy-masks-where', 7],
   ['numpy-broadcasting', 8],
   ['numpy-random-reproducibility', 7],
+  ['pandas-why-dataframe', 6],
+  ['pandas-read-inspect', 7],
+  ['pandas-selection', 7],
+  ['pandas-filtering-sorting', 7],
+  ['pandas-missing-duplicates', 7],
+  ['pandas-groupby', 7],
+  ['pandas-types-preparation', 7],
 ])
 
 const expectedQuizCounts = new Map([
-  ['intro-ai-ml-dl', 2],
-  ['programming-vs-ml', 2],
-  ['ml-task-types', 2],
-  ['data-features-target', 1],
-  ['ml-model-fit-predict-metric', 2],
+  ['intro-ai-ml-dl-v2', 1],
+  ['ml-types', 1],
+  ['ml-project-lifecycle', 0],
+  ['metrics-deep', 1],
   ['numpy-why', 2],
   ['numpy-array-creation', 2],
   ['numpy-shape-ndim-dtype', 2],
@@ -44,6 +49,34 @@ const expectedQuizCounts = new Map([
   ['numpy-masks-where', 2],
   ['numpy-broadcasting', 2],
   ['numpy-random-reproducibility', 2],
+  ['pandas-why-dataframe', 2],
+  ['pandas-read-inspect', 2],
+  ['pandas-selection', 2],
+  ['pandas-filtering-sorting', 2],
+  ['pandas-missing-duplicates', 2],
+  ['pandas-groupby', 2],
+  ['pandas-types-preparation', 2],
+])
+
+const topicsRequiringPractice = new Set([
+  'metrics-deep',
+  'numpy-why',
+  'numpy-array-creation',
+  'numpy-shape-ndim-dtype',
+  'numpy-indexing-slices',
+  'numpy-vector-operations',
+  'numpy-aggregations-statistics',
+  'numpy-2d-axis',
+  'numpy-masks-where',
+  'numpy-broadcasting',
+  'numpy-random-reproducibility',
+  'pandas-why-dataframe',
+  'pandas-read-inspect',
+  'pandas-selection',
+  'pandas-filtering-sorting',
+  'pandas-missing-duplicates',
+  'pandas-groupby',
+  'pandas-types-preparation',
 ])
 
 function requireCondition(condition, message) {
@@ -140,32 +173,30 @@ const { curriculumBlocks, flowTopics } = loadCurriculum()
 
 requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
-requireCondition(curriculumBlocks.length === 2, `Expected exactly 2 curriculum blocks, got ${curriculumBlocks.length}.`)
-requireCondition(flowTopics.length === 15, `Expected exactly 15 topics, got ${flowTopics.length}.`)
+requireCondition(curriculumBlocks.length === 3, `Expected exactly 3 curriculum blocks, got ${curriculumBlocks.length}.`)
+requireCondition(flowTopics.length === 21, `Expected exactly 21 topics, got ${flowTopics.length}.`)
 
 const blockIds = curriculumBlocks.map((block) => block.id)
-requireCondition(blockIds.join(',') === 'intro-ai-ml,numpy-ml', `Unexpected block ids: ${blockIds.join(',')}.`)
+requireCondition(blockIds.join(',') === 'intro-ai-ml,numpy-ml,pandas-eda', `Unexpected block ids: ${blockIds.join(',')}.`)
 
 const topicIds = flowTopics.map((topic) => topic.id)
 requireCondition(topicIds.join(',') === [...expectedStepCounts.keys()].join(','), `Unexpected topic order: ${topicIds.join(',')}.`)
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 102, `Expected 102 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 128, `Expected 128 total steps, got ${totalSteps}.`)
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`
   const expectedCount = expectedStepCounts.get(topic.id)
   requireCondition(topic.steps.length === expectedCount, `${prefix} expected ${expectedCount} steps, got ${topic.steps.length}.`)
-  requireCondition(topic.blockId === 'intro-ai-ml' || topic.blockId === 'numpy-ml', `${prefix} unexpected blockId ${topic.blockId}.`)
+  requireCondition(['intro-ai-ml', 'numpy-ml', 'pandas-eda'].includes(topic.blockId), `${prefix} unexpected blockId ${topic.blockId}.`)
   requireCondition(!['python-for-ai', 'data-prep'].includes(topic.blockId), `${prefix} old block id must not be displayed.`)
 
   const stepTypes = topic.steps.map((step) => step.type)
   requireCondition(stepTypes.includes('theory'), `${prefix} missing theory steps.`)
   requireCondition(stepTypes.filter((type) => type === 'quiz').length === expectedQuizCounts.get(topic.id), `${prefix} unexpected quiz step count.`)
-  if (topic.id !== 'intro-ai-ml-dl') {
+  if (topicsRequiringPractice.has(topic.id)) {
     requireCondition(stepTypes.includes('practice'), `${prefix} missing practice step.`)
-  } else {
-    requireCondition(!stepTypes.includes('practice'), `${prefix} conceptual intro topic should not contain artificial practice.`)
   }
 
   for (const step of topic.steps.filter((item) => item.type === 'theory')) {

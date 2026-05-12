@@ -1,5 +1,5 @@
 import type { FlowTopic } from '../aiCurriculumTypes'
-import { callout, code, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
+import { callout, introTopic, quizStep, section, singleQuiz, theoryStep } from './helpers'
 
 /**
  * TOPIC 1.1: AI vs ML vs DL
