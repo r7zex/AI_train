@@ -56,9 +56,23 @@ export const topicPandasReadInspect = pandasTopic(
           'df.head(n=5)',
           ['`n` - сколько первых строк показать'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+                "district": ["Center", "North", "Center", "South"],
+            })
+
             print(df.head(3))
           `,
-          'Первые 3 строки таблицы.',
+          `
+               area  rooms     price district
+            0    35      1   8200000   Center
+            1    52      2   9100000    North
+            2    80      3  18400000   Center
+          `,
           '`head()` быстро показывает начало таблицы.',
         ),
         functionSection(
@@ -67,9 +81,22 @@ export const topicPandasReadInspect = pandasTopic(
           'df.tail(n=5)',
           ['`n` - сколько последних строк показать'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+                "district": ["Center", "North", "Center", "South"],
+            })
+
             print(df.tail(2))
           `,
-          'Последние 2 строки таблицы.',
+          `
+               area  rooms     price district
+            2    80      3  18400000   Center
+            3    40      1  12000000    South
+          `,
           '`tail()` помогает заметить проблемы в конце файла.',
         ),
         functionSection(
@@ -78,9 +105,22 @@ export const topicPandasReadInspect = pandasTopic(
           'df.sample(n, random_state=None)',
           ['`n` - сколько случайных строк взять', '`random_state` - фиксирует случайность для повторяемого результата'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+                "district": ["Center", "North", "Center", "South"],
+            })
+
             print(df.sample(2, random_state=42))
           `,
-          'Две случайные строки таблицы.',
+          `
+               area  rooms     price district
+            1    52      2   9100000    North
+            3    40      1  12000000    South
+          `,
           '`sample()` даёт взгляд на разные части таблицы, а не только на начало.',
         ),
         section('rows-preview', 'Как читать первые строки', [
@@ -89,10 +129,30 @@ export const topicPandasReadInspect = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80, 40],
+                  "rooms": [1, 2, 3, 1],
+                  "price": [8200000, 9100000, 18400000, 12000000],
+                  "district": ["Center", "North", "Center", "South"],
+              })
+
               print(df.head(3))
               print(df.tail(2))
               print(df.sample(2, random_state=42))
-            `, 'Фрагменты строк из начала, конца и случайной части таблицы.', 'Параметр `random_state` фиксирует случайный выбор, чтобы пример повторялся.'),
+            `, `
+                 area  rooms     price district
+              0    35      1   8200000   Center
+              1    52      2   9100000    North
+              2    80      3  18400000   Center
+                 area  rooms     price district
+              2    80      3  18400000   Center
+              3    40      1  12000000    South
+                 area  rooms     price district
+              1    52      2   9100000    North
+              3    40      1  12000000    South
+            `, 'Параметр `random_state` фиксирует случайный выбор, чтобы пример повторялся.'),
           ],
         }),
       ],
@@ -174,9 +234,30 @@ export const topicPandasReadInspect = pandasTopic(
           'df.info()',
           ['параметры обычно не нужны для первого осмотра'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+                "district": ["Center", "North", "Center", "South"],
+            })
+
             df.info()
           `,
-          'Краткий отчёт: число строк, столбцы, non-null count и dtype.',
+          `
+            <class 'pandas.core.frame.DataFrame'>
+            RangeIndex: 4 entries, 0 to 3
+            Data columns (total 4 columns):
+             #   Column    Non-Null Count  Dtype 
+            ---  ------    --------------  ----- 
+             0   area      4 non-null      int64 
+             1   rooms     4 non-null      int64 
+             2   price     4 non-null      int64 
+             3   district  4 non-null      object
+            dtypes: int64(3), object(1)
+            memory usage: 260.0+ bytes
+          `,
           '`info()` быстро показывает типы и количество непустых значений.',
         ),
         functionSection(
@@ -185,9 +266,28 @@ export const topicPandasReadInspect = pandasTopic(
           'df.describe()',
           ['`include` - какие типы столбцов включить; по умолчанию берутся числовые'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+                "district": ["Center", "North", "Center", "South"],
+            })
+
             print(df.describe())
           `,
-          'Таблица со статистиками `count`, `mean`, `std`, `min`, квартилями и `max`.',
+          `
+                      area     rooms         price
+            count   4.0000  4.000000  4.000000e+00
+            mean   51.7500  1.750000  1.192500e+07
+            std    20.1391  0.957427  4.611128e+06
+            min    35.0000  1.000000  8.200000e+06
+            25%    38.7500  1.000000  8.875000e+06
+            50%    46.0000  1.500000  1.055000e+07
+            75%    59.0000  2.250000  1.360000e+07
+            max    80.0000  3.000000  1.840000e+07
+          `,
           '`describe()` возвращает числовую сводку по столбцам.',
         ),
         section('eda-summary', 'Краткая сводка таблицы', [

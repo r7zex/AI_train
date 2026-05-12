@@ -25,11 +25,21 @@ export const topicPandasGroupby = pandasTopic(
           'df["col"].value_counts()',
           ['`normalize=True` - вернуть доли вместо количества', '`dropna=False` - учитывать пропуски'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "district": ["Center", "North", "Center", "South"],
+                "area": [35, 52, 80, 40],
+                "price": [8, 9, 18, 12],
+            })
+
             print(df["district"].value_counts())
           `,
           `
+            district
             Center    2
             North     1
+            South     1
             Name: count, dtype: int64
           `,
           '`value_counts()` считает, сколько раз встречается каждое значение.',
@@ -40,10 +50,20 @@ export const topicPandasGroupby = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "district": ["Center", "North", "Center", "South"],
+                  "area": [35, 52, 80, 40],
+                  "price": [8, 9, 18, 12],
+              })
+
               print(df["district"].value_counts())
             `, `
+              district
               Center    2
               North     1
+              South     1
               Name: count, dtype: int64
             `, '`value_counts()` показывает количество строк для каждой категории.'),
           ],
@@ -61,12 +81,21 @@ export const topicPandasGroupby = pandasTopic(
           'df.groupby("group_col")["value_col"].mean()',
           ['`group_col` - столбец группировки', '`value_col` - числовой столбец для агрегации'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "district": ["Center", "North", "Center", "South"],
+                "area": [35, 52, 80, 40],
+                "price": [8, 9, 18, 12],
+            })
+
             print(df.groupby("district")["price"].mean())
           `,
           `
             district
-            Center    13300000.0
-            North      9100000.0
+            Center    13.0
+            North      9.0
+            South     12.0
             Name: price, dtype: float64
           `,
           '`groupby()` разбил строки по району, а `mean()` посчитал среднюю цену внутри каждой группы.',
@@ -77,11 +106,20 @@ export const topicPandasGroupby = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "district": ["Center", "North", "Center", "South"],
+                  "area": [35, 52, 80, 40],
+                  "price": [8, 9, 18, 12],
+              })
+
               print(df.groupby("district")["price"].mean())
             `, `
               district
-              Center    13300000.0
-              North      9100000.0
+              Center    13.0
+              North      9.0
+              South     12.0
               Name: price, dtype: float64
             `, 'Средняя цена посчитана отдельно внутри каждого района.'),
           ],
@@ -99,6 +137,14 @@ export const topicPandasGroupby = pandasTopic(
           'df.groupby("group_col").agg({...})',
           ['в словаре указывают столбец и одну функцию или список функций'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "district": ["Center", "North", "Center", "South"],
+                "area": [35, 52, 80, 40],
+                "price": [8, 9, 18, 12],
+            })
+
             stats = df.groupby("district").agg({
                 "price": ["mean", "median", "max"],
                 "area": "mean",
@@ -106,7 +152,14 @@ export const topicPandasGroupby = pandasTopic(
 
             print(stats)
           `,
-          'Сводная таблица с несколькими статистиками по районам.',
+          `
+                     price             area
+                      mean median max  mean
+            district                       
+            Center    13.0   13.0  18  57.5
+            North      9.0    9.0   9  52.0
+            South     12.0   12.0  12  40.0
+          `,
           '`agg()` считает несколько агрегатов в одном выражении.',
         ),
         section('agg', 'Несколько агрегатов', [
@@ -115,13 +168,28 @@ export const topicPandasGroupby = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "district": ["Center", "North", "Center", "South"],
+                  "area": [35, 52, 80, 40],
+                  "price": [8, 9, 18, 12],
+              })
+
               stats = df.groupby("district").agg({
                   "price": ["mean", "median", "max"],
                   "area": "mean",
               })
 
               print(stats)
-            `, 'Сводная таблица с несколькими статистиками по районам.', '`agg()` удобно расширять: добавлять новые столбцы и функции без переписывания всей логики.'),
+            `, `
+                       price             area
+                        mean median max  mean
+              district                       
+              Center    13.0   13.0  18  57.5
+              North      9.0    9.0   9  52.0
+              South     12.0   12.0  12  40.0
+            `, '`agg()` удобно расширять: добавлять новые столбцы и функции без переписывания всей логики.'),
           ],
         }),
       ],
@@ -137,10 +205,24 @@ export const topicPandasGroupby = pandasTopic(
           'df.pivot_table(index=..., values=..., aggfunc=...)',
           ['`index` - группы в строках', '`values` - столбец со значениями', '`aggfunc` - функция агрегации'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "district": ["Center", "North", "Center", "South"],
+                "area": [35, 52, 80, 40],
+                "price": [8, 9, 18, 12],
+            })
+
             table = df.pivot_table(index="district", values="price", aggfunc="mean")
             print(table)
           `,
-          'Средняя цена по каждому району в виде `DataFrame`.',
+          `
+                      price
+            district       
+            Center     13.0
+            North       9.0
+            South      12.0
+          `,
           '`pivot_table()` строит сводную таблицу агрегатов.',
         ),
         section('pivot', 'Сводная таблица', [
@@ -149,9 +231,23 @@ export const topicPandasGroupby = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "district": ["Center", "North", "Center", "South"],
+                  "area": [35, 52, 80, 40],
+                  "price": [8, 9, 18, 12],
+              })
+
               table = df.pivot_table(index="district", values="price", aggfunc="mean")
               print(table)
-            `, 'Средняя цена по каждому району в виде DataFrame.', '`pivot_table()` особенно полезен для отчётов и проверки гипотез по категориям.'),
+            `, `
+                        price
+              district       
+              Center     13.0
+              North       9.0
+              South      12.0
+            `, '`pivot_table()` особенно полезен для отчётов и проверки гипотез по категориям.'),
           ],
         }),
       ],

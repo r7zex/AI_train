@@ -26,9 +26,22 @@ export const topicPandasFilteringSorting = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80, 40],
+                  "rooms": [1, 2, 3, 1],
+                  "price": [8200000, 9100000, 18400000, 12000000],
+                  "district": ["Center", "North", "Center", "South"],
+              })
+
               expensive = df[df["price"] > 10_000_000]
               print(expensive)
-            `, 'DataFrame только со строками, где цена выше порога.', 'Условие применяется ко всему столбцу `price` сразу.'),
+            `, `
+                 area  rooms     price district
+              2    80      3  18400000   Center
+              3    40      1  12000000    South
+            `, 'Условие применяется ко всему столбцу `price` сразу.'),
           ],
         }),
       ],
@@ -45,9 +58,20 @@ export const topicPandasFilteringSorting = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "age": [24, 35, 41],
+                  "city": ["Moscow", "Moscow", "Kazan"],
+                  "score": [82, 90, 75],
+              })
+
               filtered = df[(df["age"] > 30) & (df["city"] == "Moscow")]
               print(filtered)
-            `, 'Строки, где одновременно выполнены оба условия.', 'Скобки вокруг условий защищают код от ошибок приоритетов операций.'),
+            `, `
+                 age    city  score
+              1   35  Moscow     90
+            `, 'Скобки вокруг условий защищают код от ошибок приоритетов операций.'),
           ],
         }),
       ],
@@ -63,9 +87,23 @@ export const topicPandasFilteringSorting = pandasTopic(
           'df.sort_values("col")',
           ['`col` - столбец для сортировки'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+                "district": ["Center", "North", "Center", "South"],
+            })
+
             print(df.sort_values("price").head(3))
           `,
-          'Три строки с самыми маленькими значениями `price`.',
+          `
+               area  rooms     price district
+            0    35      1   8200000   Center
+            1    52      2   9100000    North
+            3    40      1  12000000    South
+          `,
           '`sort_values()` по умолчанию сортирует по возрастанию.',
         ),
         functionSection(
@@ -74,10 +112,24 @@ export const topicPandasFilteringSorting = pandasTopic(
           'df.sort_values("col", ascending=False)',
           ['`ascending=False` - сортировать от больших значений к меньшим'],
           `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80, 40],
+                "rooms": [1, 2, 3, 1],
+                "price": [8200000, 9100000, 18400000, 12000000],
+                "district": ["Center", "North", "Center", "South"],
+            })
+
             top = df.sort_values("price", ascending=False).head(3)
             print(top[["area", "price"]])
           `,
-          'Три самые дорогие строки по столбцу `price`.',
+          `
+               area     price
+            2    80  18400000
+            3    40  12000000
+            1    52   9100000
+          `,
           '`ascending=False` меняет порядок сортировки на убывающий.',
         ),
         section('sort', 'Порядок строк', [
@@ -86,9 +138,23 @@ export const topicPandasFilteringSorting = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80, 40],
+                  "rooms": [1, 2, 3, 1],
+                  "price": [8200000, 9100000, 18400000, 12000000],
+                  "district": ["Center", "North", "Center", "South"],
+              })
+
               top = df.sort_values("price", ascending=False).head(3)
               print(top[["area", "price"]])
-            `, 'Три самые дорогие строки по столбцу `price`.', 'Сортировка часто используется вместе с `head()`, чтобы посмотреть экстремальные объекты.'),
+            `, `
+                 area     price
+              2    80  18400000
+              3    40  12000000
+              1    52   9100000
+            `, 'Сортировка часто используется вместе с `head()`, чтобы посмотреть экстремальные объекты.'),
           ],
         }),
       ],
@@ -105,9 +171,22 @@ export const topicPandasFilteringSorting = pandasTopic(
         ], {
           codeExamples: [
             code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80, 40],
+                  "price": [8200000, 9100000, 18400000, 12000000],
+              })
+
               df["price_per_meter"] = df["price"] / df["area"]
               print(df[["price", "area", "price_per_meter"]])
-            `, 'Таблица с новым столбцом цены за квадратный метр.', 'Новый признак считается сразу для всех строк таблицы.'),
+            `, `
+                    price  area  price_per_meter
+              0   8200000    35    234285.714286
+              1   9100000    52    175000.000000
+              2  18400000    80    230000.000000
+              3  12000000    40    300000.000000
+            `, 'Новый признак считается сразу для всех строк таблицы.'),
           ],
           callouts: [
             callout('Важно', 'Не создавайте признаки из target так, чтобы в модель утекла информация, неизвестная на момент предсказания.', 'important'),
