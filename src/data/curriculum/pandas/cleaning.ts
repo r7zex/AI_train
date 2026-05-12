@@ -1,368 +1,215 @@
-import { callout, code, functionSection, makeStdinTask, pandasTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
+import { callout, code, makeStdinTask, pandasTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
 
 export const topicPandasMissingDuplicates = pandasTopic(
   'pandas-missing-duplicates',
   '3.5 Пропуски и дубликаты',
   5,
-  'Находим пропуски, выбираем стратегию заполнения или удаления, удаляем дубликаты строк.',
-  'Перед ML-моделью таблицу нужно очистить: пропуски и дубликаты могут исказить статистики, обучение и оценку качества.',
+  'Разбираем сценарий очистки: найти пропуски, выбрать стратегию, проверить дубликаты и не испортить target.',
+  'Пропуски и дубликаты искажают анализ и могут сломать модель, поэтому их проверяют до обучения.',
   ['isna', 'dropna', 'fillna', 'median', 'mode', 'duplicated', 'drop_duplicates'],
-  ['df.isna().sum()', 'df["col"].fillna(value)', 'df.drop_duplicates()'],
+  ['isna().sum() -> отчёт по пропускам', 'median для чисел', 'mode для категорий'],
   [
-    '`isna().sum()` показывает число пропусков по столбцам.',
-    'Числовые пропуски часто заполняют медианой, категориальные - модой.',
-    '`drop_duplicates()` удаляет одинаковые строки.',
+    'Сначала находят пропуски и пытаются понять причину.',
+    '`dropna()` удаляет, `fillna()` заполняет.',
+    'Дубликаты проверяют через `duplicated()` и `drop_duplicates()`.',
   ],
   [
     theoryStep(
-      'pandas-missing-find',
-      'Как найти пропуски: `isna()`, `isna().sum()`',
-      'Сначала пропуски нужно увидеть и посчитать.',
+      'pandas-cleaning-scenario',
+      'Сырые данные требуют проверки',
+      'Показываем порядок работы с пропусками и дубликатами.',
       [
-        functionSection(
-          'isna-function',
-          '`df.isna()`',
-          'df.isna()',
-          ['параметры не нужны'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "age": [20, None, 40],
-                "city": ["Moscow", None, "Kazan"],
-                "price": [8, 9, 18],
-            })
-
-            print(df.isna())
-          `,
-          `
-                 age   city  price
-            0  False  False  False
-            1   True   True  False
-            2  False  False  False
-          `,
-          '`isna()` показывает, в каких ячейках есть пропуски.',
-        ),
-        functionSection(
-          'isna-sum-function',
-          '`df.isna().sum()`',
-          'df.isna().sum()',
-          ['сначала создаётся маска пропусков, затем сумма считается по столбцам'],
-          `
-            print(df.isna().sum())
-          `,
-          `
-            age     2
-            city    1
-            price   0
-            dtype: int64
-          `,
-          '`isna().sum()` считает количество пропусков в каждом столбце.',
-        ),
-        section('find-missing', 'Диагностика пропусков', [
-          'Сначала пропуски нужно увидеть и посчитать. Они появляются из-за ошибок выгрузки, необязательных полей, объединения таблиц или ручного ввода.',
-          'Многие модели не принимают `NaN` напрямую. Даже если модель умеет работать с пропусками, сначала нужно понять масштаб проблемы и связь пропусков с target.',
+        section('workflow', 'Пять шагов очистки', [
+          'Пропуски и дубликаты - частые проблемы сырых данных. Если их игнорировать, модель может получить ошибку или научиться на искажённых данных.',
+          'Рабочий сценарий: найти пропуски, понять причину, решить удалить или заполнить, проверить дубликаты, только потом двигаться дальше.',
         ], {
-          codeExamples: [
-            code('python', `
-              print(df.isna().sum())
-            `, `
-              age     2
-              city    1
-              price   0
-              dtype: int64
-            `, 'Сводка показывает, в каких столбцах есть пропуски и сколько их.'),
+          bullets: [
+            'найти пропуски через `isna().sum()`;',
+            'понять, случайны ли пропуски или несут смысл;',
+            'решить: удалить строки или заполнить значения;',
+            'проверить дубликаты;',
+            'не заполнять target автоматически без понимания задачи.',
           ],
         }),
-      ],
-    ),
-    theoryStep(
-      'pandas-missing-dropna',
-      'Удаление пропусков: `dropna()`',
-      'Удаление подходит, только если потери данных безопасны.',
-      [
-        functionSection(
-          'dropna-function',
-          '`df.dropna()`',
-          'df.dropna(subset=None, how="any")',
-          ['`subset` - столбцы, где проверять пропуски', '`how` - правило удаления строк'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "age": [20, None, 40],
-                "city": ["Moscow", None, "Kazan"],
-                "price": [8, 9, 18],
-            })
-
-            clean = df.dropna(subset=["price"])
-            print(clean.shape)
-          `,
-          '(3, 3)',
-          '`dropna()` удаляет строки или столбцы с пропусками.',
-        ),
-        section('dropna', 'Когда удалять строки', [
-          '`dropna()` - быстрый способ получить таблицу без `NaN`, но он может резко уменьшить выборку.',
-          'Удалять строки можно, если пропусков мало и удаление не меняет смысл выборки. Нельзя механически удалять половину данных только ради удобства модели.',
-        ], {
-          callouts: [
-            callout('Проверка', 'Перед `dropna()` сравните размер таблицы до и после удаления: `df.shape`.', 'remember'),
-          ],
-        }),
-      ],
-    ),
-    theoryStep(
-      'pandas-missing-fillna',
-      'Заполнение пропусков: `fillna()`',
-      'Заполняем пропуски осмысленными значениями.',
-      [
-        functionSection(
-          'fillna-value-function',
-          '`df.fillna()`',
-          'df.fillna(value)',
-          ['`value` - значение для замены пропусков'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "age": [20, None, 40],
-                "city": ["Moscow", None, "Kazan"],
-                "price": [8, 9, 18],
-            })
-
-            print(df.fillna(0))
-          `,
-          `
-                age    city  price
-            0  20.0  Moscow      8
-            1   0.0       0      9
-            2  40.0   Kazan     18
-          `,
-          '`fillna()` заменяет пропуски заданным значением.',
-        ),
-        functionSection(
-          'fillna-median-function',
-          '`median()` для чисел',
-          'df["col"].fillna(df["col"].median())',
-          ['`median()` - медиана числового столбца'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "age": [20, None, 40],
-                "city": ["Moscow", None, "Kazan"],
-                "price": [8, 9, 18],
-            })
-
-            df["age"] = df["age"].fillna(df["age"].median())
-            print(df)
-          `,
-          `
-                age    city  price
-            0  20.0  Moscow      8
-            1  30.0    None      9
-            2  40.0   Kazan     18
-          `,
-          'Медиана часто устойчивее среднего, если есть выбросы.',
-        ),
-        functionSection(
-          'fillna-mode-function',
-          '`mode()` для категорий',
-          'df["col"].fillna(df["col"].mode()[0])',
-          ['`mode()` возвращает самые частые значения', '`[0]` берёт первое из них'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "age": [20, None, 40],
-                "city": ["Moscow", None, "Kazan"],
-                "price": [8, 9, 18],
-            })
-
-            df["city"] = df["city"].fillna(df["city"].mode()[0])
-            print(df)
-          `,
-          `
-                age    city  price
-            0  20.0  Moscow      8
-            1   NaN   Kazan      9
-            2  40.0   Kazan     18
-          `,
-          'Мода подходит для категориальных признаков.',
-        ),
-        section('fillna', 'Медиана, среднее, мода', [
-          'Заполнение заменяет пропуски значением, которое не ломает столбец. Для чисел часто используют медиану, для категорий - моду.',
-          'Среднее чувствительно к выбросам, медиана устойчивее. Target нельзя заполнять без понимания задачи: так легко создать неверные ответы для обучения.',
+        section('missing', 'Удалить или заполнить', [
+          '`dropna()` удаляет строки или столбцы с пропусками. Это просто, но можно потерять много данных.',
+          '`fillna()` заполняет пропуски. Для чисел часто используют медиану, особенно если есть выбросы. Для категорий часто берут моду - самое частое значение.',
         ], {
           codeExamples: [
             code('python', `
               import pandas as pd
 
               df = pd.DataFrame({
-                  "age": [20, None, 40],
-                  "city": ["Moscow", None, "Kazan"],
-                  "price": [8, 9, 18],
+                  "area": [35, None, 80],
+                  "district": ["center", "north", None],
               })
 
-              df["age"] = df["age"].fillna(df["age"].median())
-              df["city"] = df["city"].fillna(df["city"].mode()[0])
+              df["area"] = df["area"].fillna(df["area"].median())
+              df["district"] = df["district"].fillna(df["district"].mode()[0])
+
               print(df)
             `, `
-                  age    city  price
-              0  20.0  Moscow      8
-              1  30.0   Kazan      9
-              2  40.0   Kazan     18
-            `, 'Стратегия зависит от смысла столбца, а не только от типа данных.'),
+                 area district
+              0  35.0   center
+              1  57.5    north
+              2  80.0   center
+            `, 'Числовой столбец заполнен медианой, категориальный - самым частым значением.'),
+          ],
+        }),
+        section('duplicates', 'Дубликаты и качество данных', [
+          'Дубликаты могут появляться после склейки выгрузок или повторного импорта. Если одна и та же строка попала в данные несколько раз, статистики и обучение модели могут сместиться.',
+        ], {
+          codeExamples: [
+            code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({"client": [1, 1, 2], "score": [10, 10, 20]})
+
+              print(df.duplicated())
+              print(df.drop_duplicates())
+            `, `
+              0    False
+              1     True
+              2    False
+              dtype: bool
+                 client  score
+              0       1     10
+              2       2     20
+            `, '`duplicated()` нашёл повтор, а `drop_duplicates()` вернул таблицу без него.'),
           ],
         }),
       ],
     ),
     theoryStep(
-      'pandas-duplicates',
-      'Дубликаты: `duplicated()`, `drop_duplicates()`',
-      'Повторяющиеся строки могут исказить обучение и статистики.',
+      'pandas-cleaning-checkpoint',
+      'Что теперь умеем',
+      'Фиксируем чек-лист перед обучением модели.',
       [
-        functionSection(
-          'duplicated-function',
-          '`df.duplicated()`',
-          'df.duplicated(subset=None)',
-          ['`subset` - столбцы, по которым проверять повтор'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "name": ["Anna", "Boris", "Boris"],
-                "age": [20, 35, 35],
-            })
-
-            print(df.duplicated().sum())
-          `,
-          '1',
-          '`duplicated()` возвращает маску строк-дубликатов.',
-        ),
-        functionSection(
-          'drop-duplicates-function',
-          '`df.drop_duplicates()`',
-          'df.drop_duplicates(subset=None)',
-          ['`subset` - столбцы, по которым определять одинаковые строки'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "name": ["Anna", "Boris", "Boris"],
-                "age": [20, 35, 35],
-            })
-
-            df = df.drop_duplicates()
-            print(df.shape)
-          `,
-          '(2, 2)',
-          '`drop_duplicates()` возвращает таблицу без повторяющихся строк.',
-        ),
-        section('duplicates', 'Повторы строк', [
-          'Дубликаты появляются после склейки файлов, повторной выгрузки или ошибок сбора данных.',
-          'Одинаковые объекты могут завысить вес части выборки и дать слишком оптимистичную оценку качества, особенно если дубль попал и в train, и в validation.',
+        section('checkpoint', 'Перед обучением модели', [
+          'Очистка данных - это не механическая замена всех проблем на нули. Стратегия зависит от смысла столбца и задачи.',
         ], {
-          codeExamples: [
-            code('python', `
-              print(df.duplicated().sum())
-              df = df.drop_duplicates()
-            `, 'Сначала напечатано число дублей, затем они удалены.', 'Удаление дубликатов обычно делают до разбиения на train и validation.'),
+          bullets: [
+            'найти пропуски;',
+            'выбрать стратегию заполнения или удаления;',
+            'проверить дубликаты;',
+            'не заполнять target автоматически;',
+            'после очистки снова проверить `isna().sum()` и `shape`.',
+          ],
+          callouts: [
+            callout('Типичная ошибка', 'Заполнить все пропуски нулями. Ноль может стать ложным значением: например, “0 рублей”, “0 лет” или “0 квадратных метров”.', 'important'),
+          ],
+        }),
+      ],
+    ),
+    theoryStep(
+      'pandas-cleaning-reasons',
+      'Почему пропуск появился',
+      'Добавляем смысл перед выбором стратегии.',
+      [
+        section('reasons', 'Пропуск не всегда случайность', [
+          'Перед заполнением полезно подумать, почему значение отсутствует. Иногда это ошибка выгрузки, иногда пользователь не заполнил поле, иногда значение невозможно измерить, а иногда пропуск сам несёт информацию.',
+          'От причины зависит стратегия. Удаление строк может быть нормально для редких случайных пропусков, но опасно, если пропусков много или они сосредоточены в важной группе объектов.',
+        ], {
+          callouts: [
+            callout('Где используется', 'Выбор стратегии очистки, подготовка признаков, анализ качества источника данных, предотвращение смещения выборки.', 'example'),
+          ],
+        }),
+      ],
+    ),
+    theoryStep(
+      'pandas-cleaning-after-check',
+      'Проверка после очистки',
+      'Закрепляем, что очистка должна проверяться.',
+      [
+        section('after', 'Очистили - проверьте снова', [
+          'После `fillna()`, `dropna()` или `drop_duplicates()` полезно снова вывести `shape` и `isna().sum()`. Это показывает, сколько строк осталось и исчезли ли пропуски там, где вы ожидали.',
+          'Такой контроль особенно важен перед ML: можно случайно удалить слишком много данных или заполнить не тот столбец. Очистка считается завершённой не после вызова метода, а после проверки результата.',
+        ], {
+          callouts: [
+            callout('Промежуточный вывод', 'Очистка - это цикл: найти проблему, выбрать стратегию, применить метод, проверить итог.', 'summary'),
           ],
         }),
       ],
     ),
     quizStep(
       'pandas-cleaning-quiz-strategy',
-      'Удалить или заполнить',
-      'Выбираем безопасную стратегию для пропусков.',
+      'Стратегия заполнения',
+      'Проверяем выбор по типу столбца.',
       singleQuiz(
-        'quiz-pandas-drop-or-fill',
+        'quiz-pandas-cleaning-strategy',
         'Пропуски',
         'pandas-missing-duplicates',
         'pandas-eda',
-        'Когда удаление строк с пропусками обычно наиболее безопасно?',
+        'Чем часто разумно заполнить пропуски в числовом столбце с выбросами?',
         [
-          { id: 'a', text: 'Когда пропусков мало и удаление не искажает выборку' },
-          { id: 'b', text: 'Когда пропущен target у половины строк' },
-          { id: 'c', text: 'Когда так быстрее, без проверки размера данных' },
-          { id: 'd', text: 'Когда столбец содержит категориальные значения' },
+          { id: 'a', text: 'Медианой этого столбца' },
+          { id: 'b', text: 'Всегда нулём' },
+          { id: 'c', text: 'Названием столбца' },
+          { id: 'd', text: 'Случайным текстом' },
         ],
         'a',
-        'Удаление подходит, если пропусков мало и после удаления выборка остаётся репрезентативной.',
+        'Медиана устойчивее среднего к выбросам и часто подходит для числовых признаков.',
       ),
     ),
     quizStep(
-      'pandas-cleaning-quiz-median',
-      'mean, median или mode',
-      'Проверяем выбор заполнителя.',
+      'pandas-cleaning-quiz-target',
+      'Target и пропуски',
+      'Проверяем осторожность с целевой переменной.',
       singleQuiz(
-        'quiz-pandas-median-mode',
-        'Заполнение пропусков',
+        'quiz-pandas-cleaning-target',
+        'Target',
         'pandas-missing-duplicates',
         'pandas-eda',
-        'Почему медиана часто безопаснее среднего для числового признака с выбросами?',
+        'Почему target нельзя автоматически заполнять без понимания задачи?',
         [
-          { id: 'a', text: 'Медиана меньше зависит от экстремально больших или маленьких значений' },
-          { id: 'b', text: 'Медиана удаляет все строки' },
-          { id: 'c', text: 'Медиана работает только со строковыми столбцами' },
-          { id: 'd', text: 'Медиана всегда равна нулю' },
+          { id: 'a', text: 'Можно исказить правильные ответы, на которых учится модель' },
+          { id: 'b', text: 'Pandas запрещает столбец `target`' },
+          { id: 'c', text: 'Target всегда строковый' },
+          { id: 'd', text: 'После заполнения исчезнут все признаки' },
         ],
         'a',
-        'Медиана смотрит на центральное значение упорядоченного ряда и поэтому устойчивее к выбросам, чем среднее.',
+        'Target - это ответ для обучения. Механическое заполнение может создать ложные ответы.',
       ),
     ),
     practiceStep(
       'pandas-cleaning-practice',
-      'Очистить таблицу',
-      'Заполняем пропуски медианой и модой, затем удаляем дубликаты.',
+      'Заполнить пропуски в признаке',
+      'Заполняем числовой признак медианой.',
       makeStdinTask(
-        'task-pandas-clean-table',
-        'Очистить таблицу',
-        'На вход подаётся CSV с колонками `name`, `age`, `city`. Заполните пропуски в `age` медианой, в `city` модой, удалите дубликаты и выведите таблицу.',
+        'task-pandas-fill-median',
+        'Заполнить пропуски в признаке',
+        'Создайте DataFrame из готового словаря, заполните пропуски в `area` медианой и выведите столбец `area`.',
         `
           import pandas as pd
-          import sys
-          from io import StringIO
 
-          df = pd.read_csv(StringIO(sys.stdin.read()))
+          data = {
+              "area": [35, None, 80],
+              "price": [8.2, 9.1, 18.4],
+          }
 
-          # TODO: найдите пропуски
+          # TODO: создайте DataFrame
 
-          # TODO: заполните age медианой
+          # TODO: заполните пропуски в area медианой
 
-          # TODO: заполните city модой
-
-          # TODO: удалите дубликаты
-
-          # TODO: выведите таблицу
+          # TODO: выведите столбец area
         `,
         [
-          {
-            id: 's1',
-            description: 'Пропуски и один дубль',
-            input: 'name,age,city\nAnna,20,Moscow\nBoris,,Kazan\nBoris,,Kazan\nMira,40,',
-            expectedOutput: ' name  age   city\n Anna 20.0 Moscow\nBoris 30.0  Kazan\n Mira 40.0  Kazan',
-          },
+          { id: 's1', description: 'Медиана площади', expectedOutput: '0    35.0\n1    57.5\n2    80.0\nName: area, dtype: float64' },
         ],
         [
-          {
-            id: 'h1',
-            description: 'Другая медиана и мода',
-            input: 'name,age,city\nOleg,30,Tula\nIra,,Tula\nMax,50,\nMax,50,',
-            expectedOutput: 'name  age city\nOleg 30.0 Tula\n Ira 50.0 Tula\n Max 50.0 Tula',
-          },
+          { id: 'h1', description: 'Проверка заполнения', expectedOutput: '0    35.0\n1    57.5\n2    80.0\nName: area, dtype: float64' },
         ],
         `
           import pandas as pd
-          import sys
-          from io import StringIO
 
-          df = pd.read_csv(StringIO(sys.stdin.read()))
-          df["age"] = df["age"].fillna(df["age"].median())
-          df["city"] = df["city"].fillna(df["city"].mode()[0])
-          df = df.drop_duplicates()
-          print(df.to_string(index=False))
+          data = {
+              "area": [35, None, 80],
+              "price": [8.2, 9.1, 18.4],
+          }
+
+          df = pd.DataFrame(data)
+          df["area"] = df["area"].fillna(df["area"].median())
+          print(df["area"])
         `,
       ),
     ),

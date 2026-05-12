@@ -1,349 +1,206 @@
-import { code, functionSection, makeStdinTask, pandasTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
+import { callout, code, makeStdinTask, pandasTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
 
 export const topicPandasGroupby = pandasTopic(
   'pandas-groupby',
   '3.6 Группировки и агрегирование',
   6,
-  'Считаем частоты категорий, группируем строки и получаем агрегированные статистики.',
-  'Группировки превращают сырую таблицу в сводки: сколько объектов в категории, как меняется среднее и где находятся экстремальные значения.',
+  'Сравниваем группы объектов через `value_counts()`, `groupby()`, `agg()` и `pivot_table()`.',
+  'Группировки нужны, чтобы понять различия между категориями: районами, городами, типами товаров или сегментами клиентов.',
   ['value_counts', 'groupby', 'agg', 'pivot_table', 'aggregation'],
-  ['df.groupby("group_col")["value_col"].mean()', 'df.groupby("group_col").agg({...})'],
+  ['groupby -> split -> aggregate -> compare'],
   [
-    '`value_counts()` считает частоты значений в одном столбце.',
-    '`groupby()` делит строки на группы и применяет агрегирующую функцию.',
-    '`agg()` позволяет посчитать несколько статистик сразу.',
+    '`value_counts()` считает частоты одного столбца.',
+    '`groupby()` группирует строки по категории.',
+    '`agg()` и `pivot_table()` помогают получить несколько статистик.',
   ],
   [
     theoryStep(
-      'pandas-value-counts',
-      '`value_counts()`',
-      'Считаем, сколько раз встречается каждое значение.',
+      'pandas-grouping-scenario',
+      'Сравнение групп',
+      'Показываем группировки как ответы на аналитические вопросы.',
       [
-        functionSection(
-          'value-counts-function',
-          '`value_counts()`',
-          'df["col"].value_counts()',
-          ['`normalize=True` - вернуть доли вместо количества', '`dropna=False` - учитывать пропуски'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "district": ["Center", "North", "Center", "South"],
-                "area": [35, 52, 80, 40],
-                "price": [8, 9, 18, 12],
-            })
-
-            print(df["district"].value_counts())
-          `,
-          `
-            district
-            Center    2
-            North     1
-            South     1
-            Name: count, dtype: int64
-          `,
-          '`value_counts()` считает, сколько раз встречается каждое значение.',
-        ),
-        section('counts', 'Частоты категорий', [
-          '`value_counts()` быстро показывает распределение категориального столбца: сколько объектов в каждом районе, классе, городе или типе товара.',
-          'В ML частоты показывают дисбаланс категорий. Если один класс встречается редко, модель может плохо его предсказывать, а метрики нужно выбирать осторожнее.',
+        section('questions', 'Какие вопросы решает группировка', [
+          'Группировки нужны, чтобы сравнивать группы объектов: средняя цена по району, количество клиентов по городу, средний чек по категории, максимальная площадь по типу квартиры.',
+          'В ML это помогает понять, какие категориальные признаки важны и где есть перекосы данных.',
+        ], {
+          callouts: [
+            callout('ML-связка', 'Если средняя цена сильно отличается по районам, `district` может быть важным признаком. Если одна категория встречается почти всегда, модель может плохо учиться на редких категориях.', 'example'),
+          ],
+        }),
+        section('value-counts', '`value_counts()` для частот', [
+          'Когда нужен быстрый ответ “сколько раз встречается каждая категория”, достаточно `value_counts()`.',
         ], {
           codeExamples: [
             code('python', `
               import pandas as pd
 
-              df = pd.DataFrame({
-                  "district": ["Center", "North", "Center", "South"],
-                  "area": [35, 52, 80, 40],
-                  "price": [8, 9, 18, 12],
-              })
+              df = pd.DataFrame({"district": ["center", "north", "center", "south"]})
 
               print(df["district"].value_counts())
             `, `
               district
-              Center    2
-              North     1
-              South     1
+              center    2
+              north     1
+              south     1
               Name: count, dtype: int64
-            `, '`value_counts()` показывает количество строк для каждой категории.'),
+            `, 'Так быстро видно распределение категорий.'),
           ],
         }),
-      ],
-    ),
-    theoryStep(
-      'pandas-groupby-mean',
-      '`groupby()`',
-      'Группируем строки по категории и считаем статистику.',
-      [
-        functionSection(
-          'groupby-mean-function',
-          '`groupby().mean()`',
-          'df.groupby("group_col")["value_col"].mean()',
-          ['`group_col` - столбец группировки', '`value_col` - числовой столбец для агрегации'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "district": ["Center", "North", "Center", "South"],
-                "area": [35, 52, 80, 40],
-                "price": [8, 9, 18, 12],
-            })
-
-            print(df.groupby("district")["price"].mean())
-          `,
-          `
-            district
-            Center    13.0
-            North      9.0
-            South     12.0
-            Name: price, dtype: float64
-          `,
-          '`groupby()` разбил строки по району, а `mean()` посчитал среднюю цену внутри каждой группы.',
-        ),
-        section('groupby', 'Разделить, посчитать, собрать', [
-          '`groupby()` нужен, чтобы сравнить группы между собой: среднюю цену квартир по району, средний чек по типу клиента, долю ошибок по сегменту.',
-          'Сначала pandas разбивает строки по `group_col`, затем берёт нужный столбец и считает агрегат внутри каждой группы. Индексом результата становятся названия групп.',
+        section('groupby', '`groupby()` и `agg()`', [
+          '`groupby()` разбивает строки на группы, а агрегирующая функция считает показатель внутри каждой группы.',
+          '`agg()` удобен, когда нужно несколько статистик: например, средняя цена и количество объектов.',
         ], {
           codeExamples: [
             code('python', `
               import pandas as pd
 
               df = pd.DataFrame({
-                  "district": ["Center", "North", "Center", "South"],
-                  "area": [35, 52, 80, 40],
-                  "price": [8, 9, 18, 12],
+                  "district": ["center", "north", "center", "north"],
+                  "price": [10, 8, 14, 12],
               })
 
-              print(df.groupby("district")["price"].mean())
+              report = df.groupby("district")["price"].agg(["mean", "count"])
+              print(report)
             `, `
-              district
-              Center    13.0
-              North      9.0
-              South     12.0
-              Name: price, dtype: float64
-            `, 'Средняя цена посчитана отдельно внутри каждого района.'),
+                        mean  count
+              district             
+              center    12.0      2
+              north     10.0      2
+            `, 'По каждому району получили среднюю цену и число объектов.'),
           ],
         }),
       ],
     ),
     theoryStep(
-      'pandas-agg',
-      '`agg()`',
-      'Считаем несколько статистик за один проход.',
+      'pandas-grouping-checkpoint',
+      'Что теперь умеем',
+      'Фиксируем инструменты сравнения групп.',
       [
-        functionSection(
-          'agg-function',
-          '`agg()`',
-          'df.groupby("group_col").agg({...})',
-          ['в словаре указывают столбец и одну функцию или список функций'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "district": ["Center", "North", "Center", "South"],
-                "area": [35, 52, 80, 40],
-                "price": [8, 9, 18, 12],
-            })
-
-            stats = df.groupby("district").agg({
-                "price": ["mean", "median", "max"],
-                "area": "mean",
-            })
-
-            print(stats)
-          `,
-          `
-                     price             area
-                      mean median max  mean
-            district                       
-            Center    13.0   13.0  18  57.5
-            North      9.0    9.0   9  52.0
-            South     12.0   12.0  12  40.0
-          `,
-          '`agg()` считает несколько агрегатов в одном выражении.',
-        ),
-        section('agg', 'Несколько агрегатов', [
-          '`agg()` даёт компактную EDA-сводку по группам. Вместо отдельных вызовов `mean()`, `median()` и `max()` можно описать нужные статистики в одном месте.',
-          'Агрегаты помогают искать закономерности, выбросы и различия между сегментами. Иногда групповые статистики становятся новыми признаками, если они рассчитаны без утечки данных.',
+        section('checkpoint', 'Промежуточный вывод', [
+          'Группировка превращает список строк в сравнение категорий.',
         ], {
-          codeExamples: [
-            code('python', `
-              import pandas as pd
-
-              df = pd.DataFrame({
-                  "district": ["Center", "North", "Center", "South"],
-                  "area": [35, 52, 80, 40],
-                  "price": [8, 9, 18, 12],
-              })
-
-              stats = df.groupby("district").agg({
-                  "price": ["mean", "median", "max"],
-                  "area": "mean",
-              })
-
-              print(stats)
-            `, `
-                       price             area
-                        mean median max  mean
-              district                       
-              Center    13.0   13.0  18  57.5
-              North      9.0    9.0   9  52.0
-              South     12.0   12.0  12  40.0
-            `, '`agg()` удобно расширять: добавлять новые столбцы и функции без переписывания всей логики.'),
+          bullets: [
+            'считать частоты категорий через `value_counts()`;',
+            'сравнивать группы через `groupby()`;',
+            'получать несколько статистик через `agg()`;',
+            'строить сводную таблицу через `pivot_table()`;',
+            'замечать перекосы категорий перед ML.',
+          ],
+          callouts: [
+            callout('Типичная ошибка', 'Сравнивать средние по группам и не смотреть `count`. Среднее по группе из одного объекта может быть случайным и ненадёжным.', 'important'),
           ],
         }),
       ],
     ),
     theoryStep(
-      'pandas-pivot-table',
-      'Сводные таблицы через `pivot_table()`',
-      '`pivot_table()` строит таблицу агрегатов в привычной форме.',
+      'pandas-grouping-agg-choice',
+      'Как выбрать агрегат',
+      'Связываем статистику с вопросом к группе.',
       [
-        functionSection(
-          'pivot-table-function',
-          '`pivot_table()`',
-          'df.pivot_table(index=..., values=..., aggfunc=...)',
-          ['`index` - группы в строках', '`values` - столбец со значениями', '`aggfunc` - функция агрегации'],
-          `
-            import pandas as pd
-
-            df = pd.DataFrame({
-                "district": ["Center", "North", "Center", "South"],
-                "area": [35, 52, 80, 40],
-                "price": [8, 9, 18, 12],
-            })
-
-            table = df.pivot_table(index="district", values="price", aggfunc="mean")
-            print(table)
-          `,
-          `
-                      price
-            district       
-            Center     13.0
-            North       9.0
-            South      12.0
-          `,
-          '`pivot_table()` строит сводную таблицу агрегатов.',
-        ),
-        section('pivot', 'Сводная таблица', [
-          '`pivot_table()` показывает агрегированные значения в формате строк и столбцов. Это похоже на сводные таблицы в Excel.',
-          'Для первичного анализа `groupby()` часто проще, но `pivot_table()` удобен, когда нужно сравнивать сразу несколько разрезов данных.',
+        section('choice', 'Среднее, количество, максимум', [
+          'Агрегат выбирают по вопросу. Для типичного значения подойдёт `mean` или `median`, для размера сегмента - `count`, для максимального значения - `max`, для разброса - `std`.',
+          'В EDA часто полезно считать сразу несколько агрегатов. Например, средняя цена без количества объектов может обмануть: район с одной дорогой квартирой будет выглядеть “дорогим”, хотя данных слишком мало.',
         ], {
-          codeExamples: [
-            code('python', `
-              import pandas as pd
-
-              df = pd.DataFrame({
-                  "district": ["Center", "North", "Center", "South"],
-                  "area": [35, 52, 80, 40],
-                  "price": [8, 9, 18, 12],
-              })
-
-              table = df.pivot_table(index="district", values="price", aggfunc="mean")
-              print(table)
-            `, `
-                        price
-              district       
-              Center     13.0
-              North       9.0
-              South      12.0
-            `, '`pivot_table()` особенно полезен для отчётов и проверки гипотез по категориям.'),
+          callouts: [
+            callout('Где используется', 'Сравнение сегментов, поиск перекосов категорий, подготовка отчётов, проверка важности категориальных признаков.', 'example'),
+          ],
+        }),
+      ],
+    ),
+    theoryStep(
+      'pandas-grouping-pivot',
+      'Когда нужна сводная таблица',
+      'Объясняем место `pivot_table()` без справочного списка.',
+      [
+        section('pivot', 'Две категории в одном отчёте', [
+          '`pivot_table()` удобна, когда нужно сравнить показатель сразу по двум категориальным осям: например, средний чек по городу и категории товара или среднюю цену по району и типу квартиры.',
+          'По смыслу это тот же groupby, но результат разворачивается в таблицу, которую легче читать глазами. Такой формат часто используют в EDA-отчётах перед тем, как решать, какие признаки оставить для модели.',
+        ], {
+          callouts: [
+            callout('Промежуточный вывод', '`value_counts()` отвечает про частоты, `groupby()` - про статистики по группам, `pivot_table()` - про удобное сравнение по двум измерениям.', 'summary'),
           ],
         }),
       ],
     ),
     quizStep(
       'pandas-groupby-quiz-counts',
-      'value_counts или groupby',
-      'Выбираем инструмент для частот.',
+      'Частоты категорий',
+      'Проверяем выбор метода.',
       singleQuiz(
-        'quiz-pandas-value-counts',
-        'Частоты категорий',
+        'quiz-pandas-groupby-counts',
+        'value_counts',
         'pandas-groupby',
         'pandas-eda',
-        'Что удобнее всего использовать, чтобы посчитать количество строк по значениям одного столбца?',
+        'Что лучше вызвать, чтобы узнать, сколько раз встречается каждый город в столбце `city`?',
         [
-          { id: 'a', text: '`df["col"].value_counts()`' },
-          { id: 'b', text: '`df.head()`' },
-          { id: 'c', text: '`df.dropna()`' },
-          { id: 'd', text: '`pd.read_csv()`' },
+          { id: 'a', text: '`df["city"].value_counts()`' },
+          { id: 'b', text: '`df["city"].mean()`' },
+          { id: 'c', text: '`df.describe()`' },
+          { id: 'd', text: '`pd.read_csv("city")`' },
         ],
         'a',
-        '`value_counts()` специально считает частоты значений в одном столбце.',
+        '`value_counts()` считает частоты значений одного столбца.',
       ),
     ),
     quizStep(
       'pandas-groupby-quiz-meaning',
-      'Что вернёт groupby',
-      'Проверяем идею группировки.',
+      'Среднее по группам',
+      'Проверяем сценарий `groupby`.',
       singleQuiz(
-        'quiz-pandas-groupby-mean',
+        'quiz-pandas-groupby-meaning',
         'groupby',
         'pandas-groupby',
         'pandas-eda',
-        'Что делает выражение `df.groupby("district")["price"].mean()`?',
+        'Что делает `df.groupby("district")["price"].mean()`?',
         [
-          { id: 'a', text: 'Считает среднюю цену отдельно для каждого района' },
+          { id: 'a', text: 'Считает среднюю цену внутри каждого района' },
           { id: 'b', text: 'Удаляет столбец `district`' },
-          { id: 'c', text: 'Выводит первые строки таблицы' },
+          { id: 'c', text: 'Сортирует таблицу по цене' },
           { id: 'd', text: 'Заполняет пропуски в цене' },
         ],
         'a',
-        '`groupby("district")` разбивает строки по району, а `["price"].mean()` считает среднюю цену внутри каждой группы.',
+        '`groupby("district")` создаёт группы по району, а `mean()` считает среднее внутри каждой группы.',
       ),
     ),
     practiceStep(
       'pandas-groupby-practice',
-      'Посчитать среднюю цену по району',
-      'Считаем количество квартир, среднюю цену и максимальную площадь.',
+      'Средняя цена по району',
+      'Группируем таблицу и считаем среднее.',
       makeStdinTask(
-        'task-pandas-groupby-district',
-        'Посчитать статистики по району',
-        'На вход подаётся CSV с колонками `district`, `area`, `price`. Выведите количество объектов по району, среднюю цену по району и максимальную площадь по району.',
+        'task-pandas-mean-by-district',
+        'Средняя цена по району',
+        'Создайте DataFrame из готового словаря и выведите среднюю `price` по каждому `district`.',
         `
           import pandas as pd
-          import sys
-          from io import StringIO
 
-          df = pd.read_csv(StringIO(sys.stdin.read()))
+          data = {
+              "district": ["center", "north", "center", "north"],
+              "price": [10, 8, 14, 12],
+          }
 
-          # TODO: посчитайте количество объектов по району
+          # TODO: создайте DataFrame
 
-          # TODO: посчитайте среднюю цену по району
+          # TODO: сгруппируйте по district и посчитайте среднюю price
 
-          # TODO: посчитайте максимальную площадь по району
-
-          # TODO: выведите результаты
+          # TODO: выведите результат
         `,
         [
-          {
-            id: 's1',
-            description: 'Два района',
-            input: 'district,area,price\nCenter,35,8\nNorth,52,9\nCenter,80,18',
-            expectedOutput: 'district\nCenter    2\nNorth     1\ndistrict\nCenter    13.0\nNorth      9.0\ndistrict\nCenter    80\nNorth     52',
-          },
+          { id: 's1', description: 'Средние по районам', expectedOutput: 'district\ncenter    12.0\nnorth     10.0\nName: price, dtype: float64' },
         ],
         [
-          {
-            id: 'h1',
-            description: 'Три района',
-            input: 'district,area,price\nA,40,10\nB,60,12\nA,80,18\nC,55,11',
-            expectedOutput: 'district\nA    2\nB    1\nC    1\ndistrict\nA    14.0\nB    12.0\nC    11.0\ndistrict\nA    80\nB    60\nC    55',
-          },
+          { id: 'h1', description: 'Проверка группировки', expectedOutput: 'district\ncenter    12.0\nnorth     10.0\nName: price, dtype: float64' },
         ],
         `
           import pandas as pd
-          import sys
-          from io import StringIO
 
-          df = pd.read_csv(StringIO(sys.stdin.read()))
-          counts = df["district"].value_counts().sort_index()
-          mean_price = df.groupby("district")["price"].mean().round(1)
-          max_area = df.groupby("district")["area"].max()
+          data = {
+              "district": ["center", "north", "center", "north"],
+              "price": [10, 8, 14, 12],
+          }
 
-          print(counts.to_string())
-          print(mean_price.to_string())
-          print(max_area.to_string())
+          df = pd.DataFrame(data)
+          result = df.groupby("district")["price"].mean()
+          print(result)
         `,
       ),
     ),
