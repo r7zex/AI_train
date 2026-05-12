@@ -32,6 +32,10 @@ const expectedStepCounts = new Map([
   ['pandas-missing-duplicates', 7],
   ['pandas-groupby', 7],
   ['pandas-types-preparation', 7],
+  ['ml-foundations-data-target', 5],
+  ['ml-foundations-model-fit-predict', 6],
+  ['ml-foundations-train-test-baseline-metrics', 7],
+  ['ml-foundations-project-cycle', 5],
 ])
 
 const expectedQuizCounts = new Map([
@@ -56,6 +60,10 @@ const expectedQuizCounts = new Map([
   ['pandas-missing-duplicates', 2],
   ['pandas-groupby', 2],
   ['pandas-types-preparation', 2],
+  ['ml-foundations-data-target', 1],
+  ['ml-foundations-model-fit-predict', 1],
+  ['ml-foundations-train-test-baseline-metrics', 2],
+  ['ml-foundations-project-cycle', 1],
 ])
 
 const topicsRequiringPractice = new Set([
@@ -77,6 +85,10 @@ const topicsRequiringPractice = new Set([
   'pandas-missing-duplicates',
   'pandas-groupby',
   'pandas-types-preparation',
+  'ml-foundations-data-target',
+  'ml-foundations-model-fit-predict',
+  'ml-foundations-train-test-baseline-metrics',
+  'ml-foundations-project-cycle',
 ])
 
 function requireCondition(condition, message) {
@@ -173,23 +185,23 @@ const { curriculumBlocks, flowTopics } = loadCurriculum()
 
 requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
-requireCondition(curriculumBlocks.length === 3, `Expected exactly 3 curriculum blocks, got ${curriculumBlocks.length}.`)
-requireCondition(flowTopics.length === 21, `Expected exactly 21 topics, got ${flowTopics.length}.`)
+requireCondition(curriculumBlocks.length === 4, `Expected exactly 4 curriculum blocks, got ${curriculumBlocks.length}.`)
+requireCondition(flowTopics.length === 25, `Expected exactly 25 topics, got ${flowTopics.length}.`)
 
 const blockIds = curriculumBlocks.map((block) => block.id)
-requireCondition(blockIds.join(',') === 'intro-ai-ml,numpy-ml,pandas-eda', `Unexpected block ids: ${blockIds.join(',')}.`)
+requireCondition(blockIds.join(',') === 'intro-ai-ml,numpy-ml,pandas-eda,ml-foundations', `Unexpected block ids: ${blockIds.join(',')}.`)
 
 const topicIds = flowTopics.map((topic) => topic.id)
 requireCondition(topicIds.join(',') === [...expectedStepCounts.keys()].join(','), `Unexpected topic order: ${topicIds.join(',')}.`)
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 128, `Expected 128 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 151, `Expected 151 total steps, got ${totalSteps}.`)
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`
   const expectedCount = expectedStepCounts.get(topic.id)
   requireCondition(topic.steps.length === expectedCount, `${prefix} expected ${expectedCount} steps, got ${topic.steps.length}.`)
-  requireCondition(['intro-ai-ml', 'numpy-ml', 'pandas-eda'].includes(topic.blockId), `${prefix} unexpected blockId ${topic.blockId}.`)
+  requireCondition(['intro-ai-ml', 'numpy-ml', 'pandas-eda', 'ml-foundations'].includes(topic.blockId), `${prefix} unexpected blockId ${topic.blockId}.`)
   requireCondition(!['python-for-ai', 'data-prep'].includes(topic.blockId), `${prefix} old block id must not be displayed.`)
 
   const stepTypes = topic.steps.map((step) => step.type)
