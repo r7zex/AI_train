@@ -1,5 +1,5 @@
 import type { FlowTopic } from '../aiCurriculumTypes'
-import { callout, code, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
+import { callout, introTopic, makeStdinTask, practiceStep, quizStep, section, singleQuiz, theoryStep } from './helpers'
 
 export const topicGradientDescent: FlowTopic = introTopic(
   'gradient-descent',
@@ -33,15 +33,13 @@ export const topicGradientDescent: FlowTopic = introTopic(
       [
         section('formula', 'Правило обновления', [
           'На каждой итерации параметры модели обновляются по формуле:',
+          'Где:',
+          '• **θ** (тета) — параметры модели.',
+          '• **α** (альфа) — **learning rate** (скорость обучения), размер нашего шага.',
+          '• **∇L(θ)** — **градиент** функции потерь, вектор, указывающий направление самого крутого роста.',
         ], {
           callouts: [
             callout('Формула', 'θ = θ - α * ∇L(θ)', 'schema'),
-          ],
-          paragraphs: [
-            'Где:',
-            '• **θ** (тета) — параметры модели.',
-            '• **α** (альфа) — **learning rate** (скорость обучения), размер нашего шага.',
-            '• **∇L(θ)** — **градиент** функции потерь, вектор, указывающий направление самого крутого роста.',
           ],
         }),
       ],

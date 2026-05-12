@@ -16,6 +16,13 @@ export const curriculumBlocks = [
     description: 'Массивы, shape, dtype, срезы, векторизация, axis, маски, broadcasting и random.',
     order: 2,
   },
+  {
+    id: 'pandas-eda',
+    title: 'Pandas и первичный анализ данных',
+    icon: '03',
+    description: 'DataFrame, Series, чтение CSV, просмотр таблиц, фильтрация, группировка, пропуски и базовая очистка данных.',
+    order: 3,
+  },
 ]
 
 export const commonSources = [
@@ -36,6 +43,12 @@ export const commonSources = [
     type: 'docs' as const,
     why: 'Официальная справка по ndarray, созданию массивов, shape, axis, broadcasting и random.',
     url: 'https://numpy.org/doc/stable/',
+  },
+  {
+    label: 'pandas documentation',
+    type: 'docs' as const,
+    why: 'Официальная справка по DataFrame, Series, чтению CSV, индексации, groupby, пропускам и преобразованию типов.',
+    url: 'https://pandas.pydata.org/docs/',
   },
 ]
 
@@ -317,6 +330,33 @@ export const numpyTopic = (
   'numpy-ml',
   'NumPy для машинного обучения',
   '02',
+  `${id}-subblock`,
+  title,
+  simpleExplanation,
+  terminology,
+  formulas,
+  themeCheatsheet,
+  steps,
+)
+
+export const pandasTopic = (
+  id: string,
+  title: string,
+  order: number,
+  summary: string,
+  simpleExplanation: string,
+  terminology: string[],
+  formulas: string[],
+  themeCheatsheet: string[],
+  steps: FlowStep[],
+) => topicBase(
+  id,
+  title,
+  order,
+  summary,
+  'pandas-eda',
+  'Pandas и первичный анализ данных',
+  '03',
   `${id}-subblock`,
   title,
   simpleExplanation,
