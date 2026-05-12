@@ -15,23 +15,23 @@ const expectedStepCounts = new Map([
   ['ml-types', 4],
   ['ml-project-lifecycle', 1],
   ['metrics-deep', 4],
-  ['numpy-why', 6],
-  ['numpy-array-creation', 7],
-  ['numpy-shape-ndim-dtype', 6],
-  ['numpy-indexing-slices', 7],
-  ['numpy-vector-operations', 6],
-  ['numpy-aggregations-statistics', 7],
-  ['numpy-2d-axis', 6],
-  ['numpy-masks-where', 7],
-  ['numpy-broadcasting', 8],
-  ['numpy-random-reproducibility', 7],
-  ['pandas-why-dataframe', 6],
-  ['pandas-read-inspect', 7],
-  ['pandas-selection', 7],
-  ['pandas-filtering-sorting', 7],
-  ['pandas-missing-duplicates', 7],
-  ['pandas-groupby', 7],
-  ['pandas-types-preparation', 7],
+  ['numpy-why', 7],
+  ['numpy-array-creation', 9],
+  ['numpy-shape-ndim-dtype', 7],
+  ['numpy-indexing-slices', 9],
+  ['numpy-vector-operations', 7],
+  ['numpy-aggregations-statistics', 9],
+  ['numpy-2d-axis', 7],
+  ['numpy-masks-where', 8],
+  ['numpy-broadcasting', 9],
+  ['numpy-random-reproducibility', 8],
+  ['pandas-why-dataframe', 8],
+  ['pandas-read-inspect', 9],
+  ['pandas-selection', 9],
+  ['pandas-filtering-sorting', 9],
+  ['pandas-missing-duplicates', 9],
+  ['pandas-groupby', 9],
+  ['pandas-types-preparation', 9],
 ])
 
 const expectedQuizCounts = new Map([
@@ -183,7 +183,7 @@ const topicIds = flowTopics.map((topic) => topic.id)
 requireCondition(topicIds.join(',') === [...expectedStepCounts.keys()].join(','), `Unexpected topic order: ${topicIds.join(',')}.`)
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 128, `Expected 128 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 155, `Expected 155 total steps, got ${totalSteps}.`)
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`

@@ -1,39 +1,145 @@
-import { callout, code, makeStdinTask, pandasTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
+import { callout, code, functionSection, makeStdinTask, pandasTopic, practiceStep, quizStep, section, singleQuiz, theoryStep } from '../helpers'
 
 export const topicPandasTypesAndPreparation = pandasTopic(
   'pandas-types-preparation',
   '3.7 Типы данных и подготовка таблицы к ML',
   7,
-  'Доводим таблицу до ML-формата: типы, категории, `X` и `y`.',
-  'Pandas-таблица ещё не значит, что данные готовы к модели: нужно привести типы, закодировать категории и отделить target.',
-  ['dtypes', 'astype', 'get_dummies', 'one-hot', 'X', 'y', 'target leakage'],
-  ['X = признаки', 'y = целевая переменная', 'pd.get_dummies() -> one-hot признаки'],
+  'Проверяем типы столбцов, кодируем категории и разделяем таблицу на признаки X и target y.',
+  'Перед обучением модели pandas-таблицу нужно привести к понятным типам, закодировать категории и отделить target от признаков.',
+  ['dtypes', 'astype', 'categorical features', 'get_dummies', 'X', 'y', 'target'],
+  ['X = df[feature_cols]', 'y = df[target_col]', 'pd.get_dummies(df, columns=[...])'],
   [
-    'Проверяем типы через `dtypes`.',
-    'Исправляем типы через `astype()`.',
-    'Категории кодируем через `pd.get_dummies()`.',
-    'Target не должен оставаться среди признаков.',
+    '`astype()` меняет тип столбца.',
+    'Строковые категории нужно кодировать перед большинством ML-моделей.',
+    'Target нельзя включать в `X`, иначе возникнет утечка данных.',
   ],
   [
     theoryStep(
-      'pandas-prep-scenario',
-      'От таблицы к `X` и `y`',
-      'Показываем финальный шаг перед sklearn.',
+      'pandas-preparation-scenario',
+      'Сценарий подготовки к ML',
+      'От проверки типов к `X` и `y`.',
       [
-        section('workflow', 'Пять шагов подготовки', [
-          'Pandas-таблица может выглядеть аккуратно, но модель всё ещё может не принять её: строки нужно закодировать, типы привести, target отделить.',
-          'Рабочий сценарий: проверить `dtypes`, исправить типы через `astype`, закодировать категории, выделить `X`, выделить `y`.',
+        section('scenario', 'Проверить -> исправить -> закодировать -> разделить', [
+          'Перед моделью таблицу нужно привести к форме, которую алгоритм сможет принять: проверить типы, исправить типы, закодировать категории и выделить `X` и `y`.',
+          'Это последний pandas-шаг перед ML. Если здесь включить target в признаки или оставить строковые категории без кодирования, модель либо даст ошибку, либо покажет нереалистично хорошее качество из-за утечки.',
         ], {
-          bullets: [
-            'проверить `dtypes`;',
-            'исправить типы через `astype()`;',
-            'закодировать категориальные признаки;',
-            'выделить `X` - признаки;',
-            'выделить `y` - целевую переменную.',
+          table: {
+            headers: ['Шаг', 'Инструмент'],
+            rows: [
+              ['проверить типы', '`df.dtypes`'],
+              ['исправить типы', '`astype()`'],
+              ['закодировать категории', '`pd.get_dummies()`'],
+              ['выделить признаки и target', '`X = df[features]`, `y = df[target]`'],
+            ],
+          },
+        }),
+      ],
+    ),
+    theoryStep(
+      'pandas-types-astype',
+      '`astype()` и типы столбцов',
+      'Проверяем и меняем типы перед дальнейшей обработкой.',
+      [
+        functionSection(
+          'dtypes-function',
+          '`df.dtypes`',
+          'df.dtypes',
+          ['`df` - таблица pandas'],
+          `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "rooms": ["1", "2", "3"],
+                "area": [35, 52, 80],
+            })
+
+            print(df.dtypes)
+          `,
+          `
+            rooms    object
+            area      int64
+            dtype: object
+          `,
+          '`dtypes` помогает заметить числа, прочитанные как строки.',
+        ),
+        functionSection(
+          'astype-function',
+          '`astype()`',
+          'df["col"].astype(dtype)',
+          ['`dtype` - новый тип, например `int`, `float` или `"category"`'],
+          `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "rooms": ["1", "2", "3"],
+                "area": [35, 52, 80],
+            })
+
+            df["rooms"] = df["rooms"].astype(int)
+            print(df["rooms"].dtype)
+          `,
+          'int64',
+          '`astype()` приводит столбец к выбранному типу.',
+        ),
+        section('astype', 'Типы данных', [
+          'Перед подготовкой к ML нужно убедиться, что числа действительно числовые, категории читаются как категории или строки, а даты не остались обычным текстом.',
+          'Если числовой столбец прочитан как `object`, модель может не принять данные. Ошибочный тип часто указывает на пробелы, запятые вместо точек или смешанные значения.',
+        ], {
+          codeExamples: [
+            code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "rooms": ["1", "2", "3"],
+                  "area": [35, 52, 80],
+              })
+
+              print(df.dtypes)
+              df["rooms"] = df["rooms"].astype(int)
+              print(df["rooms"].dtype)
+            `, `
+              rooms    object
+              area      int64
+              dtype: object
+              int64
+            `, 'Перед `astype()` нужно убедиться, что в столбце нет несовместимых значений.'),
           ],
         }),
-        section('encoding', 'Категории нужно превратить в числа', [
-          'Многие модели не умеют напрямую работать со строками вроде `center` или `north`. Один из простых способов - one-hot encoding через `pd.get_dummies()`.',
+      ],
+    ),
+    theoryStep(
+      'pandas-categorical-features',
+      'Категориальные признаки',
+      'Большинство моделей не принимает сырые строки как числа.',
+      [
+        functionSection(
+          'get-dummies-function',
+          '`pd.get_dummies()`',
+          'pd.get_dummies(df, columns=[...])',
+          ['`df` - исходная таблица', '`columns` - список категориальных столбцов', '`drop_first` - удалять ли одну категорию из набора'],
+          `
+            import pandas as pd
+
+            df = pd.DataFrame({
+                "area": [35, 52, 80],
+                "district": ["Center", "North", "Center"],
+                "price": [8, 9, 18],
+            })
+
+            df_encoded = pd.get_dummies(df, columns=["district"], drop_first=False)
+            print(df_encoded.head())
+          `,
+          `
+               area  price  district_Center  district_North
+            0    35      8             True           False
+            1    52      9            False            True
+            2    80     18             True           False
+          `,
+          '`get_dummies()` превращает категории в 0/1-столбцы.',
+        ),
+        section('categories', 'Почему строки нужно кодировать', [
+          'Район, город, тариф или тип устройства несут информацию, но строка `"Moscow"` сама по себе не является числом для большинства моделей.',
+          'One-hot кодирование подходит для небольшого числа категорий. Если уникальных значений тысячи, таблица станет слишком широкой, и понадобится другой подход.',
         ], {
           codeExamples: [
             code('python', `
@@ -41,165 +147,213 @@ export const topicPandasTypesAndPreparation = pandasTopic(
 
               df = pd.DataFrame({
                   "area": [35, 52, 80],
-                  "district": ["center", "north", "center"],
-                  "price": [8.2, 9.1, 18.4],
+                  "district": ["Center", "North", "Center"],
+                  "price": [8, 9, 18],
               })
 
-              features = pd.get_dummies(df[["area", "district"]])
-              target = df["price"]
-
-              print(features)
-              print(target)
+              df_encoded = pd.get_dummies(df, columns=["district"], drop_first=False)
+              print(df_encoded.head())
             `, `
-                 area  district_center  district_north
-              0    35             True           False
-              1    52            False            True
-              2    80             True           False
-              0     8.2
-              1     9.1
-              2    18.4
-              Name: price, dtype: float64
-            `, '`district` превратился в несколько 0/1-признаков, а `price` отделён как target.'),
+                 area  price  district_Center  district_North
+              0    35      8             True           False
+              1    52      9            False            True
+              2    80     18             True           False
+            `, 'Так модель получает числовые индикаторы категорий.'),
           ],
         }),
       ],
     ),
     theoryStep(
-      'pandas-prep-checkpoint',
+      'pandas-split-x-y',
+      'Разделение на `X` и `y`',
+      'Признаки и целевую переменную нужно хранить отдельно.',
+      [
+        section('xy', 'Features и target', [
+          '`X` - таблица признаков, `y` - целевая переменная, которую модель должна предсказывать. Их разделяют до обучения модели.',
+          'Обычная запись: `X = df[feature_cols]`, `y = df[target_col]`. В `feature_cols` не должен попадать target и столбцы, которые раскрывают target напрямую.',
+          'Почти все библиотеки обучения ожидают пару `X`, `y`. Для sklearn это стандартный интерфейс: `model.fit(X, y)`.',
+        ], {
+          codeExamples: [
+            code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80],
+                  "rooms": [1, 2, 3],
+                  "price": [8, 9, 18],
+              })
+
+              feature_cols = ["area", "rooms"]
+              X = df[feature_cols]
+              y = df["price"]
+
+              print(X.head())
+              print(y.head())
+            `, `
+                 area  rooms
+              0    35      1
+              1    52      2
+              2    80      3
+              0     8
+              1     9
+              2    18
+              Name: price, dtype: int64
+            `, '`price` не входит в `X`, потому что это ответ, который модель должна научиться предсказывать.'),
+          ],
+          callouts: [
+            callout('Важно', 'Target внутри признаков почти всегда приводит к утечке данных и нереалистично высокой оценке качества.', 'important'),
+          ],
+        }),
+      ],
+    ),
+    theoryStep(
+      'pandas-mini-pipeline',
+      'Мини-пайплайн pandas -> sklearn',
+      'Собираем базовую последовательность подготовки таблицы.',
+      [
+        section('pipeline', 'От CSV к матрице признаков', [
+          'Минимальная цепочка подготовки: прочитать данные, проверить структуру, обработать пропуски, закодировать категории, выбрать `X` и `y`.',
+          'В коде это часто выглядит как `df = pd.read_csv(...)`, затем `df.isna().sum()`, `fillna()`, `pd.get_dummies()`, `X = df_encoded[feature_cols]`, `y = df_encoded["target"]`.',
+          'Pandas не обучает модель сам по себе в этом курсе, но делает данные пригодными для обучения. Хорошая подготовка часто важнее выбора сложной модели.',
+        ], {
+          codeExamples: [
+            code('python', `
+              import pandas as pd
+
+              df = pd.DataFrame({
+                  "area": [35, 52, 80],
+                  "rooms": [1, 2, 3],
+                  "district": ["Center", "North", "Center"],
+                  "price": [8, 9, 18],
+              })
+
+              df_encoded = pd.get_dummies(df, columns=["district"], dtype=int)
+
+              feature_cols = ["area", "rooms", "district_Center", "district_North"]
+              X = df_encoded[feature_cols]
+              y = df_encoded["price"]
+
+              print(X.shape)
+              print(y.shape)
+            `, '(3, 4)\n(3,)', 'У `X` две размерности: объекты и признаки. У `y` одна размерность: ответ на каждый объект.'),
+          ],
+        }),
+      ],
+    ),
+    theoryStep(
+      'pandas-preparation-checkpoint',
       'Что теперь умеем',
-      'Закрепляем требования к таблице перед ML.',
+      'Фиксируем финальный шаг перед моделью.',
       [
         section('checkpoint', 'Промежуточный вывод', [
-          'После этого шага таблица становится ближе к виду, который можно передать в sklearn.',
+          'Теперь таблица проходит полный путь подготовки: типы проверены, категории превращены в числовые индикаторы, признаки и target разведены по разным переменным.',
+          'Это связывает pandas-блок с ML-блоком курса: дальше модель будет работать не с сырым CSV, а с подготовленными `X` и `y`.',
         ], {
           bullets: [
-            'проверять и исправлять типы столбцов;',
-            'понимать, почему строки нужно кодировать;',
-            'создавать one-hot признаки через `pd.get_dummies()`;',
-            'отделять `X` от `y`;',
-            'не оставлять target среди признаков.',
+            'проверять типы через `dtypes`;',
+            'исправлять типы через `astype()`;',
+            'кодировать категории через `get_dummies()`;',
+            'выделять `X` и `y` без утечки target.',
           ],
           callouts: [
-            callout('Важно', 'Модель не должна видеть target среди features. Иначе возникает утечка данных: качество на обучении выглядит отличным, но в реальности модель использует ответ, которого не будет при предсказании.', 'important'),
-          ],
-        }),
-      ],
-    ),
-    theoryStep(
-      'pandas-prep-types',
-      'Типы данных перед кодированием',
-      'Показываем, почему `dtypes` важен перед ML.',
-      [
-        section('types', 'Числа могут оказаться строками', [
-          'После чтения CSV числовой столбец иногда оказывается строковым: из-за пробелов, запятых вместо точек, валютных символов или смешанных значений. Поэтому `dtypes` проверяют до кодирования и обучения.',
-          '`astype()` полезен, когда данные уже чистые и их нужно привести к ожидаемому типу. Если в столбце есть мусорные строки, сначала нужно разобраться с ними, иначе приведение типа упадёт или даст неверный результат.',
-        ], {
-          callouts: [
-            callout('Где используется', 'Исправление числовых признаков, подготовка категорий к one-hot encoding, проверка готовности таблицы к sklearn.', 'example'),
-          ],
-        }),
-      ],
-    ),
-    theoryStep(
-      'pandas-prep-final-check',
-      'Финальная проверка `X` и `y`',
-      'Закрепляем критерии готовности таблицы.',
-      [
-        section('final', 'Что проверить перед передачей в sklearn', [
-          'Перед моделью полезно проверить, что `X` не содержит target, все нужные категории закодированы, числовые столбцы имеют числовой тип, а число строк `X` совпадает с длиной `y`.',
-          'Это простой финальный барьер. Он не гарантирует хорошую модель, но предотвращает типичные технические ошибки: строки вместо чисел, target leakage и несовпадение объектов с ответами.',
-        ], {
-          callouts: [
-            callout('Промежуточный вывод', 'Готовая к ML таблица - это не просто DataFrame, а осмысленно выбранные признаки `X` и отдельный target `y` без утечки ответа.', 'summary'),
+            callout('Типичная ошибка', 'Target нельзя включать в features. Если `price` лежит и в `y`, и в `X`, модель получает ответ прямо во входных данных.', 'important'),
           ],
         }),
       ],
     ),
     quizStep(
       'pandas-prep-quiz-target',
-      'Target leakage',
-      'Проверяем понимание утечки target.',
+      'Что является target',
+      'Определяем целевую переменную.',
       singleQuiz(
-        'quiz-pandas-prep-target',
+        'quiz-pandas-target',
         'Target',
         'pandas-types-preparation',
         'pandas-eda',
-        'Почему `price` нельзя оставлять в `X`, если мы пытаемся предсказывать `price`?',
+        'Если задача - предсказать цену квартиры, какой столбец обычно будет `y`?',
         [
-          { id: 'a', text: 'Модель увидит правильный ответ среди признаков' },
-          { id: 'b', text: 'Pandas удалит все строки' },
-          { id: 'c', text: '`price` всегда должен быть строкой' },
-          { id: 'd', text: 'Так нельзя создать DataFrame' },
+          { id: 'a', text: '`price`' },
+          { id: 'b', text: '`area`' },
+          { id: 'c', text: '`rooms`' },
+          { id: 'd', text: '`district`' },
         ],
         'a',
-        'Target среди признаков создаёт утечку данных и делает оценку качества нереалистичной.',
+        '`y` хранит целевую переменную, то есть ответ для обучения. В задаче предсказания цены target - `price`.',
       ),
     ),
     quizStep(
-      'pandas-prep-quiz-dummies',
-      'Кодирование категорий',
-      'Проверяем выбор инструмента.',
+      'pandas-prep-quiz-features',
+      'Как выбрать X',
+      'Проверяем запрет на утечку target.',
       singleQuiz(
-        'quiz-pandas-prep-dummies',
-        'get_dummies',
+        'quiz-pandas-features-no-target',
+        'Признаки',
         'pandas-types-preparation',
         'pandas-eda',
-        'Что делает `pd.get_dummies()`?',
+        'Почему target нельзя включать в `feature_cols`?',
         [
-          { id: 'a', text: 'Превращает категориальные столбцы в one-hot признаки' },
-          { id: 'b', text: 'Удаляет все числовые столбцы' },
-          { id: 'c', text: 'Считает среднее по группам' },
-          { id: 'd', text: 'Читает CSV-файл' },
+          { id: 'a', text: 'Модель увидит правильный ответ среди входных признаков' },
+          { id: 'b', text: 'Pandas не умеет выбирать несколько столбцов' },
+          { id: 'c', text: 'Так `head()` перестанет работать' },
+          { id: 'd', text: 'Так все числа станут строками' },
         ],
         'a',
-        '`get_dummies()` создаёт отдельные 0/1-признаки для категорий.',
+        'Если target попадает в `X`, модель получает ответ на входе. Это утечка данных и такая оценка качества не отражает реальную задачу.',
       ),
     ),
     practiceStep(
       'pandas-prep-practice',
       'Подготовить X и y',
-      'Кодируем категорию и отделяем target.',
+      'Кодируем категорию и отделяем признаки от target.',
       makeStdinTask(
-        'task-pandas-prepare-x-y',
+        'task-pandas-prepare-xy',
         'Подготовить X и y',
-        'Создайте DataFrame из готового словаря. Сформируйте `X` из `area` и `district` через one-hot encoding, `y` из `price`. Выведите `X`, затем `y`.',
+        'На вход подаётся CSV с колонками `area`, `rooms`, `district`, `price`. Закодируйте `district` через `pd.get_dummies`, выберите признаки и target, выведите `X.shape`, `y.shape` и список признаков.',
         `
           import pandas as pd
+          import sys
+          from io import StringIO
 
-          data = {
-              "area": [35, 52, 80],
-              "district": ["center", "north", "center"],
-              "price": [8.2, 9.1, 18.4],
-          }
+          df = pd.read_csv(StringIO(sys.stdin.read()))
 
-          # TODO: создайте DataFrame
+          # TODO: закодируйте категориальный столбец
 
-          # TODO: сформируйте X без target и закодируйте категории
+          # TODO: выберите feature_cols
 
-          # TODO: сформируйте y
+          # TODO: создайте X и y
 
-          # TODO: выведите X и y
+          # TODO: выведите X.shape и y.shape
         `,
         [
-          { id: 's1', description: 'X и y', expectedOutput: '   area  district_center  district_north\n0    35             True           False\n1    52            False            True\n2    80             True           False\n0     8.2\n1     9.1\n2    18.4\nName: price, dtype: float64' },
+          {
+            id: 's1',
+            description: 'Два района',
+            input: 'area,rooms,district,price\n35,1,Center,8\n52,2,North,9\n80,3,Center,18',
+            expectedOutput: "(3, 4)\n(3,)\n['area', 'rooms', 'district_Center', 'district_North']",
+          },
         ],
         [
-          { id: 'h1', description: 'Target не в X', expectedOutput: '   area  district_center  district_north\n0    35             True           False\n1    52            False            True\n2    80             True           False\n0     8.2\n1     9.1\n2    18.4\nName: price, dtype: float64' },
+          {
+            id: 'h1',
+            description: 'Три района',
+            input: 'area,rooms,district,price\n40,1,A,10\n60,2,B,12\n80,3,C,18',
+            expectedOutput: "(3, 5)\n(3,)\n['area', 'rooms', 'district_A', 'district_B', 'district_C']",
+          },
         ],
         `
           import pandas as pd
+          import sys
+          from io import StringIO
 
-          data = {
-              "area": [35, 52, 80],
-              "district": ["center", "north", "center"],
-              "price": [8.2, 9.1, 18.4],
-          }
+          df = pd.read_csv(StringIO(sys.stdin.read()))
+          df_encoded = pd.get_dummies(df, columns=["district"], dtype=int)
+          feature_cols = [col for col in df_encoded.columns if col != "price"]
+          X = df_encoded[feature_cols]
+          y = df_encoded["price"]
 
-          df = pd.DataFrame(data)
-          X = pd.get_dummies(df[["area", "district"]])
-          y = df["price"]
-          print(X)
-          print(y)
+          print(X.shape)
+          print(y.shape)
+          print(list(X.columns))
         `,
       ),
     ),
