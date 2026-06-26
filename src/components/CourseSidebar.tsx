@@ -10,10 +10,10 @@ interface CourseSidebarProps {
   getBlockProgress: (blockId: string) => number
 }
 
-function firstTopicHref(themes: Array<{ id: string; steps: Array<{ id: string }> }>, progress: ProgressState) {
+function firstTopicHref(themes: Array<{ id: string; steps: Array<{ id: string }> }>) {
   const topic = themes[0]
   if (!topic) return '/topics'
-  return getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)
+  return getFlowStepHref(topic.id, topic.steps[0].id)
 }
 
 function topicNumber(title: string) {
@@ -52,7 +52,7 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
           return (
             <section key={block.id} className="relative border-l-4 border-[#65d36f]">
               <Link
-                to={firstTopicHref(blockThemes, progress)}
+                to={firstTopicHref(blockThemes)}
                 className="block px-2 py-3 text-[14px] font-bold text-white hover:bg-[#2a2a2a]"
               >
                 {block.order} {block.title}
@@ -61,7 +61,7 @@ export default function CourseSidebar({ activeTopicId, progress, getTopicProgres
               <div className="pb-2">
                 {blockThemes.map((topic) => {
                   const isActive = topic.id === activeTopicId
-                  const href = getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)
+                  const href = getFlowStepHref(topic.id, topic.steps[0].id)
                   const progressPct = Math.round(getTopicProgress(topic.id) * 100)
 
                   return (

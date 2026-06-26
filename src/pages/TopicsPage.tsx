@@ -121,7 +121,7 @@ export default function TopicsPage() {
                         </div>
                         <div className="divide-y divide-[#edf1f5] bg-white">
                           {subblock.themes.map((topic) => {
-                            const href = getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? topic.steps[0].id)
+                            const href = getFlowStepHref(topic.id, topic.steps[0].id)
                             const topicProgress = Math.round(getTopicProgress(topic.id) * 100)
                             const theoryCount = topic.steps.filter((step) => step.type === 'theory').length
                             const questionCount = topic.steps.reduce((sum, step) => sum + (step.quiz?.questions.length ?? 0), 0)

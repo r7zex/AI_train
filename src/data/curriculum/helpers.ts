@@ -81,7 +81,7 @@ export const section = (
   id: string,
   title: string,
   paragraphs: string[],
-  options: Pick<LessonSection, 'bullets' | 'callouts' | 'table' | 'codeExamples'> = {},
+  options: Pick<LessonSection, 'variant' | 'signature' | 'params' | 'returns' | 'bullets' | 'callouts' | 'table' | 'codeExamples'> = {},
 ): LessonSection => ({
   id,
   title,
@@ -184,6 +184,10 @@ export const functionSection = (
   `**Параметры:** ${params.join('; ')}.`,
   '**Пример:** только эта функция, без соседних функций из группы.',
 ], {
+  variant: 'function-card',
+  signature,
+  params,
+  returns: functionReturnDescriptions[normalizeFunctionTitle(title)] ?? explanation,
   codeExamples: [
     code('python', exampleCode, output, explanation),
   ],

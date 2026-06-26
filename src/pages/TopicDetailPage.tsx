@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import CodeBlock, { ReadOnlyCodeCell } from '../components/CodeBlock'
 import CodeEditor from '../components/CodeEditor'
 import CourseSidebar from '../components/CourseSidebar'
 import Formula from '../components/Formula'
+import RichText from '../components/RichText'
 import QuizWidget from '../features/quiz/QuizWidget'
 import {
   getFlowPrevNextStep,
@@ -16,48 +17,11 @@ import {
   type FlowStep,
   type FlowStepType,
   type FormulaCard,
+  type LessonSection,
   type PracticeTask,
 } from '../data/courseFlow'
 import { useProgress } from '../hooks/useProgress'
 import { judgeTask, type JudgeRunResult } from '../lib/practiceEngine'
-
-const inlinePattern = /(pd\.read_csv|pd\.DataFrame|df\.head|df\.info|df\.describe|df\.columns|df\.isna|value_counts|groupby|np\.array|np\.zeros|np\.ones|np\.full|np\.arange|np\.linspace|np\.sum|np\.mean|np\.min|np\.max|np\.std|np\.var|np\.median|np\.quantile|np\.percentile|np\.where|np\.any|np\.all|np\.sort|np\.argsort|np\.unique|np\.argmax|np\.argmin|np\.random\.default_rng|rng\.integers|rng\.normal|rng\.uniform|rng\.permutation|rng\.choice|model\.fit|model\.predict|train_test_split|fit_transform|predict_proba|OneHotEncoder|OrdinalEncoder|SimpleImputer|StandardScaler|MinMaxScaler|RobustScaler|ColumnTransformer|Pipeline|LogisticRegression|LinearRegression|RandomForestClassifier|XGBClassifier|CatBoostClassifier|CrossEntropyLoss|BCEWithLogitsLoss|DataLoader|Conv2d|Transformer|random_state|learning_rate|weight_decay|n_estimators|max_depth|early_stopping_rounds|sparse_output|class_weight|batch_size|test_size|stratify|shuffle|n_splits|kernel_size|padding|num_heads|d_model|validation|precision|recall|accuracy|logits|loss|leakage|dropout|ndarray|shape|ndim|size|dtype|astype|axis|reshape|ravel|flatten|broadcasting|baseline|target|features|loc|iloc|fit|transform|predict|train|validate|AdamW|Adam|SGD|RMSprop|MAE|MSE|RMSE|R²|F1|TP|FP|FN|[A-Za-z_][A-Za-z0-9_]*(?=\())/
-const richTokenPattern = /(`[^`]+`|\*\*[^*]+\*\*)/g
-
-function RichText({ text, className = '' }: { text: string; className?: string }) {
-  const renderAutoCode = (value: string, keyPrefix: string) => (
-    value.split(inlinePattern).map((part, index) => {
-      if (!part) return null
-      if (inlinePattern.test(part)) {
-        return (
-          <code key={`${keyPrefix}-${part}-${index}`} className="rounded border border-[#e1e5ea] bg-[#f3f4f6] px-1 py-0.5 font-mono text-[0.92em] text-[#111827]">
-            {part}
-          </code>
-        )
-      }
-      return <span key={`${keyPrefix}-${part}-${index}`}>{part}</span>
-    })
-  )
-
-  return (
-    <span className={className}>
-      {text.split(richTokenPattern).map((part, index) => {
-        if (!part) return null
-        if (part.startsWith('`') && part.endsWith('`')) {
-          return (
-            <code key={`${part}-${index}`} className="rounded border border-[#e1e5ea] bg-[#f3f4f6] px-1 py-0.5 font-mono text-[0.92em] text-[#111827]">
-              {part.slice(1, -1)}
-            </code>
-          )
-        }
-        if (part.startsWith('**') && part.endsWith('**')) {
-          return <strong key={`${part}-${index}`}>{renderAutoCode(part.slice(2, -2), `strong-${index}`)}</strong>
-        }
-        return renderAutoCode(part, `text-${index}`)
-      })}
-    </span>
-  )
-}
 
 function isMathNotation(value: string) {
   return /[A-Za-z_Σσμθλπη∇]|[A-Z]{1,3}/.test(value) && !/[а-яА-ЯёЁ]/.test(value)
@@ -242,26 +206,117 @@ function ConceptCardView({ concept }: { concept: ConceptCard }) {
   )
 }
 
+function FunctionCardSection({ section }: { section: LessonSection }) {
+  const example = section.codeExamples?.[0]
+  const params = section.params ?? []
+  const output = example?.output ?? section.returns ?? ''
+
+  return (
+    <section className="overflow-hidden border border-[#dbe2ea] bg-white shadow-[0_12px_30px_-26px_rgba(30,37,45,0.7)]">
+      <div className="flex flex-col gap-3 border-b border-[#e6ebf1] bg-[#fbfcfe] px-4 py-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h2 className="text-[18px] font-bold leading-6 text-[#111827]">
+            <RichText text={section.title} />
+          </h2>
+          {section.returns && (
+            <p className="mt-1 text-[13px] leading-5 text-[#4b5563]">
+              <RichText text={section.returns} />
+            </p>
+          )}
+        </div>
+        {section.signature && (
+          <code className="w-fit max-w-full overflow-x-auto border border-[#d7dee7] bg-white px-2.5 py-1.5 font-mono text-[13px] text-[#111827]">
+            {section.signature}
+          </code>
+        )}
+      </div>
+
+      <div className="grid gap-2 px-4 py-4 md:grid-cols-[minmax(0,1fr),32px,minmax(0,0.82fr),32px,minmax(0,1fr)] md:items-stretch">
+        <div className="min-w-0 border border-[#e1e7ee] bg-[#f8fafc] p-3">
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#64748b]">Вход / параметры</div>
+          {params.length > 0 ? (
+            <ul className="space-y-1 text-[13px] leading-5 text-[#111827]">
+              {params.map((param) => (
+                <li key={param} className="break-words">
+                  <RichText text={param} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[13px] leading-5 text-[#6b7280]">Готовый массив или значение.</p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-center text-[18px] font-bold text-[#65a866] md:text-[22px]">→</div>
+
+        <div className="flex min-w-0 flex-col items-center justify-center border border-[#b8e2be] bg-[#eefaf1] p-3 text-center">
+          <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#2f7a46]">Функция</div>
+          <div className="mt-2 max-w-full overflow-x-auto font-mono text-[15px] font-bold text-[#102414]">
+            {section.signature ?? section.title.replace(/`/g, '')}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center text-[18px] font-bold text-[#65a866] md:text-[22px]">→</div>
+
+        <div className="min-w-0 border border-[#e1e7ee] bg-[#f8fafc] p-3">
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#64748b]">Выход / результат</div>
+          <p className="text-[13px] leading-5 text-[#111827]">
+            <RichText text={section.returns ?? 'Результат работы функции.'} />
+          </p>
+          {output && (
+            <pre className="mt-2 overflow-x-auto bg-white px-2 py-1.5 font-mono text-[12px] leading-5 text-[#111827]">{output}</pre>
+          )}
+        </div>
+      </div>
+
+      {example && (
+        <div className="border-t border-[#e6ebf1] px-4 py-3">
+          <CodeBlock code={example.code} language={example.language} output={example.output} explanation={example.explanation[0]} />
+        </div>
+      )}
+    </section>
+  )
+}
+
 function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () => void }) {
   const [code, setCode] = useState(task.starterCode)
   const [result, setResult] = useState<JudgeRunResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
+  const runIdRef = useRef(0)
 
   useEffect(() => {
+    runIdRef.current += 1
     setCode(task.starterCode)
     setResult(null)
     setIsRunning(false)
   }, [task.id, task.starterCode])
 
   const runJudge = async (includeHidden: boolean) => {
+    const runId = runIdRef.current + 1
+    runIdRef.current = runId
     setIsRunning(true)
+    setResult(null)
     try {
       const next = await judgeTask(task, code, includeHidden)
+      if (runIdRef.current !== runId) return
       setResult(next)
       if (includeHidden && next.passed) onPassed()
     } finally {
-      setIsRunning(false)
+      if (runIdRef.current === runId) setIsRunning(false)
     }
+  }
+
+  const cancelRun = () => {
+    runIdRef.current += 1
+    setIsRunning(false)
+    setResult({
+      passed: false,
+      score: 0,
+      sampleResults: [],
+      hiddenResults: [],
+      runtimeError: 'Выполнение отменено пользователем. Поздний результат этой проверки будет проигнорирован.',
+      structuralFeedback: [],
+    })
   }
 
   return (
@@ -311,6 +366,15 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
           >
             {isRunning ? 'Проверяем...' : 'Отправить'}
           </button>
+          {isRunning && (
+            <button
+              type="button"
+              onClick={cancelRun}
+              className="border border-[#b91c1c] bg-white px-4 py-2 text-[14px] font-bold text-[#b91c1c] hover:bg-[#fff5f5]"
+            >
+              Отменить
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -376,67 +440,73 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
       <div className="space-y-4">
         {primaryConcept && <ConceptCardView concept={primaryConcept} />}
 
-        {step.sections?.map((section) => (
-          <section key={section.id}>
-            <h2 className="mb-1.5 text-[18px] font-bold leading-6 text-[#111827]">
-              <RichText text={section.title} />
-            </h2>
-            <div className="space-y-1.5 text-[15px] leading-[1.55] text-[#111827]">
-              {section.paragraphs.map((paragraph, index) => (
-                <p key={`${section.id}-${index}`}>
-                  <RichText text={paragraph} />
-                </p>
-              ))}
-            </div>
-            {section.bullets && (
-              <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-[1.55] text-[#111827]">
-                {section.bullets.map((bullet) => (
-                  <li key={bullet}>
-                    <RichText text={bullet} />
-                  </li>
+        {step.sections?.map((section) => {
+          if (section.variant === 'function-card') {
+            return <FunctionCardSection key={section.id} section={section} />
+          }
+
+          return (
+            <section key={section.id}>
+              <h2 className="mb-1.5 text-[18px] font-bold leading-6 text-[#111827]">
+                <RichText text={section.title} />
+              </h2>
+              <div className="space-y-1.5 text-[15px] leading-[1.55] text-[#111827]">
+                {section.paragraphs.map((paragraph, index) => (
+                  <p key={`${section.id}-${index}`}>
+                    <RichText text={paragraph} />
+                  </p>
                 ))}
-              </ul>
-            )}
-            {section.callouts?.map((item) => (
-              <CalloutBlock key={`${section.id}-${item.title}-${item.body}`} title={item.title} body={item.body} tone={item.tone} />
-            ))}
-            {section.table && (
-              <div className="mt-2 overflow-x-auto border border-[#e5e7eb]">
-                <table className="min-w-full border-collapse text-left text-[14px] leading-5 text-[#111827]">
-                  <thead className="bg-[#f3f4f6]">
-                    <tr>
-                      {section.table.headers.map((header) => (
-                        <th key={header} className="border-b border-[#e5e7eb] px-2.5 py-1.5 font-bold">
-                          <RichText text={header} />
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {section.table.rows.map((row, rowIndex) => (
-                      <tr key={`${section.id}-row-${rowIndex}`} className="border-t border-[#e5e7eb]">
-                        {row.map((cell, cellIndex) => (
-                          <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-2.5 py-1.5 align-top">
-                            <RichText text={cell} />
-                          </td>
+              </div>
+              {section.bullets && (
+                <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-[1.55] text-[#111827]">
+                  {section.bullets.map((bullet) => (
+                    <li key={bullet}>
+                      <RichText text={bullet} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {section.callouts?.map((item) => (
+                <CalloutBlock key={`${section.id}-${item.title}-${item.body}`} title={item.title} body={item.body} tone={item.tone} />
+              ))}
+              {section.table && (
+                <div className="mt-2 overflow-x-auto border border-[#e5e7eb]">
+                  <table className="min-w-full border-collapse text-left text-[14px] leading-5 text-[#111827]">
+                    <thead className="bg-[#f3f4f6]">
+                      <tr>
+                        {section.table.headers.map((header) => (
+                          <th key={header} className="border-b border-[#e5e7eb] px-2.5 py-1.5 font-bold">
+                            <RichText text={header} />
+                          </th>
                         ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {section.codeExamples?.map((example, index) => (
-              <CodeBlock
-                key={`${section.id}-code-${index}`}
-                code={example.code}
-                language={example.language}
-                output={example.output}
-                explanation={example.explanation[0]}
-              />
-            ))}
-          </section>
-        ))}
+                    </thead>
+                    <tbody>
+                      {section.table.rows.map((row, rowIndex) => (
+                        <tr key={`${section.id}-row-${rowIndex}`} className="border-t border-[#e5e7eb]">
+                          {row.map((cell, cellIndex) => (
+                            <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-2.5 py-1.5 align-top">
+                              <RichText text={cell} />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {section.codeExamples?.map((example, index) => (
+                <CodeBlock
+                  key={`${section.id}-code-${index}`}
+                  code={example.code}
+                  language={example.language}
+                  output={example.output}
+                  explanation={example.explanation[0]}
+                />
+              ))}
+            </section>
+          )
+        })}
 
         {!primaryConcept && step.formulaCards && <FormulaCards cards={step.formulaCards} />}
 
@@ -504,7 +574,7 @@ export default function TopicDetailPage() {
   const progressApi = useProgress()
   const { progress, markStepCompleted, setLastVisitedStep, getTopicProgress, getSubblockProgress, getBlockProgress } = progressApi
 
-  const resolvedStepId = topic ? (stepId ?? progress.lastVisitedStep[topic.id] ?? topic.steps[0].id) : ''
+  const resolvedStepId = topic ? (stepId ?? topic.steps[0].id) : ''
   const currentStep = topic ? getFlowStep(topic.id, resolvedStepId) : null
 
   useEffect(() => {
@@ -584,11 +654,19 @@ export default function TopicDetailPage() {
 
               <div>
                 {prevNextStep.next ? (
-                  <Link to={getFlowStepHref(topic.id, prevNextStep.next.id)} className="bg-[#65d36f] px-4 py-2 text-[14px] font-bold text-[#102414] hover:bg-[#58c763]">
+                  <Link
+                    to={getFlowStepHref(topic.id, prevNextStep.next.id)}
+                    onClick={() => markStepCompleted(currentStep.id)}
+                    className="bg-[#65d36f] px-4 py-2 text-[14px] font-bold text-[#102414] hover:bg-[#58c763]"
+                  >
                     Следующий шаг
                   </Link>
                 ) : prevNextTopic.next ? (
-                  <Link to={getFlowStepHref(prevNextTopic.next.id, prevNextTopic.next.steps[0].id)} className="bg-[#65d36f] px-4 py-2 text-[14px] font-bold text-[#102414] hover:bg-[#58c763]">
+                  <Link
+                    to={getFlowStepHref(prevNextTopic.next.id, prevNextTopic.next.steps[0].id)}
+                    onClick={() => markStepCompleted(currentStep.id)}
+                    className="bg-[#65d36f] px-4 py-2 text-[14px] font-bold text-[#102414] hover:bg-[#58c763]"
+                  >
                     Следующая тема
                   </Link>
                 ) : (

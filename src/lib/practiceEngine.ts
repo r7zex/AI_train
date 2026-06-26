@@ -43,7 +43,12 @@ function stableStringify(value: unknown): string {
 }
 
 function normalizeOutput(value: unknown): string {
-  return String(value ?? '').trim().replace(/\r\n/g, '\n')
+  return String(value ?? '')
+    .replace(/\r\n/g, '\n')
+    .trim()
+    .split('\n')
+    .map((line) => line.replace(/[ \t]+/g, ' ').trimEnd())
+    .join('\n')
 }
 
 function createDiff(actual: string, expected: string) {

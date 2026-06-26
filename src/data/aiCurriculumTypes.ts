@@ -98,7 +98,11 @@ export interface ConceptCard {
 export interface LessonSection {
   id: string
   title: string
+  variant?: 'function-card'
   paragraphs: string[]
+  signature?: string
+  params?: string[]
+  returns?: string
   bullets?: string[]
   callouts?: Array<{
     title: string
