@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import RichText from '../../components/RichText'
 import type { Quiz, QuizQuestion } from '../../data/quizzes'
 
 interface QuizResult {
@@ -207,7 +208,7 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
             }
 
             return (
-              <label key={option.id} className={cls}>
+              <label key={option.id} className={`${cls} min-w-0`}>
                 <input
                   type="radio"
                   name={question.id}
@@ -217,7 +218,9 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
                   onChange={() => !isSubmitted && setDrafts((prev) => ({ ...prev, [question.id]: option.id }))}
                   className="mt-0.5 shrink-0"
                 />
-                <span className="text-sm text-gray-800">{option.text}</span>
+                <span className="min-w-0 flex-1 break-words text-sm leading-6 text-gray-800">
+                  <RichText text={option.text} />
+                </span>
                 {isSubmitted && isSelected && <span className="ml-auto shrink-0 text-xs font-medium text-gray-500">ваш ответ</span>}
                 {isSubmitted && canReveal && !isSelected && isRight && <span className="ml-auto shrink-0 text-xs font-medium text-green-700">правильный</span>}
               </label>
@@ -244,7 +247,7 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
             }
 
             return (
-              <label key={option.id} className={cls}>
+              <label key={option.id} className={`${cls} min-w-0`}>
                 <input
                   type="checkbox"
                   value={option.id}
@@ -264,7 +267,9 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
                   }}
                   className="mt-0.5 shrink-0"
                 />
-                <span className="text-sm text-gray-800">{option.text}</span>
+                <span className="min-w-0 flex-1 break-words text-sm leading-6 text-gray-800">
+                  <RichText text={option.text} />
+                </span>
                 {isSubmitted && isSelected && <span className="ml-auto shrink-0 text-xs font-medium text-gray-500">ваш ответ</span>}
                 {isSubmitted && canReveal && !isSelected && isRight && <span className="ml-auto shrink-0 text-xs font-medium text-green-700">правильный</span>}
               </label>
@@ -352,7 +357,9 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
 
             return (
               <div key={pair.left} className={rowCls}>
-                <span className="w-40 shrink-0 text-sm font-medium text-gray-700">{pair.left}</span>
+                <span className="w-40 shrink-0 break-words text-sm font-medium text-gray-700">
+                  <RichText text={pair.left} />
+                </span>
                 <span className="text-gray-400">→</span>
                 <select
                   value={selectedValue}
@@ -373,7 +380,11 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
                   ))}
                 </select>
                 {isSubmitted && <span className={`shrink-0 text-xs font-medium ${isRight ? 'text-green-600' : 'text-red-600'}`}>{isRight ? 'верно' : 'неверно'}</span>}
-                {isSubmitted && canReveal && !isRight && <span className="shrink-0 text-xs text-gray-500">нужно: {pair.right}</span>}
+                {isSubmitted && canReveal && !isRight && (
+                  <span className="shrink-0 text-xs text-gray-500">
+                    нужно: <RichText text={pair.right} />
+                  </span>
+                )}
               </div>
             )
           })}
@@ -406,7 +417,9 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
             return (
               <div key={itemIndex} className={cls}>
                 <span className="w-5 font-mono text-xs text-gray-400">{position + 1}.</span>
-                <span className="min-w-0 flex-1 text-gray-800">{question.items![itemIndex]}</span>
+                <span className="min-w-0 flex-1 break-words text-gray-800">
+                  <RichText text={question.items![itemIndex]} />
+                </span>
                 {!isSubmitted && (
                   <div className="flex flex-col gap-0.5">
                     <button onClick={() => position > 0 && moveItem(position, position - 1)} disabled={position === 0} className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30">▲</button>
@@ -470,7 +483,9 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
         </div>
 
         <div className="space-y-4 p-5">
-          <p className="font-medium leading-snug text-gray-900">{question.question}</p>
+          <p className="font-medium leading-snug text-gray-900">
+            <RichText text={question.question} />
+          </p>
 
           {renderInput(question, isSubmitted, explanationShown)}
 
@@ -487,9 +502,14 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
                 </button>
               ) : (
                 <div className="mt-2 space-y-2 text-gray-700">
-                  <p className="leading-relaxed">{question.explanation}</p>
+                  <p className="leading-relaxed">
+                    <RichText text={question.explanation} />
+                  </p>
                   <p className="text-xs">
-                    Правильный ответ: <strong>{formatCorrectAnswer(question)}</strong>
+                    Правильный ответ:{' '}
+                    <strong>
+                      <RichText text={formatCorrectAnswer(question)} />
+                    </strong>
                     {question.type === 'numeric' && (question.tolerance ?? 0) > 0 && <span> (±{question.tolerance})</span>}
                     {question.type === 'formula' && <span className="ml-2 text-gray-400">(пробелы и регистр игнорируются)</span>}
                   </p>
@@ -569,7 +589,9 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
               <div key={question.id} className={`flex items-start gap-3 rounded-lg border p-4 ${ok ? 'border-green-200 bg-green-50' : isPartial ? 'border-yellow-200 bg-yellow-50' : 'border-red-200 bg-red-50'}`}>
                 <span className={`mt-0.5 text-lg ${ok ? 'text-green-600' : isPartial ? 'text-yellow-600' : 'text-red-500'}`}>{ok ? '✓' : isPartial ? '~' : '✗'}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium leading-snug text-gray-800">{index + 1}. {question.question}</p>
+                  <p className="text-sm font-medium leading-snug text-gray-800">
+                    {index + 1}. <RichText text={question.question} />
+                  </p>
                   <p className="mt-1 text-xs text-gray-600">
                     {ok ? 'Ответ засчитан.' : 'Ответ не засчитан. Откройте объяснение в вопросе, чтобы увидеть разбор.'}
                   </p>

@@ -124,8 +124,7 @@ function registerPythonCompletions(monaco: Monaco) {
       const toSuggestion = (item: CompletionTemplate, prefix = '') => ({
         label: item.label,
         kind: completionKind(monaco, item.kind),
-        insertText: item.insertText,
-        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        insertText: item.label,
         detail: prefix ? item.detail.replace(/^(np|arr)\./, `${prefix}.`) : item.detail,
         documentation: item.documentation,
         range,
@@ -217,7 +216,7 @@ export default function CodeEditor({ value, onChange, height = 260 }: CodeEditor
           quickSuggestions: { other: true, comments: false, strings: false },
           renderLineHighlight: 'line',
           scrollBeyondLastLine: false,
-          snippetSuggestions: 'inline',
+          snippetSuggestions: 'none',
           suggestOnTriggerCharacters: true,
           tabSize: 2,
           wordBasedSuggestions: 'off',
