@@ -1,0 +1,20 @@
+{
+  "id": "ai-train-dashboard-control",
+  "name": "AI_train Dashboard Control",
+  "description": "Start and stop AI_train Workboard pipeline tasks from Windows Hub/Dashboard.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "tools": [
+      "ai_train_start_pipeline",
+      "ai_train_stop_all"
+    ]
+  }
+}
