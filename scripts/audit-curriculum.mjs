@@ -11,23 +11,23 @@ const curriculumPath = path.join(root, 'src/data/aiCurriculum.ts')
 const errors = []
 
 const expectedStepCounts = new Map([
-  ['numpy-why', 6],
-  ['numpy-array-creation', 7],
-  ['numpy-shape-ndim-dtype', 6],
-  ['numpy-indexing-slices', 7],
-  ['numpy-vector-operations', 6],
-  ['numpy-aggregations-statistics', 7],
-  ['numpy-2d-axis', 6],
-  ['numpy-masks-where', 7],
-  ['numpy-broadcasting', 8],
-  ['numpy-random-reproducibility', 7],
-  ['pandas-why-dataframe', 6],
-  ['pandas-read-inspect', 7],
-  ['pandas-selection', 7],
-  ['pandas-filtering-sorting', 7],
-  ['pandas-missing-duplicates', 7],
-  ['pandas-groupby', 7],
-  ['pandas-types-preparation', 7],
+  ['numpy-why', 7],
+  ['numpy-array-creation', 9],
+  ['numpy-shape-ndim-dtype', 7],
+  ['numpy-indexing-slices', 9],
+  ['numpy-vector-operations', 7],
+  ['numpy-aggregations-statistics', 9],
+  ['numpy-2d-axis', 7],
+  ['numpy-masks-where', 8],
+  ['numpy-broadcasting', 9],
+  ['numpy-random-reproducibility', 8],
+  ['pandas-why-dataframe', 8],
+  ['pandas-read-inspect', 9],
+  ['pandas-selection', 9],
+  ['pandas-filtering-sorting', 9],
+  ['pandas-missing-duplicates', 9],
+  ['pandas-groupby', 9],
+  ['pandas-types-preparation', 9],
   ['ml-foundations-data-target', 5],
   ['ml-foundations-model-fit-predict', 6],
   ['ml-foundations-train-test-baseline-metrics', 7],
@@ -56,30 +56,6 @@ const expectedQuizCounts = new Map([
   ['ml-foundations-model-fit-predict', 1],
   ['ml-foundations-train-test-baseline-metrics', 2],
   ['ml-foundations-project-cycle', 1],
-])
-
-const topicsRequiringPractice = new Set([
-  'numpy-why',
-  'numpy-array-creation',
-  'numpy-shape-ndim-dtype',
-  'numpy-indexing-slices',
-  'numpy-vector-operations',
-  'numpy-aggregations-statistics',
-  'numpy-2d-axis',
-  'numpy-masks-where',
-  'numpy-broadcasting',
-  'numpy-random-reproducibility',
-  'pandas-why-dataframe',
-  'pandas-read-inspect',
-  'pandas-selection',
-  'pandas-filtering-sorting',
-  'pandas-missing-duplicates',
-  'pandas-groupby',
-  'pandas-types-preparation',
-  'ml-foundations-data-target',
-  'ml-foundations-model-fit-predict',
-  'ml-foundations-train-test-baseline-metrics',
-  'ml-foundations-project-cycle',
 ])
 
 function requireCondition(condition, message) {
@@ -176,31 +152,40 @@ const { curriculumBlocks, flowTopics } = loadCurriculum()
 
 requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
-requireCondition(curriculumBlocks.length === 3, `Expected exactly 3 curriculum blocks, got ${curriculumBlocks.length}.`)
-requireCondition(flowTopics.length === 21, `Expected exactly 21 topics, got ${flowTopics.length}.`)
+requireCondition(curriculumBlocks.length === 7, `Expected exactly 7 curriculum blocks, got ${curriculumBlocks.length}.`)
+requireCondition(flowTopics.length === 36, `Expected exactly 36 topics, got ${flowTopics.length}.`)
 
 const blockIds = curriculumBlocks.map((block) => block.id)
-requireCondition(blockIds.join(',') === 'numpy-ml,pandas-eda,ml-foundations', `Unexpected block ids: ${blockIds.join(',')}.`)
+requireCondition(
+  blockIds.join(',') === 'numpy-ml,pandas-eda,visualization-eda,ml-foundations,linear-models,trees-ensembles,svm-clustering',
+  `Unexpected block ids: ${blockIds.join(',')}.`,
+)
 
 const topicIds = flowTopics.map((topic) => topic.id)
-requireCondition(topicIds.join(',') === [...expectedStepCounts.keys()].join(','), `Unexpected topic order: ${topicIds.join(',')}.`)
+requireCondition(
+  topicIds.slice(0, 17).join(',') === [...expectedStepCounts.keys()].slice(0, 17).join(','),
+  `Unexpected NumPy/pandas topic order: ${topicIds.slice(0, 17).join(',')}.`,
+)
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 138, `Expected 138 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 240, `Expected 240 total steps, got ${totalSteps}.`)
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`
   const expectedCount = expectedStepCounts.get(topic.id)
-  requireCondition(topic.steps.length === expectedCount, `${prefix} expected ${expectedCount} steps, got ${topic.steps.length}.`)
-  requireCondition(['numpy-ml', 'pandas-eda', 'ml-foundations'].includes(topic.blockId), `${prefix} unexpected blockId ${topic.blockId}.`)
+  if (expectedCount != null) {
+    requireCondition(topic.steps.length === expectedCount, `${prefix} expected ${expectedCount} steps, got ${topic.steps.length}.`)
+  } else {
+    requireCondition(topic.steps.length >= 5, `${prefix} expected at least 5 steps, got ${topic.steps.length}.`)
+  }
+  requireCondition(blockIds.includes(topic.blockId), `${prefix} unexpected blockId ${topic.blockId}.`)
   requireCondition(!['intro-ai-ml', 'python-for-ai', 'data-prep'].includes(topic.blockId), `${prefix} old block id must not be displayed.`)
 
   const stepTypes = topic.steps.map((step) => step.type)
   requireCondition(stepTypes.includes('theory'), `${prefix} missing theory steps.`)
-  requireCondition(stepTypes.filter((type) => type === 'quiz').length === expectedQuizCounts.get(topic.id), `${prefix} unexpected quiz step count.`)
-  if (topicsRequiringPractice.has(topic.id)) {
-    requireCondition(stepTypes.includes('practice'), `${prefix} missing practice step.`)
-  }
+  const expectedQuizCount = expectedQuizCounts.get(topic.id) ?? 1
+  requireCondition(stepTypes.filter((type) => type === 'quiz').length === expectedQuizCount, `${prefix} unexpected quiz step count.`)
+  requireCondition(stepTypes.includes('practice'), `${prefix} missing practice step.`)
 
   for (const step of topic.steps.filter((item) => item.type === 'theory')) {
     const sections = step.sections ?? []
@@ -230,6 +215,34 @@ for (const topic of flowTopics) {
       verifyPythonTaskSolution(topic.id, task)
     }
   }
+}
+
+const curriculumText = collectText(flowTopics).join(' ').toLowerCase()
+const requiredCoverage = [
+  ['matplotlib', 'Matplotlib'],
+  ['разведочный анализ', 'EDA'],
+  ['classification', 'classification'],
+  ['regression', 'regression'],
+  ['clustering', 'clustering'],
+  ['linearregression', 'LinearRegression'],
+  ['logisticregression', 'LogisticRegression'],
+  ['decisiontreeclassifier', 'DecisionTreeClassifier'],
+  ['randomforestclassifier', 'RandomForestClassifier'],
+  ['baggingclassifier', 'BaggingClassifier'],
+  ['gradientboostingclassifier', 'GradientBoostingClassifier'],
+  ['svc', 'SVC'],
+  ['train_test_split', 'train_test_split'],
+  ['gridsearchcv', 'GridSearchCV'],
+  ['randomizedsearchcv', 'RandomizedSearchCV'],
+  ['confusion matrix', 'confusion matrix'],
+  ['class_weight', 'class_weight'],
+  ['l1', 'L1'],
+  ['l2', 'L2'],
+  ['корреляц', 'correlation matrix'],
+]
+
+for (const [needle, label] of requiredCoverage) {
+  requireCondition(curriculumText.includes(needle), `Required curriculum coverage is missing: ${label}.`)
 }
 
 if (errors.length > 0) {

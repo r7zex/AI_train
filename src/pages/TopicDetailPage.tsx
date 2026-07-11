@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import CodeBlock, { ReadOnlyCodeCell } from '../components/CodeBlock'
-import CodeEditor from '../components/CodeEditor'
 import CourseSidebar from '../components/CourseSidebar'
 import Formula from '../components/Formula'
 import RichText from '../components/RichText'
@@ -22,6 +21,8 @@ import {
 } from '../data/courseFlow'
 import { useProgress } from '../hooks/useProgress'
 import { judgeTask, type JudgeRunResult } from '../lib/practiceEngine'
+
+const CodeEditor = lazy(() => import('../components/CodeEditor'))
 
 function isMathNotation(value: string) {
   return /[A-Za-z_Σσμθλπη∇]|[A-Z]{1,3}/.test(value) && !/[а-яА-ЯёЁ]/.test(value)
@@ -65,17 +66,18 @@ function StepGlyph({ type }: { type: FlowStepType }) {
   return null
 }
 
-function StepButton({ step, index, topicId, active, done }: { step: FlowStep; index: number; topicId: string; active: boolean; done: boolean }) {
+function StepButton({ step, index, topicId, active, done, onNavigate }: { step: FlowStep; index: number; topicId: string; active: boolean; done: boolean; onNavigate: () => void }) {
   return (
     <Link
       to={getFlowStepHref(topicId, step.id)}
+      onClick={onNavigate}
       title={`${index + 1}. ${step.title}`}
-      className={`relative flex h-[25px] min-w-[25px] items-center justify-center rounded-[3px] border-2 text-center transition ${
+      className={`relative flex h-[28px] min-w-[28px] items-center justify-center rounded-[2px] border-2 text-center transition ${
         active
-          ? 'border-white bg-[#65d36f] text-[#102414]'
+          ? 'border-white bg-[#69be62] text-[#102414]'
           : done
-            ? 'border-[#65d36f] bg-[#65d36f] text-[#102414]'
-            : 'border-[#65d36f] bg-[#202020] text-[#65d36f] hover:bg-[#2c2c2c]'
+            ? 'border-[#69be62] bg-[#69be62] text-[#102414]'
+            : 'border-[#69be62] bg-[#262626] text-[#69be62] hover:bg-[#333]'
       }`}
     >
       <StepGlyph type={step.type} />
@@ -283,30 +285,39 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
   const [result, setResult] = useState<JudgeRunResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const runIdRef = useRef(0)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
+    abortControllerRef.current?.abort()
     runIdRef.current += 1
     setCode(task.starterCode)
     setResult(null)
     setIsRunning(false)
+    return () => abortControllerRef.current?.abort()
   }, [task.id, task.starterCode])
 
   const runJudge = async (includeHidden: boolean) => {
+    abortControllerRef.current?.abort()
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
     const runId = runIdRef.current + 1
     runIdRef.current = runId
     setIsRunning(true)
     setResult(null)
     try {
-      const next = await judgeTask(task, code, includeHidden)
+      const next = await judgeTask(task, code, includeHidden, abortController.signal)
       if (runIdRef.current !== runId) return
       setResult(next)
       if (includeHidden && next.passed) onPassed()
     } finally {
+      if (abortControllerRef.current === abortController) abortControllerRef.current = null
       if (runIdRef.current === runId) setIsRunning(false)
     }
   }
 
   const cancelRun = () => {
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = null
     runIdRef.current += 1
     setIsRunning(false)
     setResult({
@@ -326,10 +337,6 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
         <p className="text-[15px] leading-6 text-[#111827]">{task.statement}</p>
       </div>
 
-      <ul className="list-disc space-y-1 pl-6 text-[15px] leading-6 text-[#111827]">
-        {task.tips.map((tip) => <li key={tip}>{tip}</li>)}
-      </ul>
-
       <div className="grid gap-3 md:grid-cols-2">
         {task.sampleTests.map((sample) => (
           <div key={sample.id} className="border border-[#e5e7eb] bg-[#f8f8f8] p-3">
@@ -346,7 +353,9 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
         <div className="bg-white px-2 py-1 text-[13px] text-[#111827]">Python 3</div>
       </div>
 
-      <CodeEditor value={code} onChange={setCode} height={320} />
+      <Suspense fallback={<div className="h-[357px] border border-[#bcc3ca] bg-[#f7f8f9] px-3 py-3 font-mono text-[13px] text-[#6b7280]">Загружаем редактор…</div>}>
+        <CodeEditor value={code} onChange={setCode} height={320} />
+      </Suspense>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
@@ -356,13 +365,13 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
             disabled={isRunning}
             className="bg-[#202020] px-4 py-2 text-[14px] font-bold text-white hover:bg-[#333] disabled:cursor-wait disabled:bg-[#777]"
           >
-            {isRunning ? 'Запуск...' : 'Запустить sample'}
+            {isRunning ? 'Запуск...' : 'Запустить'}
           </button>
           <button
             type="button"
             onClick={() => void runJudge(true)}
             disabled={isRunning}
-            className="bg-[#65d36f] px-4 py-2 text-[14px] font-bold text-[#102414] hover:bg-[#58c763] disabled:cursor-wait disabled:bg-[#a8e4ae]"
+            className="bg-[#69be62] px-5 py-2 text-[14px] font-bold text-white hover:bg-[#58aa52] disabled:cursor-wait disabled:bg-[#a8dca4]"
           >
             {isRunning ? 'Проверяем...' : 'Отправить'}
           </button>
@@ -387,7 +396,7 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
             Сбросить
           </button>
         </div>
-        <div className="text-[13px] text-[#6b7280]">Time limit: 15 sec · Memory limit: 256 MB</div>
+        <div className="text-[13px] text-[#6b7280]">Изолированный Python worker · Time limit: 15 sec</div>
       </div>
 
       {result && (
@@ -407,8 +416,15 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
                         <span>{item.description}</span>
                         <span className={item.passed ? 'font-bold text-[#1f7a3f]' : 'font-bold text-[#a63842]'}>{item.passed ? 'OK' : 'FAIL'}</span>
                       </div>
-                      <div className="mt-1 text-[#6b7280]">expected: {item.expected}</div>
-                      <div className="text-[#6b7280]">actual: {item.actual}</div>
+                      {title === 'Sample tests' ? (
+                        <>
+                          <div className="mt-1 text-[#6b7280]">expected: {item.expected}</div>
+                          <div className="text-[#6b7280]">actual: {item.actual}</div>
+                          {item.diff && <pre className="mt-2 overflow-x-auto whitespace-pre-wrap border-t border-[#e2e5e8] pt-2 font-mono text-[12px] text-[#555]">{item.diff}</pre>}
+                        </>
+                      ) : (
+                        <div className="mt-1 text-[#6b7280]">{item.passed ? 'Скрытый сценарий пройден.' : 'Скрытый сценарий не пройден; проверьте граничные случаи.'}</div>
+                      )}
                     </div>
                   )) : <div className="text-[13px] text-[#6b7280]">Hidden tests запускаются после кнопки «Отправить».</div>}
                 </div>
@@ -421,16 +437,28 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
   )
 }
 
-function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; isCompleted: boolean; onStepComplete: (stepId: string) => void }) {
+function StepContent({
+  step,
+  isCompleted,
+  onStepComplete,
+  onQuizPassed,
+  onPracticePassed,
+}: {
+  step: FlowStep
+  isCompleted: boolean
+  onStepComplete: (stepId: string) => void
+  onQuizPassed: (stepId: string) => void
+  onPracticePassed: (stepId: string) => void
+}) {
   const primaryConcept = step.conceptCards?.[0]
 
   return (
-    <article className="bg-white">
+    <article className="stepik-step bg-white">
       <header className="mb-5">
         <h1 className="text-[24px] font-bold leading-8 text-[#111827]">
           <RichText text={step.title} />
         </h1>
-        {step.summary && !primaryConcept && (
+        {step.summary && !primaryConcept && !step.sections?.length && (
           <p className="mt-2 text-[15px] leading-6 text-[#111827]">
             <RichText text={step.summary} />
           </p>
@@ -537,9 +565,26 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
 
         {step.codeExample && <CodeExampleBlock example={step.codeExample} title="Примеры кода" />}
 
-        {step.quiz && <QuizWidget key={`${step.id}-${step.quiz.id}`} quiz={step.quiz} />}
+        {step.quiz && (
+          <QuizWidget
+            key={`${step.id}-${step.quiz.id}`}
+            quiz={step.quiz}
+            onPassed={() => {
+              onQuizPassed(step.id)
+              onStepComplete(step.id)
+            }}
+          />
+        )}
 
-        {step.practiceTasks?.length ? <PracticeRunner task={step.practiceTasks[0]} onPassed={() => onStepComplete(step.id)} /> : null}
+        {step.practiceTasks?.length ? (
+          <PracticeRunner
+            task={step.practiceTasks[0]}
+            onPassed={() => {
+              onPracticePassed(step.id)
+              onStepComplete(step.id)
+            }}
+          />
+        ) : null}
 
         {step.sources && (
           <section>
@@ -555,16 +600,62 @@ function StepContent({ step, isCompleted, onStepComplete }: { step: FlowStep; is
         )}
       </div>
 
-      <footer className="mt-8 border-t border-[#e5e7eb] pt-4">
-        <button
-          type="button"
-          onClick={() => onStepComplete(step.id)}
-          className={`px-4 py-2 text-[14px] font-bold ${isCompleted ? 'bg-[#eefaf1] text-[#1f6e3a]' : 'bg-[#202020] text-white hover:bg-[#333]'}`}
-        >
-          {isCompleted ? 'Шаг зачтён' : 'Отметить шаг выполненным'}
-        </button>
+      <footer className="mt-9 flex items-center justify-between border-t border-[#e3e6e9] pt-4 text-[13px] text-[#7a828a]">
+        <span>{isCompleted ? '✓ Шаг пройден' : 'Шаг будет засчитан автоматически при переходе'}</span>
+        <span>Есть вопрос? Откройте обсуждение после урока.</span>
       </footer>
     </article>
+  )
+}
+
+function DiscussionPanel({ stepId }: { stepId: string }) {
+  const storageKey = `ai-train-comments:${stepId}`
+  const [draft, setDraft] = useState('')
+  const [comments, setComments] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey) ?? '[]') as string[]
+    } catch {
+      return []
+    }
+  })
+
+  const addComment = () => {
+    const value = draft.trim()
+    if (!value) return
+    const next = [...comments, value]
+    setComments(next)
+    localStorage.setItem(storageKey, JSON.stringify(next))
+    setDraft('')
+  }
+
+  return (
+    <section className="mt-12 border-t border-[#dfe3e7] pt-6">
+      <h2 className="text-[20px] font-semibold text-[#2b2f33]">Комментарии</h2>
+      <p className="mt-2 text-[13px] leading-5 text-[#7b838b]">Обсуждайте условие и теорию, но не публикуйте готовые решения практических заданий.</p>
+      <textarea
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        placeholder="Написать комментарий"
+        rows={3}
+        className="mt-4 w-full resize-y border border-[#cfd5db] px-3 py-2 text-[14px] outline-none focus:border-[#69ad62]"
+      />
+      <button
+        type="button"
+        onClick={addComment}
+        disabled={!draft.trim()}
+        className="mt-2 bg-[#69be62] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#58aa52] disabled:cursor-not-allowed disabled:bg-[#b8d7b5]"
+      >
+        Отправить
+      </button>
+      <div className="mt-5 space-y-3">
+        {comments.map((comment, index) => (
+          <article key={`${comment}-${index}`} className="border-t border-[#edf0f2] py-3 text-[14px] leading-6 text-[#34393e]">
+            <div className="mb-1 text-[12px] font-semibold text-[#6a737c]">Ученик</div>
+            {comment}
+          </article>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -572,14 +663,32 @@ export default function TopicDetailPage() {
   const { topicId = '', stepId } = useParams()
   const topic = getFlowTopicById(topicId)
   const progressApi = useProgress()
-  const { progress, markStepCompleted, setLastVisitedStep, getTopicProgress, getSubblockProgress, getBlockProgress } = progressApi
+  const {
+    progress,
+    markStepCompleted,
+    markQuizPassed,
+    markPracticePassed,
+    setLastVisitedStep,
+    getTopicProgress,
+    getSubblockProgress,
+    getBlockProgress,
+  } = progressApi
 
   const resolvedStepId = topic ? (stepId ?? topic.steps[0].id) : ''
   const currentStep = topic ? getFlowStep(topic.id, resolvedStepId) : null
+  const previousStepIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (topic && currentStep) setLastVisitedStep(topic.id, currentStep.id)
-  }, [topic, currentStep, setLastVisitedStep])
+    if (!topic || !currentStep) return
+    const previousStepId = previousStepIdRef.current
+    if (previousStepId && previousStepId !== currentStep.id) markStepCompleted(previousStepId)
+    previousStepIdRef.current = currentStep.id
+    setLastVisitedStep(topic.id, currentStep.id)
+  }, [currentStep, markStepCompleted, setLastVisitedStep, topic])
+
+  const completeCurrentStep = useCallback(() => {
+    if (currentStep) markStepCompleted(currentStep.id)
+  }, [currentStep, markStepCompleted])
 
   if (!topic) return <div className="p-6 text-[15px] text-[#111827]">Тема не найдена.</div>
   if (!currentStep) return <Navigate to={getFlowStepHref(topic.id, topic.steps[0].id)} replace />
@@ -588,17 +697,19 @@ export default function TopicDetailPage() {
   const completedSteps = topic.steps.filter((step) => progress.completedSteps.includes(step.id)).length
   const prevNextStep = getFlowPrevNextStep(topic.id, currentStep.id)
   const prevNextTopic = getFlowPrevNextTopic(topic.id)
+  const topicPercent = Math.round(getTopicProgress(topic.id) * 100)
+  const currentIndex = topic.steps.findIndex((step) => step.id === currentStep.id)
 
   return (
-    <div className="min-h-screen bg-white text-[#111827]">
-      <header className="sticky top-0 z-50 h-[48px] border-b border-[#3a3a3a] bg-[#202020] text-white">
-        <div className="flex h-full items-center gap-4 px-4">
-          <Link to="/topics" className="flex h-full w-[232px] shrink-0 items-center gap-2">
-            <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[13px] font-bold leading-none">AI</span>
-            <span className="text-[25px] font-normal leading-none">Train</span>
+    <div className="min-h-screen bg-white text-[#22272b]">
+      <header className="sticky top-0 z-50 h-[52px] border-b border-black bg-[#222] text-white">
+        <div className="flex h-full items-center">
+          <Link to="/topics" onClick={completeCurrentStep} className="flex h-full w-[142px] shrink-0 items-center gap-2 border-r border-white/10 px-3 sm:w-[180px] lg:w-[286px] lg:px-4">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[12px] font-bold">AI</span>
+            <span className="text-[21px] font-normal tracking-[-0.02em]">Train</span>
           </Link>
 
-          <div className="flex min-w-0 flex-1 items-center gap-[5px] overflow-x-auto py-2">
+          <div className="flex min-w-0 flex-1 items-center gap-[6px] overflow-x-auto px-4 py-2">
             {topic.steps.map((step, index) => (
               <StepButton
                 key={step.id}
@@ -607,13 +718,14 @@ export default function TopicDetailPage() {
                 topicId={topic.id}
                 active={step.id === currentStep.id}
                 done={progress.completedSteps.includes(step.id)}
+                onNavigate={completeCurrentStep}
               />
             ))}
           </div>
 
-          <div className="hidden items-center gap-2 text-[12px] text-[#d1d5db] xl:flex">
-            <span className="rounded bg-[#2f2f2f] px-2 py-1">0</span>
-            <span className="rounded bg-[#8b6b55] px-2 py-1 font-bold text-white">AI</span>
+          <div className="hidden h-full items-center gap-3 border-l border-white/10 px-4 text-[12px] text-[#d2d2d2] md:flex">
+            <span title="Прогресс темы">{topicPercent}%</span>
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#825f49] font-bold text-white">AI</span>
           </div>
         </div>
       </header>
@@ -625,57 +737,59 @@ export default function TopicDetailPage() {
           getTopicProgress={getTopicProgress}
           getSubblockProgress={getSubblockProgress}
           getBlockProgress={getBlockProgress}
+          onNavigate={completeCurrentStep}
         />
 
         <main className="min-w-0 flex-1 bg-white">
-          <div className="border-b border-[#e5e7eb] bg-white">
-            <div className="mx-auto flex min-h-[55px] max-w-[920px] items-center gap-4 px-4 text-[14px] text-[#9ca3af]">
-              <span className="font-normal text-[#111827]">{topic.title}</span>
-              <span>{completedSteps} из {topic.steps.length} шагов пройдено</span>
-              <span>{Math.round(getTopicProgress(topic.id) * 100)}% завершено</span>
+          <div className="border-b border-[#dfe3e6] bg-[#fafafa]">
+            <div className="mx-auto flex min-h-[58px] max-w-[860px] flex-wrap items-center gap-x-4 gap-y-1 px-5 py-2 text-[13px] text-[#8a929a]">
+              <span className="font-semibold text-[#30363b]">{topic.title}</span>
+              <span>Шаг {currentIndex + 1} из {topic.steps.length}</span>
+              <span>{completedSteps} пройдено</span>
+              <Link to="/topics" onClick={completeCurrentStep} className="ml-auto hidden text-[#518d4e] hover:underline sm:inline">Содержание курса</Link>
             </div>
           </div>
 
-          <div className="mx-auto max-w-[920px] px-4 py-9">
-            <StepContent step={currentStep} isCompleted={progress.completedSteps.includes(currentStep.id)} onStepComplete={markStepCompleted} />
+          <div className="mx-auto max-w-[860px] px-5 pb-16 pt-9 sm:px-8">
+            <StepContent
+              step={currentStep}
+              isCompleted={progress.completedSteps.includes(currentStep.id)}
+              onStepComplete={markStepCompleted}
+              onQuizPassed={markQuizPassed}
+              onPracticePassed={markPracticePassed}
+            />
 
-            <nav className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5e7eb] pt-4">
+            <nav aria-label="Навигация по шагам" className="mt-9 flex flex-wrap items-center justify-between gap-3 border-t border-[#dfe3e7] pt-5">
               <div>
                 {prevNextStep.prev ? (
-                  <Link to={getFlowStepHref(topic.id, prevNextStep.prev.id)} className="border border-[#d1d5db] px-4 py-2 text-[14px] text-[#111827] hover:bg-[#f3f4f6]">
-                    Предыдущий шаг
+                  <Link onClick={completeCurrentStep} to={getFlowStepHref(topic.id, prevNextStep.prev.id)} className="inline-block border border-[#bdc3c8] bg-white px-4 py-2.5 text-[14px] text-[#3f454a] hover:bg-[#f5f6f7]">
+                    ← Предыдущий шаг
                   </Link>
                 ) : prevNextTopic.prev ? (
-                  <Link to={getFlowStepHref(prevNextTopic.prev.id, prevNextTopic.prev.steps[prevNextTopic.prev.steps.length - 1].id)} className="border border-[#d1d5db] px-4 py-2 text-[14px] text-[#111827] hover:bg-[#f3f4f6]">
-                    Предыдущая тема
+                  <Link onClick={completeCurrentStep} to={getFlowStepHref(prevNextTopic.prev.id, prevNextTopic.prev.steps[prevNextTopic.prev.steps.length - 1].id)} className="inline-block border border-[#bdc3c8] bg-white px-4 py-2.5 text-[14px] text-[#3f454a] hover:bg-[#f5f6f7]">
+                    ← Предыдущий урок
                   </Link>
                 ) : null}
               </div>
 
               <div>
                 {prevNextStep.next ? (
-                  <Link
-                    to={getFlowStepHref(topic.id, prevNextStep.next.id)}
-                    onClick={() => markStepCompleted(currentStep.id)}
-                    className="bg-[#65d36f] px-4 py-2 text-[14px] font-bold text-[#102414] hover:bg-[#58c763]"
-                  >
-                    Следующий шаг
+                  <Link onClick={completeCurrentStep} to={getFlowStepHref(topic.id, prevNextStep.next.id)} className="inline-block bg-[#69be62] px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-[#58aa52]">
+                    Следующий шаг →
                   </Link>
                 ) : prevNextTopic.next ? (
-                  <Link
-                    to={getFlowStepHref(prevNextTopic.next.id, prevNextTopic.next.steps[0].id)}
-                    onClick={() => markStepCompleted(currentStep.id)}
-                    className="bg-[#65d36f] px-4 py-2 text-[14px] font-bold text-[#102414] hover:bg-[#58c763]"
-                  >
-                    Следующая тема
+                  <Link onClick={completeCurrentStep} to={getFlowStepHref(prevNextTopic.next.id, prevNextTopic.next.steps[0].id)} className="inline-block bg-[#69be62] px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-[#58aa52]">
+                    Следующий урок →
                   </Link>
                 ) : (
-                  <Link to="/topics" className="bg-[#65d36f] px-4 py-2 text-[14px] font-bold text-[#102414] hover:bg-[#58c763]">
+                  <Link onClick={completeCurrentStep} to="/topics" className="inline-block bg-[#69be62] px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-[#58aa52]">
                     К программе курса
                   </Link>
                 )}
               </div>
             </nav>
+
+            <DiscussionPanel key={currentStep.id} stepId={currentStep.id} />
           </div>
         </main>
       </div>

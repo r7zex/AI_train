@@ -1,11 +1,10 @@
-﻿import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 const navItems = [
-  { to: '/topics', label: 'Course' },
-  { to: '/terms-functions', label: 'Reference' },
-  { to: '/comparison', label: 'Comparisons' },
-  { to: '/cheatsheet', label: 'Cheatsheet' },
-  { to: '/yandex-theory', label: 'Yandex Theory' },
+  { to: '/topics', label: 'Моё обучение' },
+  { to: '/terms-functions', label: 'Справочник' },
+  { to: '/comparison', label: 'Сравнения' },
+  { to: '/cheatsheet', label: 'Шпаргалка' },
 ]
 
 export default function PlatformTopBar() {
@@ -17,22 +16,22 @@ export default function PlatformTopBar() {
   }
 
   return (
-    <header className="border-b border-black/30 bg-[#1f2329] text-white">
-      <div className="mx-auto flex h-12 max-w-[1320px] items-center justify-between gap-6 px-4 lg:px-6">
+    <header className="border-b border-black bg-[#222] text-white">
+      <div className="mx-auto flex h-[52px] max-w-[1180px] items-center justify-between gap-6 px-5">
         <Link to="/topics" className="flex items-center gap-3">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-[#2f353d] text-[10px] font-bold tracking-[0.1em] text-[#e5ebf1]">
-            AT
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[11px] font-bold text-white">
+            AI
           </span>
-          <span className="text-[13px] font-semibold text-[#e7edf5]">AI Train</span>
+          <span className="text-[20px] font-normal text-white">Train</span>
         </Link>
 
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-1 overflow-x-auto">
           {navItems.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className={`rounded-sm px-3 py-1.5 text-xs transition ${
-                isActive(item.to) ? 'bg-[#2d333b] text-white' : 'text-[#b7c0ca] hover:bg-[#2a3037] hover:text-white'
+              className={`whitespace-nowrap px-3 py-2 text-[13px] transition ${
+                isActive(item.to) ? 'bg-[#353535] text-white' : 'text-[#c8c8c8] hover:bg-[#303030] hover:text-white'
               }`}
             >
               {item.label}

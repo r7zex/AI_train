@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import RichText from '../../components/RichText'
 import type { Quiz, QuizQuestion } from '../../data/quizzes'
 
@@ -12,6 +12,7 @@ interface QuizResult {
 
 interface QuizWidgetProps {
   quiz: Quiz
+  onPassed?: () => void
 }
 
 type AnswerValue = string | string[] | number
@@ -109,7 +110,7 @@ const difficultyColor: Record<string, string> = {
   hard: 'text-red-600 bg-red-50',
 }
 
-const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
+const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz, onPassed }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({})
   const [submitted, setSubmitted] = useState<Record<string, boolean>>({})
@@ -117,6 +118,7 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
   const [explanationsShown, setExplanationsShown] = useState<Record<string, boolean>>({})
   const [showAll, setShowAll] = useState(false)
   const [finished, setFinished] = useState(false)
+  const passReportedRef = useRef(false)
 
   const questions = quiz.questions
   const currentQuestion = questions[currentIndex]
@@ -129,6 +131,7 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
     setExplanationsShown({})
     setShowAll(false)
     setFinished(false)
+    passReportedRef.current = false
   }, [])
 
   const answeredCount = Object.keys(submitted).length
@@ -159,6 +162,12 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
   useEffect(() => {
     if (finished) saveResults()
   }, [finished, saveResults])
+
+  useEffect(() => {
+    if (!finished || score !== questions.length || passReportedRef.current) return
+    passReportedRef.current = true
+    onPassed?.()
+  }, [finished, onPassed, questions.length, score])
 
   if (!currentQuestion) {
     return <div className="text-[14px] text-gray-500">В тесте пока нет вопросов.</div>
@@ -467,15 +476,15 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
     const explanationShown = !!explanationsShown[question.id]
 
     return (
-      <div key={question.id} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-3">
+      <div key={question.id} className="overflow-hidden border border-[#d8dde3] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+        <div className="flex items-center justify-between border-b border-[#e6e9ed] bg-[#f7f8f9] px-5 py-3">
           <span className="text-xs font-medium text-gray-500">Вопрос {index + 1} из {questions.length}</span>
           <div className="flex items-center gap-2">
-            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${difficultyColor[question.difficulty]}`}>
+            <span className={`px-2 py-0.5 text-xs font-medium ${difficultyColor[question.difficulty]}`}>
               {difficultyLabel[question.difficulty]}
             </span>
             {isSubmitted && (
-              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${correct ? 'bg-green-100 text-green-700' : isPartialScore ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+              <span className={`px-2 py-0.5 text-xs font-semibold ${correct ? 'bg-[#eaf7e8] text-[#2d7e35]' : isPartialScore ? 'bg-yellow-100 text-yellow-700' : 'bg-[#fff0ef] text-[#b33b35]'}`}>
                 {correct ? 'Верно' : isPartialScore ? `Частично ${Math.round(partial! * 100)}%` : 'Неверно'}
               </span>
             )}
@@ -490,7 +499,7 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
           {renderInput(question, isSubmitted, explanationShown)}
 
           {isSubmitted && (
-            <div className={`rounded-lg border-l-4 p-4 text-sm ${correct ? 'border-green-500 bg-green-50 text-green-900' : isPartialScore ? 'border-yellow-500 bg-yellow-50 text-yellow-900' : 'border-red-500 bg-red-50 text-red-900'}`}>
+            <div className={`border-l-4 p-4 text-sm ${correct ? 'border-[#5cb85c] bg-[#edf8ed] text-[#245b29]' : isPartialScore ? 'border-yellow-500 bg-yellow-50 text-yellow-900' : 'border-[#d9534f] bg-[#fff2f1] text-[#8f2d29]'}`}>
               <p className="font-semibold">{correct ? 'Верно' : isPartialScore ? `Частично верно (${Math.round(partial! * 100)}%)` : 'Неверно'}</p>
               {!explanationShown ? (
                 <button
@@ -531,14 +540,14 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
                 <button
                   onClick={() => handleSubmitAnswer(question.id)}
                   disabled={isDraftEmpty(currentQuestion, currentDraft)}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="bg-[#66bd63] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#56aa54] disabled:cursor-not-allowed disabled:bg-[#b7d7b5]"
                 >
-                  Проверить
+                  Отправить
                 </button>
               ) : (
                 <button
                   onClick={handleNext}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+                  className="bg-[#66bd63] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#56aa54]"
                 >
                   {currentIndex < questions.length - 1 ? 'Следующий вопрос →' : 'Завершить тест'}
                 </button>
@@ -603,9 +612,9 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
 
         <button
           onClick={resetAttempt}
-          className="w-full rounded-xl bg-indigo-600 py-3 font-medium text-white transition-colors hover:bg-indigo-700"
+          className="w-full bg-[#66bd63] py-3 font-semibold text-white transition-colors hover:bg-[#56aa54]"
         >
-          Начать заново
+          Решить снова
         </button>
       </div>
     )
@@ -670,8 +679,8 @@ const QuizAttempt: React.FC<QuizWidgetProps> = ({ quiz }) => {
   )
 }
 
-const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz }) => {
-  return <QuizAttempt key={quiz.id} quiz={quiz} />
+const QuizWidget: React.FC<QuizWidgetProps> = ({ quiz, onPassed }) => {
+  return <QuizAttempt key={quiz.id} quiz={quiz} onPassed={onPassed} />
 }
 
 export default QuizWidget
