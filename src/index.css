@@ -1,13 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-  color: #1e252d;
-  background: #eef2f6;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #252a2f;
+  background: #f1f2f3;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
 html {
@@ -18,16 +18,77 @@ body {
   margin: 0;
   min-width: 320px;
   background: #fff;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 * {
   box-sizing: border-box;
 }
 
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+textarea,
+input,
+select {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid #69be62;
+  outline-offset: 2px;
+}
+
+.stepik-sidebar {
+  scrollbar-color: #555 #242424;
+  scrollbar-width: thin;
+}
+
+.stepik-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.stepik-sidebar::-webkit-scrollbar-track {
+  background: #242424;
+}
+
+.stepik-sidebar::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+.stepik-step {
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.stepik-step h1,
+.stepik-step h2,
+.stepik-step h3 {
+  letter-spacing: -0.01em;
+}
+
+.stepik-step .katex-display {
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.15rem 0;
+}
+
+.stepik-step table code,
+.stepik-step p code,
+.stepik-step li code {
+  overflow-wrap: anywhere;
+}
+
 pre,
 code,
 textarea {
-  font-family: 'Source Code Pro', Consolas, Menlo, monospace;
+  font-family: Consolas, 'Liberation Mono', Menlo, monospace;
 }

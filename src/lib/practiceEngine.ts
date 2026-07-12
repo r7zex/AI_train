@@ -20,22 +20,13 @@ export interface JudgeRunResult {
 
 type AnyValue = string | number | boolean | null | undefined | AnyValue[]
 
-declare global {
-  interface Window {
-    loadPyodide?: (options: { indexURL: string }) => Promise<PyodideApi>
-  }
+interface PythonWorkerResponse {
+  id: number
+  ok?: boolean
+  status?: 'running'
+  outputs?: string[]
+  error?: string
 }
-
-interface PyodideApi {
-  runPythonAsync: (code: string) => Promise<unknown>
-  loadPackage?: (packages: string | string[]) => Promise<void>
-  globals: {
-    set: (name: string, value: unknown) => void
-    get: (name: string) => unknown
-  }
-}
-
-let pyodidePromise: Promise<PyodideApi> | null = null
 
 function stableStringify(value: unknown): string {
   if (typeof value === 'string') return value
@@ -98,100 +89,92 @@ function runFunctionCase(executed: Record<string, unknown>, task: PracticeTask, 
   }
 }
 
-async function loadPyodideApi() {
-  if (typeof window === 'undefined') {
-    throw new Error('Python runner is available only in the browser')
-  }
-
-  if (!pyodidePromise) {
-    pyodidePromise = (async () => {
-      if (!window.loadPyodide) {
-        await new Promise<void>((resolve, reject) => {
-          const existing = document.querySelector<HTMLScriptElement>('script[data-pyodide="true"]')
-          if (existing) {
-            existing.addEventListener('load', () => resolve(), { once: true })
-            existing.addEventListener('error', () => reject(new Error('Не удалось загрузить Pyodide')), { once: true })
-            return
-          }
-
-          const script = document.createElement('script')
-          script.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js'
-          script.async = true
-          script.dataset.pyodide = 'true'
-          script.onload = () => resolve()
-          script.onerror = () => reject(new Error('Не удалось загрузить Pyodide'))
-          document.head.appendChild(script)
-        })
-      }
-
-      if (!window.loadPyodide) {
-        throw new Error('Pyodide API недоступен')
-      }
-
-      return window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/' })
-    })()
-  }
-
-  return pyodidePromise
-}
-
-async function ensurePythonPackages(pyodide: PyodideApi, code: string) {
-  if (!pyodide.loadPackage) return
-
+function detectPythonPackages(code: string) {
   const packages = new Set<string>()
   if (/\b(import|from)\s+numpy\b/.test(code)) packages.add('numpy')
   if (/\b(import|from)\s+pandas\b/.test(code)) packages.add('pandas')
   if (/\b(import|from)\s+matplotlib\b/.test(code)) packages.add('matplotlib')
   if (/\b(import|from)\s+sklearn\b/.test(code)) packages.add('scikit-learn')
-
-  if (packages.size > 0) {
-    await pyodide.loadPackage([...packages])
-  }
+  return [...packages]
 }
 
-async function runPythonStdInCase(code: string, test: PracticeTestCase): Promise<JudgeCaseResult> {
-  const pyodide = await loadPyodideApi()
-  await ensurePythonPackages(pyodide, code)
-  pyodide.globals.set('__judge_input__', test.input ?? '')
-  pyodide.globals.set('__user_code__', code)
+async function runPythonCases(code: string, tests: PracticeTestCase[], signal?: AbortSignal): Promise<JudgeCaseResult[]> {
+  if (typeof window === 'undefined') throw new Error('Python runner is available only in the browser')
+  if (signal?.aborted) throw new Error('Выполнение отменено пользователем.')
 
-  const result = await pyodide.runPythonAsync(`
-import io
-import sys
+  const workerUrl = `${import.meta.env.BASE_URL}python-judge-worker.js`
+  const worker = new Worker(workerUrl)
+  const requestId = Date.now()
 
-stdin_backup = sys.stdin
-stdout_backup = sys.stdout
-sys.stdin = io.StringIO(__judge_input__)
-sys.stdout = io.StringIO()
-namespace = {"__name__": "__main__"}
+  return new Promise<JudgeCaseResult[]>((resolve, reject) => {
+    let executionTimeoutId: number | undefined
 
-try:
-    exec(__user_code__, namespace)
-    __judge_output__ = sys.stdout.getvalue()
-finally:
-    sys.stdin = stdin_backup
-    sys.stdout = stdout_backup
+    const cleanup = () => {
+      window.clearTimeout(startupTimeoutId)
+      if (executionTimeoutId !== undefined) window.clearTimeout(executionTimeoutId)
+      signal?.removeEventListener('abort', abort)
+      worker.terminate()
+    }
 
-__judge_output__
-`)
+    const abort = () => {
+      cleanup()
+      reject(new Error('Выполнение отменено пользователем.'))
+    }
 
-  const actual = normalizeOutput(result)
-  const expected = normalizeOutput(test.expectedOutput ?? '')
-  return {
-    id: test.id,
-    description: test.description,
-    passed: actual === expected,
-    actual,
-    expected,
-    diff: actual === expected ? undefined : createDiff(actual, expected),
-  }
+    const startupTimeoutId = window.setTimeout(() => {
+      cleanup()
+      reject(new Error('Python-окружение не запустилось за 60 секунд. Проверьте соединение и повторите попытку.'))
+    }, 60_000)
+
+    signal?.addEventListener('abort', abort, { once: true })
+
+    worker.onerror = (event) => {
+      cleanup()
+      reject(new Error(event.message || 'Не удалось запустить Python worker.'))
+    }
+
+    worker.onmessage = (event: MessageEvent<PythonWorkerResponse>) => {
+      if (event.data.id !== requestId) return
+      const response = event.data
+      if (response.status === 'running') {
+        window.clearTimeout(startupTimeoutId)
+        executionTimeoutId = window.setTimeout(() => {
+          cleanup()
+          reject(new Error('Превышен лимит времени: 15 секунд. Проверьте циклы и сложность решения.'))
+        }, 15_000)
+        return
+      }
+      cleanup()
+      if (!response.ok) {
+        reject(new Error(response.error || 'Python завершился с ошибкой.'))
+        return
+      }
+
+      const outputs = response.outputs ?? []
+      resolve(tests.map((test, index) => {
+        const actual = normalizeOutput(outputs[index] ?? '')
+        const expected = normalizeOutput(test.expectedOutput ?? '')
+        return {
+          id: test.id,
+          description: test.description,
+          passed: actual === expected,
+          actual,
+          expected,
+          diff: actual === expected ? undefined : createDiff(actual, expected),
+        }
+      }))
+    }
+
+    worker.postMessage({
+      id: requestId,
+      code,
+      cases: tests.map((test) => ({ input: test.input ?? '' })),
+      packages: detectPythonPackages(code),
+    })
+  })
 }
 
-async function runStdInCase(task: PracticeTask, code: string, test: PracticeTestCase): Promise<JudgeCaseResult> {
-  if (task.language === 'python') {
-    return runPythonStdInCase(code, test)
-  }
-
+async function runJavaScriptStdInCase(code: string, test: PracticeTestCase): Promise<JudgeCaseResult> {
   const executed = executeJavaScriptUserCode(code)
   const callable = executed.solve
   if (typeof callable !== 'function') {
@@ -224,27 +207,35 @@ function getStructuralFeedback(code: string, task: PracticeTask) {
   ))
 }
 
-async function runStdInCases(task: PracticeTask, code: string, tests: PracticeTestCase[]) {
+async function runStdInCases(task: PracticeTask, code: string, tests: PracticeTestCase[], signal?: AbortSignal) {
+  if (task.language === 'python') return runPythonCases(code, tests, signal)
+
   const results: JudgeCaseResult[] = []
   for (const test of tests) {
-    results.push(await runStdInCase(task, code, test))
+    results.push(await runJavaScriptStdInCase(code, test))
   }
   return results
 }
 
-export async function judgeTask(task: PracticeTask, code: string, includeHidden: boolean): Promise<JudgeRunResult> {
+export async function judgeTask(task: PracticeTask, code: string, includeHidden: boolean, signal?: AbortSignal): Promise<JudgeRunResult> {
   const structuralFeedback = getStructuralFeedback(code, task)
 
   try {
-    const sampleResults = task.kind === 'stdin-stdout' || task.kind === 'input-output'
-      ? await runStdInCases(task, code, task.sampleTests)
-      : task.sampleTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
+    const isStdInTask = task.kind === 'stdin-stdout' || task.kind === 'input-output'
+    let sampleResults: JudgeCaseResult[]
+    let hiddenResults: JudgeCaseResult[]
 
-    const hiddenResults = includeHidden
-      ? task.kind === 'stdin-stdout' || task.kind === 'input-output'
-        ? await runStdInCases(task, code, task.hiddenTests)
-        : task.hiddenTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
-      : []
+    if (isStdInTask) {
+      const selectedTests = includeHidden ? [...task.sampleTests, ...task.hiddenTests] : task.sampleTests
+      const allStdInResults = await runStdInCases(task, code, selectedTests, signal)
+      sampleResults = allStdInResults.slice(0, task.sampleTests.length)
+      hiddenResults = includeHidden ? allStdInResults.slice(task.sampleTests.length) : []
+    } else {
+      sampleResults = task.sampleTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
+      hiddenResults = includeHidden
+        ? task.hiddenTests.map((test) => runFunctionCase(executeJavaScriptUserCode(code), task, test))
+        : []
+    }
 
     const allResults = [...sampleResults, ...hiddenResults]
     const passedCases = allResults.filter((item) => item.passed).length

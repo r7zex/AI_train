@@ -57,6 +57,18 @@ export const commonSources = [
     why: 'Официальная справка по DataFrame, Series, чтению CSV, индексации, groupby, пропускам и преобразованию типов.',
     url: 'https://pandas.pydata.org/docs/',
   },
+  {
+    label: 'Matplotlib documentation',
+    type: 'docs' as const,
+    why: 'Официальная справка по Figure, Axes, pyplot и базовым видам графиков.',
+    url: 'https://matplotlib.org/stable/users/explain/quick_start.html',
+  },
+  {
+    label: 'scikit-learn model selection',
+    type: 'docs' as const,
+    why: 'Официальная справка по train/test, кросс-валидации и подбору гиперпараметров.',
+    url: 'https://scikit-learn.org/stable/model_selection.html',
+  },
 ]
 
 export function dedent(value: string) {
@@ -289,7 +301,7 @@ export const makeStdinTask = (
   solution: dedent(solution),
 })
 
-function topicBase(
+export function topicBase(
   id: string,
   title: string,
   order: number,

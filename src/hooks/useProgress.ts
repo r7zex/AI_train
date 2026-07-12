@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { flowCourseBlocks, getFlowTopicById } from '../data/courseFlow'
 
 const STORAGE_KEY = 'ml-trainer-progress-v3'
@@ -104,19 +104,19 @@ export function useProgress() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress))
   }, [progress])
 
-  const markStepCompleted = (stepId: string) => {
+  const markStepCompleted = useCallback((stepId: string) => {
     setProgress((prev) => deriveState({ ...prev, completedSteps: [...prev.completedSteps, stepId] }))
-  }
+  }, [])
 
-  const markQuizPassed = (stepId: string) => {
+  const markQuizPassed = useCallback((stepId: string) => {
     setProgress((prev) => deriveState({ ...prev, passedQuizzes: [...prev.passedQuizzes, stepId] }))
-  }
+  }, [])
 
-  const markPracticePassed = (stepId: string) => {
+  const markPracticePassed = useCallback((stepId: string) => {
     setProgress((prev) => deriveState({ ...prev, passedPractices: [...prev.passedPractices, stepId] }))
-  }
+  }, [])
 
-  const setLastVisitedStep = (topicId: string, stepId: string) => {
+  const setLastVisitedStep = useCallback((topicId: string, stepId: string) => {
     setProgress((prev) => {
       if (prev.lastVisitedStep[topicId] === stepId) return prev
       return deriveState({
@@ -127,7 +127,7 @@ export function useProgress() {
         },
       })
     })
-  }
+  }, [])
 
   const helpers = useMemo(() => ({
     isStepCompleted: (stepId: string) => progress.completedSteps.includes(stepId),
