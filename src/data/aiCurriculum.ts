@@ -2,6 +2,8 @@ import type { FlowTopic } from './aiCurriculumTypes'
 import { numpyTopics } from './curriculum/numpy/index'
 import { pandasTopics } from './curriculum/pandas'
 import { mlFoundationsTopics } from './curriculum/ml_foundations'
+import { mlMasteryTopics } from './curriculum/ml_mastery'
+import { nlpTopics } from './curriculum/nlp'
 import {
   linearModelTopics,
   mlAdvancedFoundationsTopics,
@@ -9,8 +11,17 @@ import {
   treeEnsembleTopics,
   visualizationTopics,
 } from './curriculum/ml_extended'
+import { researchTopics } from './curriculum/research'
+import { pythonStartTopics } from './curriculum/python_start'
 
 export const curriculumBlocks = [
+  {
+    id: 'python-start',
+    title: 'Python-минимум перед анализом данных',
+    icon: '00',
+    description: 'Синтаксис, типы, коллекции, циклы, функции, ошибки, файлы и окружение — без предположения, что Python уже знаком.',
+    order: 0,
+  },
   {
     id: 'numpy-ml',
     title: 'NumPy для машинного обучения',
@@ -60,6 +71,48 @@ export const curriculumBlocks = [
     description: 'SVC, SVR, margin, kernel, параметры C и gamma, а также KMeans и оценка кластеров.',
     order: 7,
   },
+  {
+    id: 'research-statistics',
+    title: 'Статистика и дизайн исследования',
+    icon: '08',
+    description: 'Неопределённость, размеры эффекта, FDR, мощность, bootstrap и протокол биомедицинского исследования.',
+    order: 8,
+  },
+  {
+    id: 'biomedical-ml',
+    title: 'Биомедицинский ML без утечек',
+    icon: '09',
+    description: 'Когорта, target, временная логика, Pipeline, дисбаланс, калибровка и внешняя валидация на кейсах Gamma Knife и ASPA.',
+    order: 9,
+  },
+  {
+    id: 'genomics-cancer',
+    title: 'Гены, экспрессия и рак',
+    icon: '10',
+    description: 'FASTA/FASTQ/GTF/VCF, RNA-seq, варианты, GDC/cBioPortal, survival и multi-omics.',
+    order: 10,
+  },
+  {
+    id: 'protein-bioinformatics',
+    title: 'Белки, последовательности и deep learning',
+    icon: '11',
+    description: 'UniProt, BLAST, гомологический split, PDB, pLDDT/PAE, CNN/RNN/Transformers и protein embeddings.',
+    order: 11,
+  },
+  {
+    id: 'biomedical-nlp',
+    title: 'NLP для биомедицины и научных текстов',
+    icon: '12',
+    description: 'От разметки и TF-IDF до patient-level validation, biomedical NER, Transformers, RAG и проверяемого синтеза доказательств.',
+    order: 12,
+  },
+  {
+    id: 'article-capstone',
+    title: 'От протокола до статьи',
+    icon: '13',
+    description: 'Capstone-проект, система экспериментов, TRIPOD+AI/PROBAST+AI, рукопись, supplement и воспроизводимый submission package.',
+    order: 13,
+  },
 ]
 
 function withBlock(topic: FlowTopic, blockTitle: string, blockIcon: string, title: string, order: number): FlowTopic {
@@ -97,12 +150,16 @@ const mlCourseTopics = mlFoundationsTopics.map((topic, index) => {
 })
 
 export const flowTopics: FlowTopic[] = [
+  ...pythonStartTopics,
   ...numpyCourseTopics,
   ...pandasCourseTopics,
   ...visualizationTopics,
   ...mlCourseTopics,
   ...mlAdvancedFoundationsTopics,
+  ...mlMasteryTopics,
   ...linearModelTopics,
   ...treeEnsembleTopics,
   ...svmClusteringTopics,
+  ...nlpTopics,
+  ...researchTopics,
 ]

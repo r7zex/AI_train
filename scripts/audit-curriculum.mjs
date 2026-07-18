@@ -152,23 +152,43 @@ const { curriculumBlocks, flowTopics } = loadCurriculum()
 
 requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
-requireCondition(curriculumBlocks.length === 7, `Expected exactly 7 curriculum blocks, got ${curriculumBlocks.length}.`)
-requireCondition(flowTopics.length === 36, `Expected exactly 36 topics, got ${flowTopics.length}.`)
+requireCondition(curriculumBlocks.length === 14, `Expected exactly 14 curriculum blocks, got ${curriculumBlocks.length}.`)
+requireCondition(flowTopics.length === 81, `Expected exactly 81 topics, got ${flowTopics.length}.`)
 
 const blockIds = curriculumBlocks.map((block) => block.id)
 requireCondition(
-  blockIds.join(',') === 'numpy-ml,pandas-eda,visualization-eda,ml-foundations,linear-models,trees-ensembles,svm-clustering',
+  blockIds.join(',') === 'python-start,numpy-ml,pandas-eda,visualization-eda,ml-foundations,linear-models,trees-ensembles,svm-clustering,research-statistics,biomedical-ml,genomics-cancer,protein-bioinformatics,biomedical-nlp,article-capstone',
   `Unexpected block ids: ${blockIds.join(',')}.`,
 )
 
 const topicIds = flowTopics.map((topic) => topic.id)
 requireCondition(
-  topicIds.slice(0, 17).join(',') === [...expectedStepCounts.keys()].slice(0, 17).join(','),
-  `Unexpected NumPy/pandas topic order: ${topicIds.slice(0, 17).join(',')}.`,
+  topicIds.slice(4, 21).join(',') === [...expectedStepCounts.keys()].slice(0, 17).join(','),
+  `Unexpected NumPy/pandas topic order: ${topicIds.slice(4, 21).join(',')}.`,
 )
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 240, `Expected 240 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 592, `Expected 592 total steps, got ${totalSteps}.`)
+
+const researchTopics = flowTopics.filter((topic) => topic.blockId === 'research-statistics'
+  || topic.blockId === 'biomedical-ml'
+  || topic.blockId === 'genomics-cancer'
+  || topic.blockId === 'protein-bioinformatics'
+  || topic.blockId === 'biomedical-nlp'
+  || topic.blockId === 'article-capstone')
+
+requireCondition(researchTopics.length === 32, `Expected 32 research/bioinformatics topics, got ${researchTopics.length}.`)
+requireCondition(new Set(researchTopics.map((topic) => topic.steps.length)).size >= 4, 'Research topics must use at least four different lesson lengths.')
+requireCondition(new Set(researchTopics.map((topic) => topic.learningDesign?.format)).size >= 10, 'Research topics must use varied learning formats, not one repeated template.')
+
+const mlMasteryTopics = flowTopics.filter((topic) => topic.id.startsWith('ml-') && topic.order >= 10)
+const nlpTopics = flowTopics.filter((topic) => topic.blockId === 'biomedical-nlp')
+const capstoneTopics = flowTopics.filter((topic) => topic.blockId === 'article-capstone')
+requireCondition(mlMasteryTopics.length === 9, `Expected 9 from-zero ML mastery topics, got ${mlMasteryTopics.length}.`)
+requireCondition(nlpTopics.length === 8, `Expected 8 dedicated NLP topics, got ${nlpTopics.length}.`)
+requireCondition(capstoneTopics.length === 8, `Expected 8 article capstone topics, got ${capstoneTopics.length}.`)
+requireCondition(new Set(nlpTopics.map((topic) => topic.learningDesign?.practiceTasks)).size >= 3, 'NLP lessons must vary practice intensity by topic.')
+requireCondition(new Set(mlMasteryTopics.map((topic) => topic.learningDesign?.quizQuestions)).size >= 3, 'ML mastery lessons must vary assessment depth by topic.')
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`
@@ -180,6 +200,19 @@ for (const topic of flowTopics) {
   }
   requireCondition(blockIds.includes(topic.blockId), `${prefix} unexpected blockId ${topic.blockId}.`)
   requireCondition(!['intro-ai-ml', 'python-for-ai', 'data-prep'].includes(topic.blockId), `${prefix} old block id must not be displayed.`)
+
+  if (topic.learningDesign) {
+    const actualQuestions = topic.steps.reduce((sum, step) => sum + (step.quiz?.questions.length ?? 0), 0)
+    const actualPractices = topic.steps.reduce((sum, step) => sum + (step.practiceTasks?.length ?? 0), 0)
+    const actualExamples = topic.steps.reduce((sum, step) => sum
+      + (step.workedExample?.length ?? 0)
+      + (step.codeExample ? 1 : 0)
+      + (step.sections?.reduce((sectionSum, section) => sectionSum + (section.codeExamples?.length ?? 0), 0) ?? 0), 0)
+    requireCondition(actualQuestions === topic.learningDesign.quizQuestions, `${prefix} learning design says ${topic.learningDesign.quizQuestions} questions, actual ${actualQuestions}.`)
+    requireCondition(actualPractices === topic.learningDesign.practiceTasks, `${prefix} learning design says ${topic.learningDesign.practiceTasks} practices, actual ${actualPractices}.`)
+    requireCondition(actualExamples === topic.learningDesign.examples, `${prefix} learning design says ${topic.learningDesign.examples} examples, actual ${actualExamples}.`)
+    requireCondition(topic.learningDesign.estimatedMinutes >= 45, `${prefix} research lesson duration is implausibly short.`)
+  }
 
   const stepTypes = topic.steps.map((step) => step.type)
   requireCondition(stepTypes.includes('theory'), `${prefix} missing theory steps.`)
@@ -239,6 +272,42 @@ const requiredCoverage = [
   ['l1', 'L1'],
   ['l2', 'L2'],
   ['корреляц', 'correlation matrix'],
+  ['gamma knife', 'Gamma Knife case'],
+  ['aspa', 'ASPA case'],
+  ['benjamini', 'Benjamini-Hochberg / FDR'],
+  ['calibration', 'probability calibration'],
+  ['nested cv', 'nested cross-validation'],
+  ['out-of-fold', 'out-of-fold predictions'],
+  ['groupkfold', 'group cross-validation'],
+  ['temporal split', 'temporal split'],
+  ['learning curve', 'learning curves'],
+  ['optuna', 'Optuna hyperparameter search'],
+  ['columntransformer', 'ColumnTransformer'],
+  ['decision curve', 'decision curve analysis'],
+  ['permutation importance', 'permutation importance'],
+  ['fasta', 'FASTA'],
+  ['fastq', 'FASTQ'],
+  ['vcf', 'VCF'],
+  ['deseq2', 'DESeq2'],
+  ['survival', 'survival analysis'],
+  ['gdc', 'Genomic Data Commons'],
+  ['cbioportal', 'cBioPortal'],
+  ['uniprot', 'UniProt'],
+  ['blast', 'BLAST'],
+  ['plddt', 'pLDDT'],
+  ['transformer', 'Transformers'],
+  ['tf-idf', 'TF-IDF'],
+  ['word2vec', 'Word2Vec'],
+  ['pubmedbert', 'PubMedBERT'],
+  ['biomedical ner', 'biomedical named entity recognition'],
+  ['relation extraction', 'relation extraction'],
+  ['macro f1', 'macro F1'],
+  ['recall@k', 'retrieval evaluation'],
+  ['citation faithfulness', 'RAG citation faithfulness'],
+  ['tripod', 'TRIPOD reporting'],
+  ['probast+ai', 'PROBAST+AI'],
+  ['statistical analysis plan', 'statistical analysis plan'],
+  ['reviewer response', 'reviewer response workflow'],
 ]
 
 for (const [needle, label] of requiredCoverage) {

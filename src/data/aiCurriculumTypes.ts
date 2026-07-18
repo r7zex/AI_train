@@ -152,6 +152,13 @@ export interface FlowTopic {
   formulas: string[]
   themeCheatsheet: string[]
   sources: SourceLink[]
+  learningDesign?: {
+    format: string
+    estimatedMinutes: number
+    quizQuestions: number
+    practiceTasks: number
+    examples: number
+  }
   steps: FlowStep[]
 }
 

@@ -451,10 +451,31 @@ function StepContent({
   onPracticePassed: (stepId: string) => void
 }) {
   const primaryConcept = step.conceptCards?.[0]
+  const stepSurface = {
+    theory: '',
+    terminology: 'border-l-3 border-[#77918a] pl-4',
+    formula: 'border-l-3 border-[#7087a8] pl-4',
+    intuition: 'border-l-3 border-[#d1a64c] pl-4',
+    'worked-example': 'border-l-3 border-[#69be62] pl-4',
+    quiz: 'border border-[#d9e6d8] bg-[#fbfdfb] p-5',
+    code: 'border-l-3 border-[#4f6578] pl-4',
+    practice: '',
+    pitfalls: 'border border-[#eed9d9] bg-[#fffafa] p-5',
+    recap: 'border border-[#d9e6d8] bg-[#f8fbf7] p-5',
+    sources: 'border-t border-[#e3e6e9] pt-5',
+  }[step.type]
+  const stepLabel = {
+    theory: 'Теория', terminology: 'Словарь', formula: 'Формулы', intuition: 'Интуиция',
+    'worked-example': 'Разбор примеров', quiz: 'Проверка понимания', code: 'Кодовая демонстрация',
+    practice: 'Практическая лаборатория', pitfalls: 'Аудит ошибок', recap: 'Итог урока', sources: 'Первоисточники',
+  }[step.type]
 
   return (
-    <article className="stepik-step bg-white">
+    <article className={`stepik-step bg-white ${stepSurface}`}>
       <header className="mb-5">
+        {step.type !== 'theory' && (
+          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6e777f]">{stepLabel}</div>
+        )}
         <h1 className="text-[24px] font-bold leading-8 text-[#111827]">
           <RichText text={step.title} />
         </h1>
@@ -465,7 +486,7 @@ function StepContent({
         )}
       </header>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         {primaryConcept && <ConceptCardView concept={primaryConcept} />}
 
         {step.sections?.map((section) => {
@@ -498,12 +519,12 @@ function StepContent({
                 <CalloutBlock key={`${section.id}-${item.title}-${item.body}`} title={item.title} body={item.body} tone={item.tone} />
               ))}
               {section.table && (
-                <div className="mt-2 overflow-x-auto border border-[#e5e7eb]">
+                <div className="mt-3 overflow-x-auto border border-[#dfe4e7] bg-white shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
                   <table className="min-w-full border-collapse text-left text-[14px] leading-5 text-[#111827]">
                     <thead className="bg-[#f3f4f6]">
                       <tr>
                         {section.table.headers.map((header) => (
-                          <th key={header} className="border-b border-[#e5e7eb] px-2.5 py-1.5 font-bold">
+                          <th key={header} className="border-b border-[#e5e7eb] px-3 py-2 font-bold">
                             <RichText text={header} />
                           </th>
                         ))}
@@ -513,7 +534,7 @@ function StepContent({
                       {section.table.rows.map((row, rowIndex) => (
                         <tr key={`${section.id}-row-${rowIndex}`} className="border-t border-[#e5e7eb]">
                           {row.map((cell, cellIndex) => (
-                            <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-2.5 py-1.5 align-top">
+                            <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-3 py-2 align-top">
                               <RichText text={cell} />
                             </td>
                           ))}
@@ -541,13 +562,14 @@ function StepContent({
         {step.workedExample && (
           <section>
             <h2 className="mb-2 text-[18px] font-bold leading-6 text-[#111827]">Как применять</h2>
-            <ul className="list-disc space-y-1 pl-6 text-[15px] leading-6 text-[#111827]">
+            <div className="grid gap-2 sm:grid-cols-2">
               {step.workedExample.map((item) => (
-                <li key={item.title}>
-                  <strong>{item.title}</strong>: <RichText text={item.body} />
-                </li>
+                <article key={item.title} className="border border-[#dfe5df] bg-white px-3.5 py-3 text-[14px] leading-6 text-[#232a2e] shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
+                  <h3 className="font-bold text-[#345b35]">{item.title}</h3>
+                  <p className="mt-1"><RichText text={item.body} /></p>
+                </article>
               ))}
-            </ul>
+            </div>
           </section>
         )}
 
@@ -587,7 +609,7 @@ function StepContent({
         ) : null}
 
         {step.sources && (
-          <section>
+          <section className="border border-[#e2e6e8] bg-[#fafbfb] p-4">
             <h2 className="mb-3 text-[18px] font-bold leading-7 text-[#111827]">Источники</h2>
             <div className="space-y-2 text-[15px] leading-7">
               {step.sources.slice(0, 4).map((source) => (
@@ -746,6 +768,11 @@ export default function TopicDetailPage() {
               <span className="font-semibold text-[#30363b]">{topic.title}</span>
               <span>Шаг {currentIndex + 1} из {topic.steps.length}</span>
               <span>{completedSteps} пройдено</span>
+              {topic.learningDesign && (
+                <span className="basis-full text-[11px] text-[#647068] sm:basis-auto">
+                  {topic.learningDesign.format} · ≈ {topic.learningDesign.estimatedMinutes} мин · {topic.learningDesign.quizQuestions} вопросов · {topic.learningDesign.practiceTasks} {topic.learningDesign.practiceTasks === 1 ? 'практика' : 'практики'}
+                </span>
+              )}
               <Link to="/topics" onClick={completeCurrentStep} className="ml-auto hidden text-[#518d4e] hover:underline sm:inline">Содержание курса</Link>
             </div>
           </div>

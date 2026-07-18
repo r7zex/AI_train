@@ -2,6 +2,24 @@ import { Link } from 'react-router-dom'
 import { flowCourseBlocks, flowTopics, getFlowStepHref } from '../data/courseFlow'
 import { useProgress } from '../hooks/useProgress'
 
+function getLessonCounts(topic: (typeof flowTopics)[number]) {
+  const questions = topic.steps.reduce((sum, step) => sum + (step.quiz?.questions.length ?? 0), 0)
+  const practices = topic.steps.reduce((sum, step) => sum + (step.practiceTasks?.length ?? 0), 0)
+  const examples = topic.steps.reduce((sum, step) => sum
+    + (step.workedExample?.length ?? 0)
+    + (step.codeExample ? 1 : 0)
+    + (step.sections?.reduce((sectionSum, section) => sectionSum + (section.codeExamples?.length ?? 0), 0) ?? 0), 0)
+  return { questions, practices, examples }
+}
+
+function pluralize(count: number, one: string, few: string, many: string) {
+  const tail = count % 100
+  if (tail >= 11 && tail <= 14) return many
+  if (count % 10 === 1) return one
+  if (count % 10 >= 2 && count % 10 <= 4) return few
+  return many
+}
+
 export default function TopicsPage() {
   const { getCourseProgress, getBlockProgress, getTopicProgress, progress } = useProgress()
   const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
@@ -21,8 +39,11 @@ export default function TopicsPage() {
             <div>
               <h1 className="text-[28px] font-semibold tracking-[-0.02em] text-[#252a2e]">Машинное обучение с нуля</h1>
               <p className="mt-2 max-w-[760px] text-[14px] leading-6 text-[#626b73]">
-                NumPy, pandas, Matplotlib, EDA, постановка ML-задач, валидация, метрики и классические алгоритмы scikit-learn.
+                Python и ML с нуля — до воспроизводимого исследования генов, белков, рака, biomedical NLP и submission-ready структуры научной статьи.
               </p>
+              <div className="mt-3 max-w-[760px] border-l-3 border-[#69be62] bg-[#f6faf5] px-3 py-2 text-[12px] leading-5 text-[#4d5b50]">
+                Сквозные кейсы: Gamma Knife, скрининг диабета ASPA, cancer genomics, protein sequence ML и извлечение доказательств из биомедицинских текстов.
+              </div>
             </div>
             {continueTopic && (
               <Link to={getFlowStepHref(continueTopic.id, continueStepId)} className="inline-flex w-fit items-center bg-[#69be62] px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-[#58aa52]">
@@ -68,7 +89,9 @@ export default function TopicsPage() {
         <main className="border border-[#d6dbe0] bg-white">
           <header className="border-b border-[#e1e5e8] px-6 py-5">
             <h2 className="text-[22px] font-semibold text-[#2a3035]">Содержание курса</h2>
-            <p className="mt-1 text-[13px] text-[#747e86]">{flowCourseBlocks.length} модулей · {flowTopics.length} уроков · {totalSteps} интерактивных шагов</p>
+            <p className="mt-1 text-[13px] text-[#747e86]">
+              {flowCourseBlocks.length} {pluralize(flowCourseBlocks.length, 'модуль', 'модуля', 'модулей')} · {flowTopics.length} {pluralize(flowTopics.length, 'урок', 'урока', 'уроков')} · {totalSteps} интерактивных {pluralize(totalSteps, 'шаг', 'шага', 'шагов')}
+            </p>
           </header>
 
           <div>
@@ -86,7 +109,7 @@ export default function TopicsPage() {
                       <p className="mt-1 text-[12px] leading-5 text-[#747d85]">{block.description}</p>
                     </div>
                     <div className="hidden min-w-[135px] text-right sm:block">
-                      <div className="text-[11px] text-[#838b92]">{topics.length} уроков · {blockSteps} шагов</div>
+                      <div className="text-[11px] text-[#838b92]">{topics.length} {pluralize(topics.length, 'урок', 'урока', 'уроков')} · {blockSteps} {pluralize(blockSteps, 'шаг', 'шага', 'шагов')}</div>
                       <div className="mt-2 h-1 bg-[#dfe3e5]"><div className="h-1 bg-[#69be62]" style={{ width: `${blockPercent}%` }} /></div>
                     </div>
                   </div>
@@ -96,8 +119,7 @@ export default function TopicsPage() {
                       const firstStep = topic.steps[0]
                       const href = getFlowStepHref(topic.id, progress.lastVisitedStep[topic.id] ?? firstStep.id)
                       const percent = Math.round(getTopicProgress(topic.id) * 100)
-                      const quizCount = topic.steps.filter((step) => step.type === 'quiz').length
-                      const practiceCount = topic.steps.filter((step) => step.type === 'practice').length
+                      const counts = getLessonCounts(topic)
 
                       return (
                         <Link key={topic.id} to={href} className="grid gap-3 px-6 py-4 hover:bg-[#fbfcfc] sm:grid-cols-[minmax(0,1fr),150px]">
@@ -106,7 +128,14 @@ export default function TopicsPage() {
                             <div className="min-w-0">
                               <h4 className="text-[14px] font-semibold text-[#343a40]">{topic.title}</h4>
                               <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[#768089]">{topic.summary}</p>
-                              <div className="mt-1 text-[11px] text-[#939aa1]">{topic.steps.length} шагов · {quizCount} тест · {practiceCount} практика</div>
+                              {topic.learningDesign ? (
+                                <div className="mt-2 space-y-1 text-[11px] text-[#838c94]">
+                                  <div className="font-medium text-[#657169]">{topic.learningDesign.format} · ≈ {topic.learningDesign.estimatedMinutes} мин</div>
+                                  <div>{counts.questions} {pluralize(counts.questions, 'вопрос', 'вопроса', 'вопросов')} · {counts.practices} {pluralize(counts.practices, 'практика', 'практики', 'практик')} · {counts.examples} {pluralize(counts.examples, 'пример', 'примера', 'примеров')} · {topic.steps.length} шагов</div>
+                                </div>
+                              ) : (
+                                <div className="mt-1 text-[11px] text-[#939aa1]">{topic.steps.length} шагов · {counts.questions} вопросов · {counts.practices} практика</div>
+                              )}
                             </div>
                           </div>
                           <div className="self-center text-right">

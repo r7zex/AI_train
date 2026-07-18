@@ -5,13 +5,54 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/topics', { waitUntil: 'domcontentloaded' })
 })
 
-test('syllabus exposes the complete ML path', async ({ page }) => {
+test('syllabus exposes the complete ML and bioinformatics path', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Содержание курса' })).toBeVisible()
+  await expect(page.getByText('Python-минимум перед анализом данных', { exact: true })).toBeVisible()
   await expect(page.getByText('Matplotlib и разведочный анализ данных', { exact: true })).toBeVisible()
   await expect(page.getByText('Линейные модели и регуляризация', { exact: true })).toBeVisible()
   await expect(page.getByText('Деревья, бэггинг и бустинг', { exact: true })).toBeVisible()
   await expect(page.getByText('Метод опорных векторов и кластеризация', { exact: true })).toBeVisible()
-  await expect(page.getByText('240 интерактивных шагов')).toBeVisible()
+  await expect(page.getByText('Статистика и дизайн исследования', { exact: true })).toBeVisible()
+  await expect(page.getByText('Биомедицинский ML без утечек', { exact: true })).toBeVisible()
+  await expect(page.getByText('Гены, экспрессия и рак', { exact: true })).toBeVisible()
+  await expect(page.getByText('Белки, последовательности и deep learning', { exact: true })).toBeVisible()
+  await expect(page.getByText('NLP для биомедицины и научных текстов', { exact: true })).toBeVisible()
+  await expect(page.getByText('От протокола до статьи', { exact: true })).toBeVisible()
+  await expect(page.getByText('14 модулей · 81 урок · 592 интерактивных шага')).toBeVisible()
+})
+
+test('research lessons expose their individual learning design', async ({ page }) => {
+  await page.goto('/topics/biomedical-leakage-pipeline/biomedical-leakage-pipeline-theory')
+  await expect(page.getByText('клиническое расследование + 2 практики · ≈ 80 мин · 7 вопросов · 2 практики')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Утечка данных в биомедицинском исследовании' })).toBeVisible()
+  await expect(page.getByText('Кейс Gamma Knife', { exact: true })).toBeVisible()
+  await expect(page.getByText('Отбор top-genes до CV', { exact: true })).toBeVisible()
+})
+
+test('from-zero validation and NLP have distinct learning designs', async ({ page }) => {
+  await page.goto('/topics/ml-split-strategy-lab/ml-split-strategy-lab-theory')
+  await expect(page.getByText('пять предметных split-кейсов + 2 аудита · ≈ 105 мин · 9 вопросов · 2 практики')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Train, validation, evaluation и единица разбиения' })).toBeVisible()
+
+  await page.goto('/topics/nlp-data-labels-tokenization/nlp-data-labels-tokenization-theory')
+  await expect(page.getByText('лаборатория разметки + 2 проверки · ≈ 85 мин · 6 вопросов · 2 практики')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Текст становится исследовательскими данными' })).toBeVisible()
+})
+
+test('research lesson remains readable on desktop and mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/topics')
+  await expect(page.getByText('592 интерактивных шага')).toBeVisible()
+  await page.screenshot({ path: '/tmp/ai-train-topics-desktop.png' })
+
+  await page.goto('/topics/biomedical-leakage-pipeline/biomedical-leakage-pipeline-theory')
+  await expect(page.locator('.stepik-sidebar')).toBeVisible()
+  await page.screenshot({ path: '/tmp/ai-train-lesson-desktop.png' })
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.locator('.stepik-sidebar')).toBeHidden()
+  await expect(page.getByRole('heading', { name: 'Утечка данных в биомедицинском исследовании' })).toBeVisible()
+  await page.screenshot({ path: '/tmp/ai-train-lesson-mobile.png' })
 })
 
 test('leaving a step automatically records completion', async ({ page }) => {
