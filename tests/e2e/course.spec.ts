@@ -84,13 +84,13 @@ test('Matplotlib is a complete asynchronous module with local Russian definition
   await page.goto('/topics/matplotlib-basics/matplotlib-basics-theory')
   await expect(page.getByText('объяснение → разбор кода → аудит ошибок → тест → практика · ≈ 70 мин · 3 вопроса · 1 практика')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Что именно создаёт Matplotlib' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Словарь терминов этого урока' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Термины текущего шага' })).toBeVisible()
   await expect(page.getByText('область графика (Axes)')).toBeVisible()
   await expect(page.getByText('отдельная система координат внутри рисунка Matplotlib')).toBeVisible()
   await page.screenshot({ path: '/tmp/ai-train-matplotlib-desktop.png' })
 
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.getByRole('heading', { name: 'Словарь терминов этого урока' }).scrollIntoViewIfNeeded()
+  await page.getByRole('heading', { name: 'Термины текущего шага' }).scrollIntoViewIfNeeded()
   await expect(page.locator('.stepik-sidebar')).toBeHidden()
   await page.screenshot({ path: '/tmp/ai-train-matplotlib-glossary-mobile.png' })
 
@@ -115,6 +115,33 @@ test('beginner ML terminology is Russian-first and baseline is explained as a mo
   await expect(page.getByText(/самое простое разумное решение, с которым сравнивают основной алгоритм/)).toBeVisible()
   await expect(page.getByText('простая сравнительная модель (baseline)').first()).toBeVisible()
   await page.screenshot({ path: '/tmp/ai-train-baseline-desktop.png' })
+})
+
+test('core ML theory has distinct raster visuals, plain-language explanations, and worked formulas', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/topics/linear-regression/linear-regression-theory')
+  await expect(page.getByRole('heading', { name: 'Как прямая превращает признаки в числовой прогноз' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Зачем нужен метод наименьших квадратов (МНК)' })).toBeVisible()
+  await expect(page.getByText('МНК — не отдельная модель поверх линейной регрессии, а способ подобрать её коэффициенты.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Прогноз квартиры' })).toBeVisible()
+  const linearVisuals = page.getByRole('region', { name: 'Иллюстрации к теме' }).locator('img')
+  await expect(linearVisuals).toHaveCount(2)
+  await expect.poll(async () => linearVisuals.evaluateAll((images) => images.every((image) => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 1000))).toBe(true)
+  await page.screenshot({ path: '/tmp/ai-train-linear-regression-desktop.png', fullPage: true })
+
+  await page.goto('/topics/decision-trees/decision-trees-theory')
+  await expect(page.getByRole('heading', { name: 'Путь одного объекта' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Gini смешанного узла' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Иллюстрации к теме' }).locator('img')).toHaveCount(2)
+
+  await page.goto('/topics/validation-split/validation-split-theory')
+  await expect(page.getByRole('heading', { name: 'У каждой части данных своя работа' })).toBeVisible()
+  await expect(page.locator('.katex-display')).toHaveCount(0)
+  await expect(page.getByText('Holdout-оценка')).toHaveCount(0)
+
+  await page.goto('/topics/ml-math-vectors-gradients/ml-math-vectors-gradients-formula')
+  await expect(page.getByRole('heading', { name: 'Длина вектора [3, 4]' })).toBeVisible()
+  await expect(page.getByText('Длина вектора; лежит в основе расстояний и L2-регуляризации.')).toHaveCount(0)
 })
 
 test('local comments control changes real UI state', async ({ page }) => {
