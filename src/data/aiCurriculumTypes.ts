@@ -57,6 +57,11 @@ export interface FormulaCard {
   expression: string
   meaning: string
   notation: string[]
+  example?: {
+    title: string
+    steps: string[]
+    conclusion: string
+  }
 }
 
 export interface ParameterInfo {

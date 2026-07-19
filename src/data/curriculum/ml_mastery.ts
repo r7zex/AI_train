@@ -38,9 +38,9 @@ const mathSteps: FlowStep[] = [
   {
     id: `${mathId}-formula`, type: 'formula', title: 'Операции, которые встречаются в моделях', summary: 'От dot product до шага по градиенту.',
     formulaCards: [
-      { label: 'Скалярное произведение', expression: 'x^Tw=\\sum_{j=1}^{p}x_jw_j', meaning: 'Линейный score объекта.', notation: ['p — число признаков', 'w_j — вес признака'] },
-      { label: 'Евклидова норма', expression: '\\lVert x\\rVert_2=\\sqrt{\\sum_jx_j^2}', meaning: 'Длина вектора; лежит в основе расстояний и L2-регуляризации.', notation: ['Норма не учитывает шкалы признаков сама'] },
-      { label: 'Градиентный шаг', expression: '\\theta_{t+1}=\\theta_t-\\eta\\nabla_\\theta L', meaning: 'Параметры смещаются против направления роста loss.', notation: ['eta — learning rate', 'L — функция потерь'] },
+      { label: 'Скалярное произведение', expression: 'x^Tw=\\sum_{j=1}^{p}x_jw_j', meaning: 'Сумма попарных произведений признаков и весов.', notation: ['p — число признаков', 'w_j — вес признака'], example: { title: 'Два признака', steps: ['x=[1, 2], w=[3, 4].', '1×3 + 2×4 = 3 + 8.'], conclusion: 'Скалярное произведение равно 11.' } },
+      { label: 'Евклидова норма', expression: '\\lVert x\\rVert_2=\\sqrt{\\sum_jx_j^2}', meaning: 'Обычная геометрическая длина вектора; используется при расчёте расстояний.', notation: ['Сначала значения возводятся в квадрат, затем складываются и извлекается корень.'], example: { title: 'Длина вектора [3, 4]', steps: ['3² + 4² = 9 + 16 = 25.', '√25 = 5.'], conclusion: 'Длина вектора равна 5.' } },
+      { label: 'Градиентный шаг', expression: '\\theta_{t+1}=\\theta_t-\\eta\\nabla_\\theta L', meaning: 'Параметры смещаются против направления роста функции ошибки.', notation: [String.raw`\eta — размер шага`, 'L — функция ошибки'], example: { title: 'Один шаг параметра', steps: ['θ=5, размер шага η=0.1, градиент=4.', '5 − 0.1×4 = 4.6.'], conclusion: 'Новое значение параметра равно 4.6.' } },
     ],
   },
   {

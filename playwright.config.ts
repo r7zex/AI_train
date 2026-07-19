@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const externalChromium = process.env.PLAYWRIGHT_EXECUTABLE_PATH
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
@@ -13,6 +15,7 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:5173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    launchOptions: externalChromium ? { executablePath: externalChromium, args: ['--no-sandbox'] } : undefined,
   },
   webServer: {
     command: 'npm run dev -- --host 127.0.0.1',

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import CodeBlock, { ReadOnlyCodeCell } from '../components/CodeBlock'
+import CourseVisualGallery from '../components/CourseVisualGallery'
 import CourseSidebar from '../components/CourseSidebar'
 import Formula from '../components/Formula'
 import RichText from '../components/RichText'
@@ -130,14 +131,29 @@ function CalloutBlock({ title, body, tone }: { title: string; body: string; tone
   )
 }
 
-function LocalGlossary({ terms }: { terms: string[] }) {
-  const entries = getCourseGlossaryEntries(terms)
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function termsUsedInStep(terms: string[], step: FlowStep) {
+  const searchableText = JSON.stringify(step).toLocaleLowerCase('ru-RU')
+  return terms.filter((term) => {
+    const normalized = term.toLocaleLowerCase('ru-RU').trim()
+    if (!normalized) return false
+    const pattern = new RegExp(`(^|[^a-zа-яё0-9_])${escapeRegExp(normalized)}([^a-zа-яё0-9_]|$)`, 'iu')
+    return pattern.test(searchableText)
+  })
+}
+
+function LocalGlossary({ terms, step }: { terms: string[]; step: FlowStep }) {
+  const localTerms = termsUsedInStep(terms, step)
+  const entries = getCourseGlossaryEntries(localTerms)
   if (!entries.length) return null
 
   return (
     <section className="mt-10 border-t border-[#dfe4e7] pt-6" aria-labelledby="local-glossary-title">
-      <h2 id="local-glossary-title" className="text-[19px] font-bold leading-7 text-[#111827]">Словарь терминов этого урока</h2>
-      <p className="mt-2 text-[14px] leading-6 text-[#5d6670]">Переводы находятся на этой же странице, поэтому возвращаться к отдельному справочнику не нужно.</p>
+      <h2 id="local-glossary-title" className="text-[19px] font-bold leading-7 text-[#111827]">Термины текущего шага</h2>
+      <p className="mt-2 text-[14px] leading-6 text-[#5d6670]">Здесь перечислены только английские термины, которые встретились на текущем шаге.</p>
       <dl className="mt-4 divide-y divide-[#e6eaed] border-y border-[#e0e5e8]">
         {entries.map((entry) => (
           <div key={entry.original} className="grid gap-1 py-3 sm:grid-cols-[minmax(190px,0.7fr),minmax(0,1.3fr)] sm:gap-5">
@@ -172,6 +188,17 @@ function FormulaCards({ cards }: { cards: FormulaCard[] }) {
               </li>
             ))}
           </ul>
+          {card.example && (
+            <div className="mt-4 border-l-4 border-[#69be62] bg-[#f4fbf4] px-4 py-3">
+              <h3 className="text-[15px] font-bold leading-6 text-[#214b2c]">{card.example.title}</h3>
+              <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-[14px] leading-6 text-[#243039]">
+                {card.example.steps.map((item) => (
+                  <li key={item}><RichText text={item} /></li>
+                ))}
+              </ol>
+              <p className="mt-2 text-[14px] font-semibold leading-6 text-[#214b2c]"><RichText text={card.example.conclusion} /></p>
+            </div>
+          )}
         </article>
       ))}
     </section>
@@ -486,6 +513,8 @@ function StepContent({
   onPracticePassed: (stepId: string) => void
 }) {
   const primaryConcept = step.conceptCards?.[0]
+  const firstTheoryStepId = topic.steps.find((item) => item.type === 'theory')?.id
+  const showTopicVisuals = step.id === firstTheoryStepId
   const stepSurface = {
     theory: '',
     terminology: 'border-l-3 border-[#77918a] pl-4',
@@ -523,6 +552,8 @@ function StepContent({
 
       <div className="space-y-8">
         {primaryConcept && <ConceptCardView concept={primaryConcept} />}
+
+        {showTopicVisuals && <CourseVisualGallery topic={topic} />}
 
         {step.sections?.map((section) => {
           if (section.variant === 'function-card') {
@@ -656,7 +687,7 @@ function StepContent({
           </section>
         )}
 
-        <LocalGlossary terms={topic.terminology} />
+        <LocalGlossary terms={topic.terminology} step={step} />
       </div>
 
       <footer className="mt-9 flex items-center justify-between border-t border-[#e3e6e9] pt-4 text-[13px] text-[#7a828a]">

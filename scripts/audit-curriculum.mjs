@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import vm from 'node:vm'
 import { fileURLToPath } from 'node:url'
 import * as ts from 'typescript'
@@ -178,6 +179,33 @@ requireCondition(
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
 requireCondition(totalSteps === 618, `Expected 618 total steps, got ${totalSteps}.`)
 
+const courseVisualsPath = path.join(root, 'public/course-visuals')
+requireCondition(fs.existsSync(courseVisualsPath), 'Course visual directory is missing.')
+const courseVisualFiles = fs.existsSync(courseVisualsPath)
+  ? fs.readdirSync(courseVisualsPath).filter((file) => file.endsWith('.png'))
+  : []
+requireCondition(courseVisualFiles.length === 101, `Expected exactly 101 course PNG files, got ${courseVisualFiles.length}.`)
+const visualHashes = new Map()
+for (const file of courseVisualFiles) {
+  const digest = createHash('sha256').update(fs.readFileSync(path.join(courseVisualsPath, file))).digest('hex')
+  const matchingFiles = visualHashes.get(digest) ?? []
+  matchingFiles.push(file)
+  visualHashes.set(digest, matchingFiles)
+}
+for (const matchingFiles of visualHashes.values()) {
+  requireCondition(matchingFiles.length === 1, `Course visuals must be distinct; duplicate files: ${matchingFiles.join(', ')}.`)
+}
+for (const topic of flowTopics) {
+  const visualPattern = new RegExp(`^${topic.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:-\\d+)?\\.png$`)
+  const topicVisuals = courseVisualFiles.filter((file) => visualPattern.test(file))
+  requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+  requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)
+  for (const file of topicVisuals) {
+    const size = fs.statSync(path.join(courseVisualsPath, file)).size
+    requireCondition(size >= 10_000, `${topic.id}: ${file} is suspiciously small (${size} bytes).`)
+  }
+}
+
 const researchTopics = flowTopics.filter((topic) => topic.blockId === 'research-statistics'
   || topic.blockId === 'biomedical-ml'
   || topic.blockId === 'genomics-cancer'
@@ -261,6 +289,36 @@ for (const topic of flowTopics) {
 }
 
 const curriculumText = collectText(flowTopics).join(' ').toLowerCase()
+const forbiddenBoilerplate = [
+  'когда применять и как проверять',
+  'метод проверяют на данных, которые не участвовали в обучении',
+  'качество сравнивают с baseline. если результат нестабилен между фолдами',
+  'решение запускается на платформе',
+]
+for (const phrase of forbiddenBoilerplate) {
+  requireCondition(!curriculumText.includes(phrase), `Repeated filler text must not appear: "${phrase}".`)
+}
+
+for (const topicId of ['ml-problem-types', 'validation-split']) {
+  const topic = flowTopics.find((item) => item.id === topicId)
+  const formulaCards = topic?.steps.flatMap((step) => step.formulaCards ?? []) ?? []
+  requireCondition(formulaCards.length === 0, `${topicId}: beginner theory must explain the idea before introducing formulas.`)
+}
+
+for (const topicId of [
+  'linear-regression',
+  'regularization-l1-l2',
+  'logistic-regression',
+  'decision-trees',
+  'bagging-random-forest',
+  'gradient-boosting',
+  'support-vector-machines',
+  'kmeans-clustering',
+]) {
+  const topic = flowTopics.find((item) => item.id === topicId)
+  const formulaCards = topic?.steps.flatMap((step) => step.formulaCards ?? []) ?? []
+  requireCondition(formulaCards.some((card) => card.example?.steps?.length), `${topicId}: at least one displayed formula needs a worked numeric example.`)
+}
 const missingGlossaryTerms = [...new Set(flowTopics
   .flatMap((topic) => topic.terminology)
   .filter((term) => hasLatinLetters(term))
