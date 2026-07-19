@@ -1,20 +1,31 @@
 # AI Train
 
-Интерактивный курс по машинному обучению на React, TypeScript, Vite и Tailwind. Интерфейс повторяет учебный поток Stepik: тёмная панель курса, отдельные шаги урока, мгновенная проверка квизов, практические задачи и автоматический прогресс.
+Интерактивный курс по машинному обучению, biomedical NLP и биоинформатике на React, TypeScript, Vite и Tailwind. Интерфейс сохраняет учебный поток Stepik: тёмная панель курса, отдельные шаги урока, мгновенная проверка квизов, практические задачи и автоматический прогресс.
 
 ## Что входит в курс
 
-Текущая программа: **7 модулей, 36 уроков и 240 интерактивных шагов**.
+Текущая программа: **14 модулей, 81 урок и 592 интерактивных шага**.
 
+0. Python-минимум: типы, коллекции, циклы, функции, ошибки, файлы и окружение.
 1. NumPy для машинного обучения.
 2. pandas и подготовка данных.
 3. Matplotlib, EDA и матрица корреляций.
-4. Типы ML-задач, train/test split, валидация, cross-validation, CV-search, метрики, confusion matrix, балансировка классов и Pipeline.
+4. ML с нуля: векторы, вероятность и loss, bias–variance, learning curves, random/group/center/time split, OOF и repeated/nested CV, Optuna, ColumnTransformer, feature selection, uncertainty, calibration, decision curve, интерпретация и fairness.
 5. Линейная и логистическая регрессия, L1, L2 и ElasticNet.
 6. Деревья решений, бэггинг, Random Forest и boosting.
 7. SVM и кластеризация K-Means.
+8. Статистика, размеры эффекта, FDR, мощность, bootstrap и дизайн исследования.
+9. Биомедицинский ML без утечек: когорта, target, Pipeline, калибровка, nested CV и внешняя валидация на кейсах Gamma Knife и ASPA.
+10. Гены и рак: FASTA/FASTQ/GTF/VCF, RNA-seq, DESeq2, варианты, GDC/cBioPortal, survival и multi-omics.
+11. Белки: UniProt, BLAST, гомологический split, PDB, pLDDT/PAE, CNN/RNN/Transformers и ESM embeddings.
+12. Biomedical NLP: корпуса и разметка, TF-IDF, честная NLP-валидация, Word2Vec/fastText, CNN/RNN/Transformers, PubMedBERT, NER, relations, LLM/RAG и evidence pipeline.
+13. Capstone: protocol/SAP, literature gap, sample size, система экспериментов, TRIPOD+AI/PROBAST+AI, Methods/Results/Discussion, Q3-shortlist, submission и reviewer response.
 
-Новые алгоритмические уроки содержат:
+Исследовательские уроки специально имеют разную структуру: от **5 до 9 вопросов**, **1–3 кодовых практик**, разное число примеров и более двадцати учебных форматов. В зависимости от темы это клиническое расследование утечки, split-аудит, omics-разбор, NER/RAG-лаборатория, редакционная мастерская или имитация submission room.
+
+Финальная цель — воспроизводимый, submission-ready пакет исследования уровня, подходящего для рассмотрения профильным журналом. Курс не обещает принятие или конкретный квартиль: scope и актуальный quartile по базе, категории и году проверяются непосредственно перед подачей.
+
+Уроки содержат:
 
 - идею и математические формулы в KaTeX;
 - таблицу параметров с default и часто используемыми значениями;
@@ -72,7 +83,7 @@ npm run build
 npm run test:e2e
 ```
 
-`audit:curriculum` проверяет точное число модулей/уроков/шагов, обязательное покрытие тем, наличие теории, квизов и практики, а также выполняет эталонные Python-решения на sample и hidden tests.
+`audit:curriculum` проверяет точное число модулей/уроков/шагов, обязательное покрытие ML и bioinformatics, разнообразие учебных форматов, заявленные числа вопросов/примеров/практик, а также выполняет эталонные Python-решения на sample и hidden tests.
 
 Playwright E2E проверяет программу курса, автоматический прогресс, квизы, комментарии, Python judge со скрытыми тестами и отмену зависшего выполнения.
 
@@ -90,9 +101,9 @@ src/
     CourseSidebar.tsx          # Stepik-like структура курса
     PlatformTopBar.tsx
   data/
-    aiCurriculum.ts            # активные 7 модулей
+    aiCurriculum.ts            # активные 14 модулей
     courseFlow.ts              # типы и итоговый lesson flow
-    curriculum/                # NumPy, pandas и расширенный ML-контент
+    curriculum/                # NumPy, pandas, ML и research/bioinformatics-контент
   features/quiz/
     QuizWidget.tsx
   hooks/
