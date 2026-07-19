@@ -64,7 +64,7 @@ function buildExtendedTopic(spec: ExtendedTopicSpec): FlowTopic {
     [
       `Формулы: ${formulaNames}.`,
       `Параметры по умолчанию: ${parameterSummary}.`,
-      `Практический шаблон: fit -> predict -> metric, если тема описывает обучаемую модель.`,
+      'Практический порядок для обучаемой модели: обучение (fit) → прогноз (predict) → оценка качества на отложенных данных.',
     ],
     [
       theoryStepWithFormulas(
@@ -75,7 +75,7 @@ function buildExtendedTopic(spec: ExtendedTopicSpec): FlowTopic {
           section('idea', 'Что решает метод', [
             spec.summary,
             spec.intuition,
-            `Термины, которые нужно различать: ${spec.terminology.join(', ')}. Формула не заменяет смысл: сначала определяют тип задачи и метрику, затем выбирают модель и только после этого настраивают гиперпараметры.`,
+            'Перед применением метода сформулируйте тип задачи, доступный в момент прогноза вход и критерий успеха. Формула описывает устройство алгоритма, но не заменяет проверку качества, устойчивости и соответствия исследовательскому вопросу.',
           ]),
           section('workflow', 'Когда применять и как проверять', [
             'Метод проверяют на данных, которые не участвовали в обучении. Для обычных независимых объектов используют train/test и кросс-валидацию; для временных данных сохраняют порядок времени; для группированных объектов не разрывают одну группу между train и validation.',
@@ -109,7 +109,7 @@ function buildExtendedTopic(spec: ExtendedTopicSpec): FlowTopic {
             ...spec.implementationNotes,
             'В реальном проекте фиксируют `random_state`, сохраняют одинаковое разбиение для сравнения моделей и помещают преобразования в `Pipeline`. Это предотвращает утечку статистик validation/test в обучение.',
           ], {
-            codeExamples: [code('python', spec.code, spec.output, 'Пример показывает минимальную воспроизводимую реализацию и место, где считается итоговая метрика.')],
+            codeExamples: [code('python', spec.code, spec.output, 'Пример показывает минимальную воспроизводимую реализацию и объясняет, какой результат возвращает метод.')],
           }),
         ],
       ),
@@ -276,7 +276,7 @@ print(f"{mean:g} {(q3 - q1):g}")`,
     blockId: 'ml-foundations',
     blockTitle: 'Основы машинного обучения',
     blockIcon: '04',
-    summary: 'Тип target определяет постановку: класс — классификация, число — регрессия, отсутствие target и поиск групп — кластеризация.',
+    summary: 'Тип целевой переменной (target) определяет постановку: класс — классификация, число — регрессия, отсутствие готового ответа и поиск групп — кластеризация.',
     intuition: 'Один и тот же набор признаков можно использовать для разных задач, но алгоритм, метрика и способ проверки выбираются по тому, какой ответ нужен.',
     terminology: ['supervised learning', 'unsupervised learning', 'classification', 'regression', 'clustering', 'target', 'label'],
     formulas: [
@@ -285,10 +285,10 @@ print(f"{mean:g} {(q3 - q1):g}")`,
       { label: 'Кластеризация', expression: String.raw`c_i\in\{1,\ldots,K\}`, meaning: 'Алгоритм присваивает объекту номер найденной группы без готового target.', notation: ['c_i — кластер объекта i'] },
     ],
     parameterRows: [
-      ['target', 'задаётся данными', 'класс / число / отсутствует', 'тип задачи'],
-      ['baseline', 'нет универсального', 'most_frequent / mean / random', 'минимальный ориентир'],
-      ['metric', 'нет универсальной', 'F1 / MAE / silhouette', 'критерий качества'],
-      ['random_state', '`None`', '`42` или другой фиксированный int', 'воспроизводимость'],
+      ['целевая переменная (`target`)', 'задаётся данными', 'класс / число / отсутствует', 'тип задачи'],
+      ['простая сравнительная модель (`baseline`)', 'нет универсальной', 'частый класс / среднее / случайное правило', 'минимальный ориентир'],
+      ['метрика качества (`metric`)', 'нет универсальной', 'F1 / MAE / силуэт', 'критерий качества'],
+      ['зерно случайности (`random_state`)', '`None`', '`42` или другое фиксированное целое число', 'воспроизводимость'],
     ],
     implementationNotes: ['Не определяйте задачу только по dtype: целые числа могут быть как классами, так и числовым target.', 'Для кластеризации нет правильных меток по умолчанию, поэтому используют внутренние метрики и предметную интерпретацию групп.'],
     code: `from sklearn.datasets import load_iris, load_diabetes, make_blobs
@@ -328,13 +328,13 @@ print(mapping[target_kind])`,
   },
   {
     id: 'validation-split',
-    title: '4.6 Валидация и `train_test_split`',
+    title: '4.6 Проверочное разбиение и функция train_test_split',
     order: 6,
     blockId: 'ml-foundations',
     blockTitle: 'Основы машинного обучения',
     blockIcon: '04',
-    summary: '`train_test_split` создаёт отложенную выборку; validation используют для выбора решения, а test — для финальной честной оценки.',
-    intuition: 'Модель должна сдавать экзамен на примерах, которых не видела. Если подбирать параметры по test, экзамен превращается в тренировку.',
+    summary: 'Функция `train_test_split` создаёт отложенную выборку; проверочную часть (validation) используют для выбора решения, а тестовую (test) — для финальной честной оценки.',
+    intuition: 'Модель должна сдавать экзамен на примерах, которых не видела. Если подбирать параметры по тестовой части, экзамен превращается в тренировку.',
     terminology: ['train', 'validation', 'test', 'holdout', 'stratify', 'shuffle', 'random_state', 'data leakage'],
     formulas: [
       { label: 'Доли разбиения', expression: String.raw`n=n_{train}+n_{val}+n_{test}`, meaning: 'Все объекты распределяются между независимыми ролями.', notation: ['n_train — обучение', 'n_val — подбор', 'n_test — финальная проверка'] },
@@ -384,13 +384,13 @@ print(train_size, test_size)`,
   },
   {
     id: 'cross-validation-search',
-    title: '4.7 Кросс-валидация и CV-search',
+    title: '4.7 Кросс-валидация и поиск настроек',
     order: 7,
     blockId: 'ml-foundations',
     blockTitle: 'Основы машинного обучения',
     blockIcon: '04',
-    summary: 'Кросс-валидация несколько раз меняет validation-фолд, а GridSearchCV и RandomizedSearchCV сравнивают гиперпараметры по средней метрике.',
-    intuition: 'Один split может случайно оказаться лёгким или сложным. Несколько фолдов показывают не только среднее качество, но и его устойчивость.',
+    summary: 'Кросс-валидация несколько раз меняет проверочный блок (validation fold), а полный и случайный поиск (`GridSearchCV`, `RandomizedSearchCV`) сравнивают настройки по средней метрике.',
+    intuition: 'Одно разбиение (split) может случайно оказаться лёгким или сложным. Несколько блоков показывают не только среднее качество, но и его устойчивость.',
     terminology: ['KFold', 'StratifiedKFold', 'TimeSeriesSplit', 'cross_validate', 'GridSearchCV', 'RandomizedSearchCV', 'fold', 'scoring'],
     formulas: [
       { label: 'Среднее по CV', expression: String.raw`\bar{Q}=\frac{1}{K}\sum_{k=1}^{K}Q_k`, meaning: 'Средняя метрика по K validation-фолдам.', notation: ['K — число фолдов', 'Q_k — качество на фолде k'] },
@@ -441,7 +441,7 @@ print(f"{mean:.2f} {spread:.2f}")`,
   },
   {
     id: 'metrics-confusion-matrix',
-    title: '4.8 Метрики и матрица исходов: TP, TN, FP, FN',
+    title: '4.8 Метрики и матрица исходов классификации',
     order: 8,
     blockId: 'ml-foundations',
     blockTitle: 'Основы машинного обучения',
@@ -568,13 +568,13 @@ print(f"{w0:.2f} {w1:.2f}")`,
     blockId: 'linear-models',
     blockTitle: 'Линейные модели и регуляризация',
     blockIcon: '05',
-    summary: 'Линейная регрессия предсказывает число как взвешенную сумму признаков и обучается минимизировать квадратичную ошибку.',
-    intuition: 'Каждый коэффициент показывает, как меняется прогноз при увеличении признака на единицу при прочих равных.',
-    terminology: ['OLS', 'coefficient', 'intercept', 'residual', 'MSE', 'MAE', 'R²', 'multicollinearity'],
+    summary: 'Линейная регрессия строит числовой прогноз как сумму вкладов признаков; обычный метод наименьших квадратов подбирает прямую по остаткам обучающих объектов.',
+    intuition: 'Коэффициент — изменение прогноза при росте одного признака на единицу при фиксированных остальных; свободный член — прогноз при нулевых признаках.',
+    terminology: ['linear regression', 'OLS', 'coefficient', 'intercept', 'residual', 'multicollinearity'],
     formulas: [
-      { label: 'Линейный прогноз', expression: String.raw`\hat{y}=w_0+\sum_{j=1}^{p}w_jx_j`, meaning: 'Взвешенная сумма признаков и свободный член.', notation: ['w_j — коэффициент', 'x_j — признак', 'w_0 — intercept'] },
-      { label: 'MSE', expression: String.raw`MSE=\frac{1}{n}\sum_{i=1}^{n}(y_i-\hat{y}_i)^2`, meaning: 'Штрафует крупные ошибки квадратично.', notation: ['y_i — ответ', 'hat{y}_i — прогноз'] },
-      { label: 'R²', expression: String.raw`R^2=1-\frac{\sum_i(y_i-\hat{y}_i)^2}{\sum_i(y_i-\bar{y})^2}`, meaning: 'Сравнивает модель с предсказанием среднего.', notation: ['R²=1 — идеальный прогноз', 'R² может быть отрицательным'] },
+      { label: 'Линейный прогноз', expression: String.raw`\hat{y}=w_0+\sum_{j=1}^{p}w_jx_j`, meaning: 'Свободный член и сумма вкладов всех признаков.', notation: ['w_j — коэффициент j-го признака', 'x_j — значение j-го признака', 'w_0 — свободный член (intercept)'] },
+      { label: 'Остаток наблюдения', expression: String.raw`e_i=y_i-\hat{y}_i`, meaning: 'Вертикальное расстояние от правильного ответа до прогноза прямой.', notation: ['e_i — остаток', 'y_i — правильный ответ', 'hat y_i — прогноз'] },
+      { label: 'Цель метода наименьших квадратов', expression: String.raw`\min_w\sum_{i=1}^{n}e_i^2`, meaning: 'OLS выбирает коэффициенты с наименьшей суммой квадратов остатков на обучающих данных.', notation: ['OLS — обычный метод наименьших квадратов', 'w — набор подбираемых коэффициентов'] },
     ],
     parameterRows: [
       ['fit_intercept', '`True`', '`True`; `False` только при обоснованном нуле', 'наличие свободного члена'],
@@ -582,23 +582,22 @@ print(f"{w0:.2f} {w1:.2f}")`,
       ['n_jobs', '`None`', '`-1` полезен только в отдельных многотаргетных случаях', 'параллельность'],
       ['copy_X', '`True`', 'обычно не меняют', 'копирование X'],
     ],
-    implementationNotes: ['Оценивайте и MAE, и RMSE: MAE легче интерпретировать, RMSE сильнее реагирует на крупные ошибки.', 'Сильная корреляция признаков делает отдельные коэффициенты нестабильными; для устойчивости применяют Ridge или отбор признаков.'],
-    code: `from sklearn.datasets import load_diabetes
-from sklearn.model_selection import train_test_split
+    implementationNotes: ['После `fit` свободный член находится в `intercept_`, а коэффициенты признаков — в `coef_`; сопоставляйте их с названиями столбцов.', 'Сильная линейная связь признаков называется мультиколлинеарностью и делает отдельные коэффициенты нестабильными; это не то же самое, что плохое качество прогноза.'],
+    code: `import numpy as np
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 
-X, y = load_diabetes(return_X_y=True)
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+X = np.array([[0.0], [1.0], [2.0]])
+y = np.array([5.0, 8.0, 11.0])
+
 model = LinearRegression()
-model.fit(X_train, y_train)
-prediction = model.predict(X_test)
+model.fit(X, y)
 
-print("MAE", round(mean_absolute_error(y_test, prediction), 2))
-print("RMSE", round(root_mean_squared_error(y_test, prediction), 2))
-print("R2", round(r2_score(y_test, prediction), 3))`,
+print("Свободный член:", round(model.intercept_, 1))
+print("Коэффициент x:", round(model.coef_[0], 1))
+print("Прогноз при x=3:", round(model.predict([[3.0]])[0], 1))`,
+    output: `Свободный член: 5.0
+Коэффициент x: 3.0
+Прогноз при x=3: 14.0`,
     quiz: {
       question: 'Как интерпретируется коэффициент `w_j` линейной регрессии?',
       options: [{ id: 'a', text: 'Изменение прогноза при росте `x_j` на 1 при прочих равных' }, { id: 'b', text: 'Вероятность класса j' }, { id: 'c', text: 'Количество листьев дерева' }, { id: 'd', text: 'Доля test' }],

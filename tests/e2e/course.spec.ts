@@ -18,7 +18,7 @@ test('syllabus exposes the complete ML and bioinformatics path', async ({ page }
   await expect(page.getByText('Белки, последовательности и deep learning', { exact: true })).toBeVisible()
   await expect(page.getByText('NLP для биомедицины и научных текстов', { exact: true })).toBeVisible()
   await expect(page.getByText('От протокола до статьи', { exact: true })).toBeVisible()
-  await expect(page.getByText('14 модулей · 81 урок · 592 интерактивных шага')).toBeVisible()
+  await expect(page.getByText('14 модулей · 84 урока · 618 интерактивных шагов')).toBeVisible()
 })
 
 test('research lessons expose their individual learning design', async ({ page }) => {
@@ -42,7 +42,7 @@ test('from-zero validation and NLP have distinct learning designs', async ({ pag
 test('research lesson remains readable on desktop and mobile', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/topics')
-  await expect(page.getByText('592 интерактивных шага')).toBeVisible()
+  await expect(page.getByText('618 интерактивных шагов')).toBeVisible()
   await page.screenshot({ path: '/tmp/ai-train-topics-desktop.png' })
 
   await page.goto('/topics/biomedical-leakage-pipeline/biomedical-leakage-pipeline-theory')
@@ -58,7 +58,7 @@ test('research lesson remains readable on desktop and mobile', async ({ page }) 
 test('leaving a step automatically records completion', async ({ page }) => {
   await page.goto('/topics/matplotlib-basics/matplotlib-basics-theory')
   await page.getByRole('link', { name: 'Следующий шаг →' }).click()
-  await expect(page).toHaveURL(/matplotlib-basics-parameters$/)
+  await expect(page).toHaveURL(/matplotlib-basics-oo$/)
 
   const completed = await page.evaluate(() => {
     const state = JSON.parse(localStorage.getItem('ml-trainer-progress-v3') ?? '{}') as { completedSteps?: string[] }
@@ -69,12 +69,52 @@ test('leaving a step automatically records completion', async ({ page }) => {
 
 test('quiz gives immediate Stepik-like feedback and can be retried', async ({ page }) => {
   await page.goto('/topics/matplotlib-basics/matplotlib-basics-quiz')
-  await page.getByRole('radio', { name: 'Axes' }).check()
-  await page.locator('button:not([disabled])').filter({ hasText: 'Отправить' }).click()
-  await expect(page.locator('p').filter({ hasText: 'Верно' })).toBeVisible()
-  await page.getByRole('button', { name: 'Завершить тест' }).click()
+  for (let question = 0; question < 3; question += 1) {
+    await page.getByRole('radio').first().check()
+    await page.locator('button:not([disabled])').filter({ hasText: 'Отправить' }).click()
+    await expect(page.locator('p').filter({ hasText: 'Верно' })).toBeVisible()
+    await page.getByRole('button', { name: question === 2 ? 'Завершить тест' : 'Следующий вопрос' }).click()
+  }
   await expect(page.getByText('100%')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Решить снова' })).toBeVisible()
+})
+
+test('Matplotlib is a complete asynchronous module with local Russian definitions', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/topics/matplotlib-basics/matplotlib-basics-theory')
+  await expect(page.getByText('объяснение → разбор кода → аудит ошибок → тест → практика · ≈ 70 мин · 3 вопроса · 1 практика')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Что именно создаёт Matplotlib' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Словарь терминов этого урока' })).toBeVisible()
+  await expect(page.getByText('область графика (Axes)')).toBeVisible()
+  await expect(page.getByText('отдельная система координат внутри рисунка Matplotlib')).toBeVisible()
+  await page.screenshot({ path: '/tmp/ai-train-matplotlib-desktop.png' })
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('heading', { name: 'Словарь терминов этого урока' }).scrollIntoViewIfNeeded()
+  await expect(page.locator('.stepik-sidebar')).toBeHidden()
+  await page.screenshot({ path: '/tmp/ai-train-matplotlib-glossary-mobile.png' })
+
+  await page.goto('/topics/matplotlib-layout-export/matplotlib-layout-export-files')
+  await expect(page.getByRole('heading', { name: 'PNG, SVG, PDF и разрешение' })).toBeVisible()
+  await expect(page.getByText('сохранение рисунка (savefig)')).toBeVisible()
+})
+
+test('beginner ML terminology is Russian-first and baseline is explained as a model', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-object')
+  await expect(page.getByRole('heading', { name: 'Словарь названий столбцов из примеров' })).toBeVisible()
+  await expect(page.getByText('Площадь (area), м²', { exact: true })).toBeVisible()
+  await expect(page.getByText('дней с последнего входа', { exact: true })).toBeVisible()
+
+  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model')
+  await expect(page.getByText('признаки (features) → модель (model) → прогноз (prediction)')).toBeVisible()
+  await expect(page.locator('code').filter({ hasText: /^predict$/ })).toHaveCount(0)
+
+  await page.goto('/topics/ml-foundations-train-test-baseline-metrics/ml-foundations-train-test-baseline-metrics-baseline')
+  await expect(page.getByRole('heading', { name: 'Простая сравнительная модель (baseline)' })).toBeVisible()
+  await expect(page.getByText(/самое простое разумное решение, с которым сравнивают основной алгоритм/)).toBeVisible()
+  await expect(page.getByText('простая сравнительная модель (baseline)').first()).toBeVisible()
+  await page.screenshot({ path: '/tmp/ai-train-baseline-desktop.png' })
 })
 
 test('local comments control changes real UI state', async ({ page }) => {

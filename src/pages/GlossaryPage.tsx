@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { flowCourseBlocks } from '../data/courseFlow'
+import { getCourseGlossaryEntry } from '../data/courseGlossary'
 
 interface ReferenceSection {
   blockId: string
@@ -12,6 +13,29 @@ interface ReferenceSection {
 
 function uniqueItems(items: string[]) {
   return Array.from(new Set(items.filter(Boolean)))
+}
+
+function termMatches(term: string, query: string) {
+  const entry = getCourseGlossaryEntry(term)
+  return [term, entry?.russian, entry?.definition]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .includes(query)
+}
+
+function TermReference({ term }: { term: string }) {
+  const entry = getCourseGlossaryEntry(term)
+  if (!entry) return <>{term}</>
+
+  return (
+    <>
+      <div className="font-bold text-[#20262b]">
+        {entry.russian} <span className="font-normal text-[#69727a]">({entry.original})</span>
+      </div>
+      <div className="mt-1 text-[#535d65]">{entry.definition}</div>
+    </>
+  )
 }
 
 const referenceSections: ReferenceSection[] = flowCourseBlocks.map((block) => {
@@ -41,7 +65,7 @@ export function TermsAndFunctionsPage() {
     return referenceSections
       .map((section) => ({
         ...section,
-        terms: section.terms.filter((item) => item.toLowerCase().includes(normalized)),
+        terms: section.terms.filter((item) => termMatches(item, normalized)),
         functions: section.functions.filter((item) => item.toLowerCase().includes(normalized)),
         schemes: section.schemes.filter((item) => item.toLowerCase().includes(normalized)),
         notes: section.notes.filter((item) => item.toLowerCase().includes(normalized)),
@@ -54,10 +78,10 @@ export function TermsAndFunctionsPage() {
       <section className="rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.04)]">
         <div className="max-w-4xl">
           <div className="text-sm font-semibold uppercase tracking-[0.14em] text-[#2e7d32]">Справочник</div>
-          <h1 className="mt-3 text-3xl font-bold text-[#111] lg:text-4xl">Термины, функции NumPy и опорные схемы по блокам</h1>
+          <h1 className="mt-3 text-3xl font-bold text-[#111] lg:text-4xl">Русско-английский словарь и опорные схемы курса</h1>
           <p className="mt-3 text-base leading-7 text-[#666]">
-            Здесь собраны сущности из текущей учебной траектории: первые два блока курса, ключевые термины, функции NumPy,
-            схемы и короткие правила для повторения перед практикой.
+            Здесь собраны термины всех блоков. Сначала дан русский перевод, затем английское написание в скобках и короткое
+            объяснение. Тот же компактный словарь находится внизу каждого урока.
           </p>
         </div>
 
@@ -87,7 +111,7 @@ export function TermsAndFunctionsPage() {
                   <div className="mt-4 space-y-3">
                     {group.items.length > 0 ? group.items.map((item) => (
                       <div key={item} className="rounded-2xl border border-black/8 bg-white px-4 py-3 text-sm leading-7 text-[#2b2b2b]">
-                        {item}
+                        {group.title === 'Термины' ? <TermReference term={item} /> : item}
                       </div>
                     )) : (
                       <div className="rounded-2xl border border-dashed border-black/10 px-4 py-3 text-sm text-[#888]">В этом блоке нет элементов этой категории.</div>
