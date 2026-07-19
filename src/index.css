@@ -65,7 +65,7 @@ input:focus-visible {
 
 .stepik-step {
   font-size: 15px;
-  line-height: 1.65;
+  line-height: 1.75;
 }
 
 .stepik-step h1,
@@ -79,12 +79,6 @@ input:focus-visible {
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0.15rem 0;
-}
-
-.stepik-step table code,
-.stepik-step p code,
-.stepik-step li code {
-  overflow-wrap: anywhere;
 }
 
 pre,

@@ -4,6 +4,7 @@ import CodeBlock, { ReadOnlyCodeCell } from '../components/CodeBlock'
 import CourseSidebar from '../components/CourseSidebar'
 import Formula from '../components/Formula'
 import RichText from '../components/RichText'
+import { getCourseGlossaryEntries } from '../data/courseGlossary'
 import QuizWidget from '../features/quiz/QuizWidget'
 import {
   getFlowPrevNextStep,
@@ -15,6 +16,7 @@ import {
   type ConceptCodeExample,
   type FlowStep,
   type FlowStepType,
+  type FlowTopic,
   type FormulaCard,
   type LessonSection,
   type PracticeTask,
@@ -23,6 +25,15 @@ import { useProgress } from '../hooks/useProgress'
 import { judgeTask, type JudgeRunResult } from '../lib/practiceEngine'
 
 const CodeEditor = lazy(() => import('../components/CodeEditor'))
+
+function pluralizeRussian(value: number, one: string, few: string, many: string) {
+  const mod100 = value % 100
+  const mod10 = value % 10
+  if (mod100 >= 11 && mod100 <= 14) return many
+  if (mod10 === 1) return one
+  if (mod10 >= 2 && mod10 <= 4) return few
+  return many
+}
 
 function isMathNotation(value: string) {
   return /[A-Za-z_Σσμθλπη∇]|[A-Z]{1,3}/.test(value) && !/[а-яА-ЯёЁ]/.test(value)
@@ -110,12 +121,34 @@ function CalloutBlock({ title, body, tone }: { title: string; body: string; tone
   }[tone]
 
   return (
-    <div className={`mt-2 border-l-4 px-3 py-2 text-[14px] leading-5 text-[#111827] ${toneClass}`}>
+    <div className={`mt-4 border-l-4 px-4 py-3 text-[14px] leading-6 text-[#111827] ${toneClass}`}>
       <div className="mb-0.5 text-[12px] font-bold uppercase tracking-[0.06em] text-[#374151]">{title}</div>
       <div className={tone === 'schema' ? 'whitespace-pre-line text-[14px]' : 'whitespace-pre-line'}>
         <RichText text={body} />
       </div>
     </div>
+  )
+}
+
+function LocalGlossary({ terms }: { terms: string[] }) {
+  const entries = getCourseGlossaryEntries(terms)
+  if (!entries.length) return null
+
+  return (
+    <section className="mt-10 border-t border-[#dfe4e7] pt-6" aria-labelledby="local-glossary-title">
+      <h2 id="local-glossary-title" className="text-[19px] font-bold leading-7 text-[#111827]">Словарь терминов этого урока</h2>
+      <p className="mt-2 text-[14px] leading-6 text-[#5d6670]">Переводы находятся на этой же странице, поэтому возвращаться к отдельному справочнику не нужно.</p>
+      <dl className="mt-4 divide-y divide-[#e6eaed] border-y border-[#e0e5e8]">
+        {entries.map((entry) => (
+          <div key={entry.original} className="grid gap-1 py-3 sm:grid-cols-[minmax(190px,0.7fr),minmax(0,1.3fr)] sm:gap-5">
+            <dt className="text-[14px] font-bold leading-6 text-[#273038]">
+              {entry.russian} <span className="font-normal text-[#68727b]">({entry.original})</span>
+            </dt>
+            <dd className="text-[14px] leading-6 text-[#303840]">{entry.definition}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   )
 }
 
@@ -438,12 +471,14 @@ function PracticeRunner({ task, onPassed }: { task: PracticeTask; onPassed: () =
 }
 
 function StepContent({
+  topic,
   step,
   isCompleted,
   onStepComplete,
   onQuizPassed,
   onPracticePassed,
 }: {
+  topic: FlowTopic
   step: FlowStep
   isCompleted: boolean
   onStepComplete: (stepId: string) => void
@@ -486,7 +521,7 @@ function StepContent({
         )}
       </header>
 
-      <div className="space-y-5">
+      <div className="space-y-8">
         {primaryConcept && <ConceptCardView concept={primaryConcept} />}
 
         {step.sections?.map((section) => {
@@ -496,10 +531,10 @@ function StepContent({
 
           return (
             <section key={section.id}>
-              <h2 className="mb-1.5 text-[18px] font-bold leading-6 text-[#111827]">
+              <h2 className="mb-3 text-[18px] font-bold leading-7 text-[#111827]">
                 <RichText text={section.title} />
               </h2>
-              <div className="space-y-1.5 text-[15px] leading-[1.55] text-[#111827]">
+              <div className="space-y-4 text-[15px] leading-[1.75] text-[#111827]">
                 {section.paragraphs.map((paragraph, index) => (
                   <p key={`${section.id}-${index}`}>
                     <RichText text={paragraph} />
@@ -507,7 +542,7 @@ function StepContent({
                 ))}
               </div>
               {section.bullets && (
-                <ul className="mt-2 list-disc space-y-1 pl-6 text-[15px] leading-[1.55] text-[#111827]">
+                <ul className="mt-4 list-disc space-y-2 pl-6 text-[15px] leading-[1.7] text-[#111827]">
                   {section.bullets.map((bullet) => (
                     <li key={bullet}>
                       <RichText text={bullet} />
@@ -519,7 +554,7 @@ function StepContent({
                 <CalloutBlock key={`${section.id}-${item.title}-${item.body}`} title={item.title} body={item.body} tone={item.tone} />
               ))}
               {section.table && (
-                <div className="mt-3 overflow-x-auto border border-[#dfe4e7] bg-white shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
+                <div className="mt-5 overflow-x-auto border border-[#dfe4e7] bg-white shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
                   <table className="min-w-full border-collapse text-left text-[14px] leading-5 text-[#111827]">
                     <thead className="bg-[#f3f4f6]">
                       <tr>
@@ -620,6 +655,8 @@ function StepContent({
             </div>
           </section>
         )}
+
+        <LocalGlossary terms={topic.terminology} />
       </div>
 
       <footer className="mt-9 flex items-center justify-between border-t border-[#e3e6e9] pt-4 text-[13px] text-[#7a828a]">
@@ -770,7 +807,7 @@ export default function TopicDetailPage() {
               <span>{completedSteps} пройдено</span>
               {topic.learningDesign && (
                 <span className="basis-full text-[11px] text-[#647068] sm:basis-auto">
-                  {topic.learningDesign.format} · ≈ {topic.learningDesign.estimatedMinutes} мин · {topic.learningDesign.quizQuestions} вопросов · {topic.learningDesign.practiceTasks} {topic.learningDesign.practiceTasks === 1 ? 'практика' : 'практики'}
+                  {topic.learningDesign.format} · ≈ {topic.learningDesign.estimatedMinutes} мин · {topic.learningDesign.quizQuestions} {pluralizeRussian(topic.learningDesign.quizQuestions, 'вопрос', 'вопроса', 'вопросов')} · {topic.learningDesign.practiceTasks} {pluralizeRussian(topic.learningDesign.practiceTasks, 'практика', 'практики', 'практик')}
                 </span>
               )}
               <Link to="/topics" onClick={completeCurrentStep} className="ml-auto hidden text-[#518d4e] hover:underline sm:inline">Содержание курса</Link>
@@ -779,6 +816,7 @@ export default function TopicDetailPage() {
 
           <div className="mx-auto max-w-[860px] px-5 pb-16 pt-9 sm:px-8">
             <StepContent
+              topic={topic}
               step={currentStep}
               isCompleted={progress.completedSteps.includes(currentStep.id)}
               onStepComplete={markStepCompleted}

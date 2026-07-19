@@ -9,8 +9,8 @@ import {
   mlAdvancedFoundationsTopics,
   svmClusteringTopics,
   treeEnsembleTopics,
-  visualizationTopics,
 } from './curriculum/ml_extended'
+import { visualizationTopics } from './curriculum/visualization'
 import { researchTopics } from './curriculum/research'
 import { pythonStartTopics } from './curriculum/python_start'
 
@@ -40,14 +40,14 @@ export const curriculumBlocks = [
     id: 'visualization-eda',
     title: 'Matplotlib и разведочный анализ данных',
     icon: '03',
-    description: 'Figure, Axes, базовые графики, распределения, выбросы, EDA и матрица корреляций.',
+    description: 'От первого рисунка до публикационного EDA: устройство Figure/Axes, линии, точки, распределения, несколько панелей, экспорт и корреляции.',
     order: 3,
   },
   {
     id: 'ml-foundations',
     title: 'Основы машинного обучения',
     icon: '04',
-    description: 'Типы задач, данные, target, обучение, train/test, baseline, CV-search, метрики, матрица ошибок и дисбаланс классов.',
+    description: 'Типы задач, целевая переменная, обучение, разбиения данных, простые сравнительные модели, кросс-валидация, метрики и дисбаланс классов.',
     order: 4,
   },
   {

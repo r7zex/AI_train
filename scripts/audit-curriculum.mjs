@@ -8,6 +8,7 @@ import * as ts from 'typescript'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
 const curriculumPath = path.join(root, 'src/data/aiCurriculum.ts')
+const glossaryPath = path.join(root, 'src/data/courseGlossary.ts')
 const errors = []
 
 const expectedStepCounts = new Map([
@@ -149,11 +150,18 @@ function collectText(value) {
 }
 
 const { curriculumBlocks, flowTopics } = loadCurriculum()
+const { getCourseGlossaryEntry, hasLatinLetters } = loadTsModule(glossaryPath)
+
+if (process.env.CURRICULUM_PRINT_TERMS === '1') {
+  const terms = [...new Set(flowTopics.flatMap((topic) => topic.terminology))].sort((left, right) => left.localeCompare(right))
+  console.log(JSON.stringify(terms, null, 2))
+  process.exit(0)
+}
 
 requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
 requireCondition(curriculumBlocks.length === 14, `Expected exactly 14 curriculum blocks, got ${curriculumBlocks.length}.`)
-requireCondition(flowTopics.length === 81, `Expected exactly 81 topics, got ${flowTopics.length}.`)
+requireCondition(flowTopics.length === 84, `Expected exactly 84 topics, got ${flowTopics.length}.`)
 
 const blockIds = curriculumBlocks.map((block) => block.id)
 requireCondition(
@@ -168,7 +176,7 @@ requireCondition(
 )
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 592, `Expected 592 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 618, `Expected 618 total steps, got ${totalSteps}.`)
 
 const researchTopics = flowTopics.filter((topic) => topic.blockId === 'research-statistics'
   || topic.blockId === 'biomedical-ml'
@@ -231,7 +239,9 @@ for (const topic of flowTopics) {
     const questions = step.quiz?.questions ?? []
     requireCondition(questions.length >= 1, `${prefix} quiz step ${step.id} must contain questions.`)
     for (const question of questions) {
-      const visibleText = [question.question, ...(question.options ?? []).map((option) => option.text), question.explanation].join(' ')
+      const options = Array.isArray(question.options) ? question.options : []
+      requireCondition(question.options == null || Array.isArray(question.options), `${prefix} quiz ${question.id} options must be an array.`)
+      const visibleText = [question.question, ...options.map((option) => option.text), question.explanation].join(' ')
       requireCondition(!/верн(ый|ого)\s+ответ|ответ:\s*[a-d]/i.test(visibleText), `${prefix} quiz ${question.id} reveals answer in visible text.`)
     }
   }
@@ -251,8 +261,22 @@ for (const topic of flowTopics) {
 }
 
 const curriculumText = collectText(flowTopics).join(' ').toLowerCase()
+const missingGlossaryTerms = [...new Set(flowTopics
+  .flatMap((topic) => topic.terminology)
+  .filter((term) => hasLatinLetters(term))
+  .filter((term) => !getCourseGlossaryEntry(term)))]
+  .sort((left, right) => left.localeCompare(right))
+requireCondition(
+  missingGlossaryTerms.length === 0,
+  `English terminology without a local Russian definition: ${missingGlossaryTerms.join(', ')}.`,
+)
+requireCondition(!curriculumText.includes('карта метрик без углубления'), 'Vague metric map wording must not appear in the course.')
+requireCondition(!curriculumText.includes('термины, которые нужно различать:'), 'Template terminology dumps must not appear in the course.')
 const requiredCoverage = [
   ['matplotlib', 'Matplotlib'],
+  ['fig.savefig', 'Matplotlib export'],
+  ['boxplot', 'boxplot'],
+  ['plt.subplots', 'Matplotlib subplots'],
   ['разведочный анализ', 'EDA'],
   ['classification', 'classification'],
   ['regression', 'regression'],
