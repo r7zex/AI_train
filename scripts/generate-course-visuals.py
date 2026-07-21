@@ -16,6 +16,7 @@ os.environ.setdefault("MPLCONFIGDIR", "/tmp/ai-train-matplotlib")
 
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, Rectangle
 from sklearn.cluster import KMeans
 from sklearn.datasets import make_blobs, make_classification, make_moons, make_regression
@@ -31,6 +32,8 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "public" / "course-visuals"
 OUT.mkdir(parents=True, exist_ok=True)
+TEMP = Path("/tmp/ai-train-course-visuals")
+TEMP.mkdir(parents=True, exist_ok=True)
 
 GREEN = "#69be62"
 GREEN_DARK = "#2f7a46"
@@ -160,6 +163,25 @@ def save_png(fig, path: Path):
     temporary_path = path.with_name(f".{path.stem}.tmp.png")
     temporary_path.write_bytes(image_bytes)
     temporary_path.replace(path)
+
+
+def stack_png_panels(paths: list[Path], destination: Path, figsize: tuple[float, float]):
+    """Combine scoped concepts vertically so the registry keeps one readable PNG per topic."""
+    images = [plt.imread(path) for path in paths]
+    fig, axes = plt.subplots(len(images), 1, figsize=figsize, dpi=150)
+    for ax, image in zip(np.atleast_1d(axes), images):
+        ax.imshow(image)
+        ax.axis("off")
+    fig.subplots_adjust(left=.01, right=.99, top=.995, bottom=.005, hspace=.035)
+    save_png(fig, destination)
+    plt.close(fig)
+    optimized_path = destination.with_name(f".{destination.stem}.optimized.png")
+    with Image.open(destination) as combined:
+        combined.quantize(colors=256).save(optimized_path, optimize=True)
+    optimized_path.replace(destination)
+    for path in paths:
+        if path != destination:
+            path.unlink(missing_ok=True)
 
 
 def finish(fig, ax, topic_id: str, suffix: str = ""):
@@ -391,6 +413,287 @@ def model_fit_predict_visual(topic_id: str, title: str, suffix: str = ""):
             ha="center", fontsize=12, fontweight="bold", color=INK)
     save_png(fig, OUT / f"{topic_id}.png")
     plt.close(fig)
+
+
+def train_test_baseline_metrics_visual(topic_id: str, title: str):
+    """Render the four scoped topic 4.3 concepts from its synthetic examples."""
+    fig, ax = plt.subplots(figsize=(15, 7.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    fig.subplots_adjust(left=.055, right=.96, top=.80, bottom=.12)
+    fig.suptitle("Три роли данных в первом эксперименте", x=.055, y=.96,
+                 ha="left", fontsize=20, fontweight="bold", color=INK)
+    fig.text(.055, .89,
+             "Синтетические 100 независимых объектов: доли показывают роли, но не являются универсальным правилом.",
+             ha="left", fontsize=11, color=MUTED)
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    parts = [
+        (0, 60, "TRAIN - ОБУЧЕНИЕ", "60 объектов / 60%", "fit преобразований и модели", "#cfe9d0", "///"),
+        (60, 20, "VALIDATION - ВЫБОР", "20 объектов / 20%", "модель, настройки, порог", "#fff1bf", "xx"),
+        (80, 20, "TEST - ФИНАЛ", "20 объектов / 20%", "одна оценка после выбора", "#fbdad5", ".."),
+    ]
+    for start, width, heading, count, role, color, hatch in parts:
+        ax.add_patch(Rectangle((start, .39), width, .31, facecolor=color,
+                               edgecolor="white", linewidth=2.5, hatch=hatch))
+        ax.text(start + width / 2, .61, heading, ha="center", va="center",
+                fontsize=12, fontweight="bold", color=INK)
+        ax.text(start + width / 2, .51, count, ha="center", va="center",
+                fontsize=11, fontweight="bold", color=INK)
+        ax.text(start + width / 2, .43, role, ha="center", va="center",
+                fontsize=9.5, color=INK)
+    ax.text(30, .25, "учится только здесь", ha="center", fontsize=11,
+            fontweight="bold", color=GREEN_DARK)
+    ax.text(70, .25, "решения разработки", ha="center", fontsize=11,
+            fontweight="bold", color="#8c6d00")
+    ax.text(90, .25, "не использовать при выборе", ha="center", fontsize=11,
+            fontweight="bold", color=CORAL)
+    ax.text(50, .08,
+            "Вывод: validation выбирает процедуру, test проверяет уже выбранную процедуру один раз.",
+            ha="center", fontsize=12, fontweight="bold", color=INK)
+    save_png(fig, TEMP / f"{topic_id}.png")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(15, 7.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    fig.subplots_adjust(left=.10, right=.94, top=.80, bottom=.15)
+    fig.suptitle("Baseline и модель сравниваются на одной validation-части", x=.065, y=.96,
+                 ha="left", fontsize=20, fontweight="bold", color=INK)
+    fig.text(.065, .89,
+             "y_true = [10, 12, 20]; меньше MAE - лучше. Baseline получил среднее 14 только из y_train.",
+             ha="left", fontsize=11, color=MUTED)
+    names = ["Среднее y_train\nBASELINE", "Основная модель\nMODEL"]
+    scores = [4.00, 7 / 3]
+    bars = ax.bar(names, scores, width=.48, color=["#e8eef4", "#cfe9d0"],
+                  edgecolor=[BLUE_DARK, GREEN_DARK], linewidth=2)
+    ax.set_ylim(0, 5)
+    ax.set_ylabel("MAE на одной validation-части, единицы target")
+    ax.grid(axis="y", alpha=.18)
+    ax.bar_label(bars, labels=["4.00", "2.33"], padding=6, fontsize=15,
+                 fontweight="bold", color=INK)
+    ax.annotate("delta = model - baseline = -1.67\nошибка модели ниже",
+                xy=(1, scores[1]), xytext=(.53, 4.35),
+                arrowprops={"arrowstyle": "-|>", "color": GREEN_DARK, "lw": 2},
+                ha="center", va="center", fontsize=12, fontweight="bold", color=GREEN_DARK)
+    ax.text(.5, -.19,
+            "Вывод: score получает смысл только рядом с baseline, delta и названием общей части данных.",
+            transform=ax.transAxes, ha="center", fontsize=12, fontweight="bold", color=INK)
+    ax.spines[["top", "right"]].set_visible(False)
+    save_png(fig, TEMP / f"{topic_id}-2.png")
+    plt.close(fig)
+
+    y_true = np.array([10, 12, 20])
+    y_pred = np.array([11, 10, 16])
+    absolute_errors = np.abs(y_true - y_pred)
+    fig, (errors_ax, summary_ax) = plt.subplots(
+        1, 2, figsize=(15, 7.2), dpi=150, gridspec_kw={"width_ratios": [1.35, 1]},
+    )
+    fig.patch.set_facecolor("white")
+    fig.subplots_adjust(left=.065, right=.96, top=.80, bottom=.14, wspace=.20)
+    fig.suptitle("Одни прогнозы - четыре метрики регрессии", x=.065, y=.96,
+                 ha="left", fontsize=20, fontweight="bold", color=INK)
+    fig.text(.065, .89,
+             "Основной синтетический пример: y_true=[10, 12, 20], y_pred=[11, 10, 16].",
+             ha="left", fontsize=11, color=MUTED)
+
+    positions = np.arange(1, 4)
+    errors_ax.scatter(positions, y_true, s=95, color=BLUE, marker="o", label="правильный ответ y_true", zorder=3)
+    errors_ax.scatter(positions, y_pred, s=95, color=CORAL, marker="X", label="прогноз y_pred", zorder=3)
+    for position, actual, forecast, error_value in zip(positions, y_true, y_pred, absolute_errors):
+        errors_ax.plot([position, position], [actual, forecast], color=GREEN_DARK,
+                       linewidth=3, linestyle="--", zorder=2)
+        errors_ax.text(position + .06, (actual + forecast) / 2, f"|ошибка| = {error_value}",
+                       va="center", fontsize=10, fontweight="bold", color=GREEN_DARK)
+    errors_ax.set_xticks(positions, ["объект 1", "объект 2", "объект 3"])
+    errors_ax.set_ylabel("значение target")
+    errors_ax.set_ylim(7, 22)
+    errors_ax.grid(alpha=.18)
+    errors_ax.legend(frameon=False, loc="upper left")
+    errors_ax.spines[["top", "right"]].set_visible(False)
+
+    summary_ax.set_xlim(0, 1)
+    summary_ax.set_ylim(0, 1)
+    summary_ax.axis("off")
+    metric_rows = [
+        ("MAE", "(1+2+4)/3", "2.333", "единицы target"),
+        ("MSE", "(1+4+16)/3", "7.000", "квадратные единицы"),
+        ("RMSE", "sqrt(7)", "2.646", "единицы target"),
+        ("R²", "1 - 21/56", "0.625", "без единиц"),
+    ]
+    for index, (metric, calculation, value, units) in enumerate(metric_rows):
+        y = .77 - index * .19
+        summary_ax.add_patch(FancyBboxPatch((.04, y), .90, .14,
+                                             boxstyle="round,pad=0.018",
+                                             facecolor="#f5f7f8", edgecolor=GRID, linewidth=1.5))
+        summary_ax.text(.08, y + .09, metric, fontsize=13, fontweight="bold", color=INK)
+        summary_ax.text(.29, y + .09, calculation, fontsize=11, color=MUTED)
+        summary_ax.text(.70, y + .09, value, fontsize=13, fontweight="bold", color=INK)
+        summary_ax.text(.08, y + .035, units, fontsize=9.5, color=MUTED)
+    summary_ax.text(.49, .06,
+                    "Вывод: данные одинаковы; меняется только правило объединения ошибок.",
+                    ha="center", fontsize=11, fontweight="bold", color=INK)
+    save_png(fig, TEMP / f"{topic_id}-3.png")
+    plt.close(fig)
+
+    fig, (matrix_ax, threshold_ax) = plt.subplots(
+        1, 2, figsize=(15, 7.2), dpi=150, gridspec_kw={"width_ratios": [1, 1.15]},
+    )
+    fig.patch.set_facecolor("white")
+    fig.subplots_adjust(left=.07, right=.96, top=.78, bottom=.14, wspace=.28)
+    fig.suptitle("Положительный класс, матрица ошибок и порог", x=.065, y=.96,
+                 ha="left", fontsize=20, fontweight="bold", color=INK)
+    fig.text(.065, .89,
+             "Синтетические 100 объектов; positive class = 1. Строки - истина, столбцы - прогноз.",
+             ha="left", fontsize=11, color=MUTED)
+
+    matrix = np.array([[72, 18], [2, 8]])
+    image = matrix_ax.imshow(matrix, cmap="Blues", vmin=0, vmax=72)
+    abbreviations = np.array([["TN", "FP"], ["FN", "TP"]])
+    meanings = np.array([["верно: нет", "ложная тревога"], ["пропуск", "верно: есть"]])
+    for row in range(2):
+        for column in range(2):
+            color = "white" if matrix[row, column] > 36 else INK
+            matrix_ax.text(column, row - .08, f"{abbreviations[row, column]} = {matrix[row, column]}",
+                           ha="center", va="center", fontsize=17, fontweight="bold", color=color)
+            matrix_ax.text(column, row + .18, meanings[row, column],
+                           ha="center", va="center", fontsize=9.5, color=color)
+    matrix_ax.set_xticks([0, 1], ["прогноз 0\nсобытия нет", "прогноз 1\nсобытие есть"])
+    matrix_ax.set_yticks([0, 1], ["истина 0\nсобытия нет", "истина 1\nсобытие есть"])
+    matrix_ax.set_xlabel("ПРОГНОЗ - СТОЛБЦЫ", fontweight="bold")
+    matrix_ax.set_ylabel("ИСТИНА - СТРОКИ", fontweight="bold")
+    fig.colorbar(image, ax=matrix_ax, fraction=.045, label="число объектов")
+
+    threshold_ax.set_xlim(0, 1)
+    threshold_ax.set_ylim(0, 1)
+    threshold_ax.axis("off")
+    threshold_ax.text(.50, .90, "ПОРОГ ПРЕВРАЩАЕТ ВЕРОЯТНОСТЬ В КЛАСС",
+                      ha="center", fontsize=12, fontweight="bold", color=INK)
+    threshold_ax.plot([.12, .88], [.60, .60], color=INK, linewidth=4)
+    threshold_ax.scatter([.50], [.60], s=150, color=YELLOW, edgecolor=INK, zorder=3)
+    threshold_ax.text(.50, .67, "зафиксированный порог", ha="center",
+                      fontsize=11, fontweight="bold", color=INK)
+    threshold_ax.text(.12, .52, "НИЖЕ ПОРОГ", ha="center", fontsize=11,
+                      fontweight="bold", color=BLUE_DARK)
+    threshold_ax.text(.12, .41, "больше прогнозов 1\nrecall часто выше\nFP часто больше",
+                      ha="center", va="top", fontsize=10.5, color=INK)
+    threshold_ax.text(.88, .52, "ВЫШЕ ПОРОГ", ha="center", fontsize=11,
+                      fontweight="bold", color=CORAL)
+    threshold_ax.text(.88, .41, "меньше прогнозов 1\nprecision может вырасти\nFN может стать больше",
+                      ha="center", va="top", fontsize=10.5, color=INK)
+    threshold_ax.text(.50, .13, "F1 = 2TP / (2TP+FP+FN)\n= 16/36 = 0.444",
+                      ha="center", va="center", fontsize=13, fontweight="bold", color=GREEN_DARK)
+    threshold_ax.text(.50, .02, "Вывод: порог выбирают на validation, не на test.",
+                      ha="center", fontsize=11, fontweight="bold", color=INK)
+    save_png(fig, TEMP / f"{topic_id}-4.png")
+    plt.close(fig)
+    stack_png_panels(
+        [TEMP / f"{topic_id}.png", TEMP / f"{topic_id}-2.png",
+         TEMP / f"{topic_id}-3.png", TEMP / f"{topic_id}-4.png"],
+        OUT / f"{topic_id}.png",
+        (15, 28.8),
+    )
+
+
+def project_cycle_visual(topic_id: str, title: str):
+    """Render the operational canvas and monitored cycle required for topic 4.4."""
+    fig, ax = plt.subplots(figsize=(15, 7.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    fig.subplots_adjust(left=.045, right=.97, top=.80, bottom=.10)
+    fig.suptitle("Операционализированный вопрос об оттоке", x=.05, y=.96,
+                 ha="left", fontsize=20, fontweight="bold", color=INK)
+    fig.text(.05, .89,
+             "Полностью синтетический canvas: семь полей связывают время, прогноз, действие и оценку.",
+             ha="left", fontsize=11, color=MUTED)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    cards = [
+        (.04, .58, "1. ОБЪЕКТ", "активный клиент\nна дату t", "#e8f1fb", BLUE_DARK),
+        (.28, .58, "2. CUTOFF", "данные доступны\nне позже t", "#fff4cf", "#8c6d00"),
+        (.52, .58, "3. HORIZON", "уход в следующие\n30 дней", "#fde8e4", CORAL),
+        (.76, .58, "4. ДЕЙСТВИЕ", "помощь после t,\nно до ухода", "#e8f6e8", GREEN_DARK),
+        (.04, .28, "5. TARGET", "churn_30d:\nушёл / не ушёл", "#fde8e4", CORAL),
+        (.28, .28, "6. PRIMARY METRIC", "F1 на validation\nпри заданном пороге", "#e8f1fb", BLUE_DARK),
+        (.52, .28, "7. BASELINE", "частый класс\nfit только по y_train", "#f5f7f8", MUTED),
+    ]
+    for x, y, heading, body, fill, edge in cards:
+        ax.add_patch(FancyBboxPatch((x, y), .20, .19, boxstyle="round,pad=0.018",
+                                    facecolor=fill, edgecolor=edge, linewidth=2))
+        ax.text(x + .10, y + .145, heading, ha="center", fontsize=10.5,
+                fontweight="bold", color=edge)
+        ax.text(x + .10, y + .072, body, ha="center", va="center",
+                fontsize=10.5, color=INK)
+    ax.add_patch(FancyBboxPatch((.76, .28), .20, .19, boxstyle="round,pad=0.018",
+                                facecolor="#fff4cf", edgecolor=INK, linewidth=2.4, hatch="//"))
+    ax.text(.86, .425, "GATE ДО МОДЕЛИ", ha="center", fontsize=10.5,
+            fontweight="bold", color=INK)
+    ax.text(.86, .355, "label наблюдаем?\nдействие возможно?", ha="center", va="center",
+            fontsize=10.5, fontweight="bold", color=INK)
+    ax.text(.50, .13,
+            "Observation window: последние 90 дней до t  |  Target window: (t, t+30 дней]",
+            ha="center", fontsize=11, fontweight="bold", color=INK)
+    ax.text(.50, .045,
+            "Вывод: если label недоступен или действие опаздывает, обучение не начинается.",
+            ha="center", fontsize=12, fontweight="bold", color=CORAL)
+    save_png(fig, TEMP / f"{topic_id}.png")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(15, 7.4), dpi=150)
+    fig.patch.set_facecolor("white")
+    fig.subplots_adjust(left=.045, right=.97, top=.80, bottom=.10)
+    fig.suptitle("Цикл ML-проекта с мониторингом и возвратом", x=.05, y=.96,
+                 ha="left", fontsize=20, fontweight="bold", color=INK)
+    fig.text(.05, .89,
+             "Offline-метрика, решение и бизнес-результат проверяются раздельно.",
+             ha="left", fontsize=11, color=MUTED)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    nodes = [
+        (.04, .60, .24, .18, "1. ВОПРОС И ДЕЙСТВИЕ", "объект, cutoff, horizon\ntarget, metric, baseline", "#e8f1fb", BLUE_DARK),
+        (.38, .60, .24, .18, "2. ДАННЫЕ И GATE", "label наблюдаем?\nдействие своевременно?", "#fff4cf", "#8c6d00"),
+        (.72, .60, .24, .18, "3. ОБУЧЕНИЕ", "train-only fit\nbaseline + модель", "#e8f6e8", GREEN_DARK),
+        (.72, .25, .24, .18, "4. OFFLINE-ОЦЕНКА", "validation выбирает\ntest подтверждает один раз", "#fde8e4", CORAL),
+        (.38, .25, .24, .18, "5. РЕШЕНИЕ И OUTCOME", "decision metric отдельно\nbusiness outcome отдельно", "#e8f1fb", BLUE_DARK),
+        (.04, .25, .24, .18, "6. МОНИТОРИНГ", "data/metric drift\nfeedback; retraining gate", "#f5f7f8", MUTED),
+    ]
+    for x, y, width, height, heading, body, fill, edge in nodes:
+        ax.add_patch(FancyBboxPatch((x, y), width, height, boxstyle="round,pad=0.018",
+                                    facecolor=fill, edgecolor=edge, linewidth=2))
+        ax.text(x + width / 2, y + .125, heading, ha="center", fontsize=10.5,
+                fontweight="bold", color=edge)
+        ax.text(x + width / 2, y + .055, body, ha="center", va="center",
+                fontsize=9.7, color=INK)
+    arrows = [
+        ((.28, .69), (.37, .69)),
+        ((.62, .69), (.71, .69)),
+        ((.84, .59), (.84, .44)),
+        ((.72, .34), (.63, .34)),
+        ((.38, .34), (.29, .34)),
+    ]
+    for start, end in arrows:
+        arrow(ax, start, end)
+    ax.add_patch(FancyArrowPatch((.04, .34), (.16, .59),
+                                 connectionstyle="arc3,rad=-.48", arrowstyle="-|>",
+                                 mutation_scale=18, linewidth=2.4, color=CORAL))
+    ax.text(.015, .51, "условие\nвозврата", ha="left", va="center",
+            fontsize=10, fontweight="bold", color=CORAL)
+    ax.text(.50, .11,
+            "Возврат запускают заданные сигналы, а не календарь: drift, падение метрики или обратная связь.",
+            ha="center", fontsize=11.5, fontweight="bold", color=INK)
+    ax.text(.50, .035,
+            "Вывод: улучшение F1 не обещает бизнес-эффект; каждый уровень требует своего evidence.",
+            ha="center", fontsize=12, fontweight="bold", color=GREEN_DARK)
+    save_png(fig, TEMP / f"{topic_id}-2.png")
+    plt.close(fig)
+    stack_png_panels(
+        [TEMP / f"{topic_id}.png", TEMP / f"{topic_id}-2.png"],
+        OUT / f"{topic_id}.png",
+        (15, 14.4),
+    )
 
 
 def array_visual(topic_id: str, title: str):
@@ -756,6 +1059,10 @@ def generate(topic_id: str, title: str):
         data_target_visual(topic_id, title)
     elif topic_id == "ml-foundations-model-fit-predict":
         model_fit_predict_visual(topic_id, title)
+    elif topic_id == "ml-foundations-train-test-baseline-metrics":
+        train_test_baseline_metrics_visual(topic_id, title)
+    elif topic_id == "ml-foundations-project-cycle":
+        project_cycle_visual(topic_id, title)
     elif topic_id.startswith("numpy-"):
         array_visual(topic_id,title)
     elif topic_id.startswith("pandas-"):
@@ -764,7 +1071,7 @@ def generate(topic_id: str, title: str):
         matplotlib_visual(topic_id,title)
     elif topic_id=="ml-problem-types":
         model_problem_types(topic_id,title)
-    elif topic_id in {"validation-split","cross-validation-search","ml-foundations-train-test-baseline-metrics"}:
+    elif topic_id in {"validation-split","cross-validation-search"}:
         split_visual(topic_id,title)
     elif topic_id=="metrics-confusion-matrix":
         confusion_visual(topic_id,title)
@@ -813,6 +1120,8 @@ def main():
         OUT / "ml-foundations-data-target-2.png",
         OUT / "ml-foundations-model-fit-predict.png",
         OUT / "ml-foundations-model-fit-predict-2.png",
+        OUT / "ml-foundations-train-test-baseline-metrics.png",
+        OUT / "ml-foundations-project-cycle.png",
     ]
     for asset in required_assets:
         if not asset.is_file():
@@ -828,9 +1137,9 @@ def main():
             f"Validated {asset.relative_to(ROOT)}: {width}x{height}, "
             f"source=scripts/generate-course-visuals.py"
         )
-    if actual < expected:
-        raise RuntimeError(f"Generated {actual} PNG files; expected at least {expected}.")
-    print(f"Generated and validated {actual} PNG files; expected at least {expected}.")
+    if actual != expected:
+        raise RuntimeError(f"Generated {actual} PNG files; expected exactly {expected}.")
+    print(f"Generated and validated {actual} PNG files; expected exactly {expected}.")
 
 
 if __name__ == "__main__":
