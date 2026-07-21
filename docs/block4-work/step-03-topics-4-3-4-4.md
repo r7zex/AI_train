@@ -4,8 +4,8 @@
 
 - Branch: `agent/block4-step03-topics-4-3-4-4`
 - Base SHA: `b93ae4ce2366422b0552b5d8f402c1361c154c24`
-- Implementation SHA: будет зафиксирован после первого commit этого отчёта.
-- Draft PR: будет добавлен после публикации ветки.
+- Implementation/head SHA до report-only publication commit: `4ce0ef9835658a3383bcd624bfe8c7da4697b93c`.
+- Draft PR: https://github.com/r7zex/AI_train/pull/56
 - Base source: `origin/main`, полученный командой `git fetch origin main` 2026-07-21 до создания ветки.
 - Drift: отсутствует; актуальный `origin/main` уже содержал слитые этапы 01–02.
 - Scope: только темы 4.3/4.4, их visual metadata/PNG, scoped generator, targeted tests и этот отчёт.
