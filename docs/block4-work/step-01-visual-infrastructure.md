@@ -4,6 +4,14 @@
 
 Base: `df3389e3bcc753473711284b456f09d305e7211e` (`main`, fetched 2026-07-21).
 
+Branch: `agent/block4-step01-visual-infrastructure`.
+
+Verified source head: `d086e4120738e9286810a96867f55745ec9bed00`.
+
+Draft PR: https://github.com/r7zex/AI_train/pull/53
+
+The commit after the verified source head changes only this report to record publication metadata. The current PR head is therefore the report-finalization commit returned in the completion response; the tested source tree remains exactly `d086e4120738e9286810a96867f55745ec9bed00`.
+
 The current `main` still matches the snapshot named in the roadmap, so there is no drift to reconcile. This step changes only visual metadata, placement/rendering, visual audit coverage, targeted tests, and this report. Curriculum theory, `LocalGlossary`, quizzes, practices, and PNG assets remain unchanged.
 
 Implementation sequence:
