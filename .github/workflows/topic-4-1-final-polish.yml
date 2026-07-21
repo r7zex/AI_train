@@ -1,0 +1,232 @@
+name: Validate final topic 4.1 polish
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-publish:
+    if: github.head_ref == 'agent/block4-topic-4-1-concise-data-target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/block4-topic-4-1-concise-data-target
+          fetch-depth: 0
+
+      - name: Refresh main before editing
+        run: git fetch origin main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Apply final formatting and regression assertions
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          audit_path = Path('scripts/audit-curriculum.mjs')
+          audit = audit_path.read_text(encoding='utf-8')
+          old = """  if (topic.id === 'ml-foundations-data-target') {
+          const structuredTables = topic.steps
+            .flatMap((step) => step.sections ?? [])
+            .map((section) => section.table)
+            .filter(Boolean)
+          const mainTable = structuredTables[0]
+          requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+          requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+          requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+          requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+        } else {
+          requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+        }
+        requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          new = """  if (topic.id === 'ml-foundations-data-target') {
+            const structuredTables = topic.steps
+              .flatMap((step) => step.sections ?? [])
+              .map((section) => section.table)
+              .filter(Boolean)
+            const mainTable = structuredTables[0]
+            requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+            requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+            requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+            requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+          } else {
+            requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+          }
+          requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          if audit.count(old) != 1:
+              raise RuntimeError(f'Expected one unformatted audit block, found {audit.count(old)}')
+          audit_path.write_text(audit.replace(old, new, 1), encoding='utf-8')
+
+          source_test_path = Path('tests/test_block4_topic_4_1_simplification.py')
+          source_test = source_test_path.read_text(encoding='utf-8')
+          marker = '    assert "явно синтетический набор данных" not in source\n'
+          addition = (
+              marker
+              + '    assert "dataset" not in source.split("[", 2)[2].split("]", 1)[0]\n'
+              + '    assert "feature" not in source.split("[", 2)[2].split("]", 1)[0]\n'
+              + '    assert "target" not in source.split("[", 2)[2].split("]", 1)[0]\n'
+              + '    assert "leakage" not in source.split("[", 2)[2].split("]", 1)[0]\n'
+              + '    assert "`basic` — «базовый»" in source\n'
+              + '    assert "`pro` — «расширенный»" in source\n'
+          )
+          if source_test.count(marker) != 1:
+              raise RuntimeError('Could not extend terminology regression assertions')
+          source_test_path.write_text(source_test.replace(marker, addition, 1), encoding='utf-8')
+
+          e2e_path = Path('tests/e2e/course.spec.ts')
+          e2e = e2e_path.read_text(encoding='utf-8')
+          object_marker = "    await expect(page.getByRole('figure')).toHaveCount(0)\n"
+          object_addition = object_marker + "    await expect(page.getByText('целевая переменная (target)', { exact: true })).toHaveCount(0)\n"
+          if e2e.count(object_marker) < 1:
+              raise RuntimeError('Could not locate topic 4.1 object-page assertions')
+          e2e = e2e.replace(object_marker, object_addition, 1)
+          category_marker = "    await expect(page.getByText(/Тариф пока остаётся строкой/)).toBeVisible()\n"
+          category_addition = category_marker + "    await expect(page.getByText(/basic.*базовый.*pro.*расширенный/)).toBeVisible()\n"
+          if e2e.count(category_marker) != 1:
+              raise RuntimeError('Could not locate category translation assertion')
+          e2e_path.write_text(e2e.replace(category_marker, category_addition, 1), encoding='utf-8')
+          PY
+
+      - name: Install Python verification dependencies
+        run: python -m pip install --disable-pip-version-check matplotlib numpy pandas pillow scikit-learn pytest
+
+      - name: Install locked Node dependencies
+        run: npm ci
+
+      - name: Regenerate and validate remaining visuals
+        run: |
+          python scripts/generate-course-visuals.py
+          git checkout HEAD -- public/course-visuals
+
+      - name: Run scoped source regression tests
+        run: python -m pytest tests/test_block4_topic_4_1_simplification.py
+
+      - name: Audit curriculum
+        run: npm run audit:curriculum
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run targeted Playwright
+        run: npx playwright test tests/e2e/block4-step02-consistency.spec.ts tests/e2e/course.spec.ts --grep "topic 4.1|topics 4.1 and 4.2|step 02 keeps"
+
+      - name: Run full Playwright suite
+        run: npm run test:e2e
+
+      - name: Check scope, whitespace and protected counts
+        shell: bash
+        run: |
+          git diff --check
+          python - <<'PY'
+          import subprocess
+          from pathlib import Path
+
+          allowed = {
+              '.github/workflows/topic-4-1-final-polish.yml',
+              'scripts/audit-curriculum.mjs',
+              'tests/e2e/course.spec.ts',
+              'tests/test_block4_topic_4_1_simplification.py',
+          }
+          changed = set(subprocess.check_output(['git', 'diff', '--name-only', 'HEAD'], text=True).splitlines())
+          unexpected = changed - allowed
+          if unexpected:
+              raise SystemExit(f'Files outside final polish scope: {sorted(unexpected)}')
+
+          source = Path('src/data/curriculum/ml_foundations/data_target.ts').read_text(encoding='utf-8')
+          assert source.count('theoryStep(') == 3
+          assert source.count('quizStep(') == 1
+          assert source.count('practiceStep(') == 1
+          assert source.count("{ id: 's") == 2
+          assert source.count("{ id: 'h") == 3
+          assert not list(Path('tests').rglob('*.pyc'))
+          PY
+
+      - name: Upload refreshed desktop and mobile screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: topic-4-1-final-review
+          path: |
+            /tmp/ai-train-topic-4-1-desktop.png
+            /tmp/ai-train-topic-4-1-mobile.png
+          if-no-files-found: error
+
+      - name: Commit tested source tree
+        id: source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          find tests -type d -name __pycache__ -prune -exec rm -rf {} +
+          git rm .github/workflows/topic-4-1-final-polish.yml
+          git add scripts/audit-curriculum.mjs tests/e2e/course.spec.ts tests/test_block4_topic_4_1_simplification.py
+          git commit -m "fix(curriculum): finalize topic 4.1 wording and formatting"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Refresh the report from the tested tree
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import subprocess
+
+          base = '751f51256338c2b6e19220b33b592b97e066e67d'
+          source = os.environ['SOURCE_SHA']
+          path = Path('docs/block4-work/topic-4-1-concise-data-target.md')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              '- Tested source SHA: `5ef5b430493703034388cfdfba92e9e3ab4edbf0`.',
+              f'- Tested source SHA: `{source}`.',
+              1,
+          )
+
+          rows = []
+          additions = deletions = 0
+          for line in subprocess.check_output(['git', 'diff', '--numstat', f'{base}..{source}'], text=True).splitlines():
+              add, delete, filename = line.split('\t', 2)
+              if filename == 'docs/block4-work/topic-4-1-concise-data-target.md':
+                  continue
+              if add.isdigit():
+                  additions += int(add)
+                  deletions += int(delete)
+                  rows.append(f'| `{filename}` | {add} | {delete} |')
+              else:
+                  rows.append(f'| `{filename}` | binary | binary |')
+
+          start = text.index('| Файл | Добавления | Удаления |')
+          end_marker = '\n\nSource text total:'
+          end = text.index(end_marker, start)
+          table = '| Файл | Добавления | Удаления |\n|---|---:|---:|\n' + '\n'.join(rows)
+          text = text[:start] + table + text[end:]
+          total_start = text.index('Source text total:')
+          total_end = text.index('\n', total_start)
+          total = f'Source text total: **{additions} additions / {deletions} deletions**. Два PNG учитываются как бинарные удаления.'
+          text = text[:total_start] + total + text[total_end:]
+          path.write_text(text, encoding='utf-8')
+          PY
+          git add docs/block4-work/topic-4-1-concise-data-target.md
+          git diff --cached --name-only | grep -qx 'docs/block4-work/topic-4-1-concise-data-target.md'
+          git commit -m "docs: refresh final topic 4.1 report"
+          git push origin HEAD
