@@ -133,6 +133,7 @@ TOPICS = [
 
 EXTRA_TOPICS = {
     "matplotlib-basics", "matplotlib-lines-scatter", "matplotlib-distributions", "matplotlib-layout-export", "eda-correlation",
+    "ml-foundations-data-target", "ml-foundations-model-fit-predict",
     "ml-problem-types", "validation-split", "cross-validation-search", "metrics-confusion-matrix",
     "linear-regression", "regularization-l1-l2", "logistic-regression", "decision-trees",
     "bagging-random-forest", "gradient-boosting", "support-vector-machines", "kmeans-clustering",
@@ -204,6 +205,192 @@ def generic_pipeline(topic_id: str, title: str):
             arrow(ax, (x + 0.18, 0.48), (x + 0.235, 0.48))
     ax.text(0.5, 0.2, "Каждый переход должен быть понятен и воспроизводим", ha="center", fontsize=13, color=MUTED)
     finish(fig, ax, topic_id)
+
+
+def data_target_visual(topic_id: str, title: str, suffix: str = ""):
+    """Render the two topic 4.1 diagrams from the shared synthetic churn data."""
+    if suffix:
+        fig, ax = plt.subplots(figsize=(15, 7.2), dpi=150)
+        fig.patch.set_facecolor("white")
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.axis("off")
+        fig.suptitle("Момент прогноза отделяет признаки от будущего", x=.055, y=.96,
+                     ha="left", fontsize=20, fontweight="bold", color=INK)
+        fig.text(.055, .89, "Синтетический прогноз оттока: сведения слева доступны до решения, события справа возникают позже.",
+                 ha="left", fontsize=11, color=MUTED)
+
+        ax.annotate("", xy=(.94, .23), xytext=(.06, .23),
+                    arrowprops={"arrowstyle": "-|>", "color": INK, "lw": 2.5})
+        ax.text(.06, .17, "раньше", color=MUTED, fontsize=11)
+        ax.text(.90, .17, "позже", color=MUTED, fontsize=11)
+        ax.axvline(.58, ymin=.15, ymax=.86, color=INK, linewidth=3)
+        ax.text(.58, .91, "CUTOFF\nмомент решения", ha="center", va="center",
+                fontsize=13, fontweight="bold", color=INK)
+
+        before = [
+            ("days_since_login", "2 / 18 / 5 / 31 / 9 / 24"),
+            ("tariff", "pro / basic"),
+            ("support_tickets", "0 / 2 / 1 / 4 / 0 / 3"),
+        ]
+        for index, (name, values) in enumerate(before):
+            y = .72 - index * .20
+            ax.add_patch(FancyBboxPatch((.07, y), .40, .13, boxstyle="round,pad=0.018",
+                                        facecolor="#e8f6e8", edgecolor=GREEN_DARK, linewidth=1.8))
+            ax.text(.09, y + .087, name, ha="left", fontsize=11, fontweight="bold", color=INK)
+            ax.text(.09, y + .035, values, ha="left", fontsize=10, color=MUTED)
+            ax.text(.44, y + .065, "ДОСТУПНО", ha="right", va="center", fontsize=9,
+                    fontweight="bold", color=GREEN_DARK)
+
+        after = [
+            ("churn_after_30d", "target: да / нет"),
+            ("account_closed_at", "дата закрытия аккаунта"),
+        ]
+        for index, (name, meaning) in enumerate(after):
+            y = .66 - index * .25
+            ax.add_patch(FancyBboxPatch((.67, y), .26, .15, boxstyle="round,pad=0.018",
+                                        facecolor="#fde8e4", edgecolor=CORAL, linewidth=1.8))
+            ax.text(.69, y + .10, name, ha="left", fontsize=11, fontweight="bold", color=INK)
+            ax.text(.69, y + .05, meaning, ha="left", fontsize=10, color=MUTED)
+            ax.text(.90, y + .02, "НЕ ВКЛЮЧАТЬ В X", ha="right", fontsize=8.5,
+                    fontweight="bold", color=CORAL)
+
+        ax.text(.5, .04,
+                "Вывод: столбец из архива допустим только тогда, когда он был доступен тем же способом к cutoff.",
+                ha="center", fontsize=12, fontweight="bold", color=INK)
+        save_png(fig, OUT / f"{topic_id}{suffix}.png")
+        plt.close(fig)
+        return
+
+    fig, (table_ax, split_ax) = plt.subplots(
+        1, 2, figsize=(15, 7.4), dpi=150, gridspec_kw={"width_ratios": [1.75, 1]},
+    )
+    fig.patch.set_facecolor("white")
+    fig.subplots_adjust(left=.04, right=.97, top=.80, bottom=.10, wspace=.08)
+    fig.suptitle("Одна таблица разделяется на признаки X и ответ y", x=.045, y=.96,
+                 ha="left", fontsize=20, fontweight="bold", color=INK)
+    fig.text(.045, .89, "Синтетические данные: одна строка — один клиент на дату решения; шесть строк сохраняются в обеих частях.",
+             ha="left", fontsize=11, color=MUTED)
+
+    table_ax.axis("off")
+    columns = [
+        "client_id\n[ID]", "household_group\n[GROUP]", "days_since_login\n[FEATURE]",
+        "tariff\n[FEATURE]", "support_tickets\n[FEATURE]", "churn_after_30d\n[TARGET]",
+    ]
+    rows = [
+        ["C101", "H1", "2", "pro", "0", "нет"],
+        ["C102", "H1", "18", "basic", "2", "да"],
+        ["C103", "H2", "5", "pro", "1", "нет"],
+        ["C104", "H2", "31", "basic", "4", "да"],
+        ["C105", "H3", "9", "basic", "0", "нет"],
+        ["C106", "H3", "24", "pro", "3", "да"],
+    ]
+    table = table_ax.table(cellText=rows, colLabels=columns, cellLoc="center", loc="center")
+    table.auto_set_font_size(False)
+    table.set_fontsize(9.5)
+    table.scale(1, 2.25)
+    for (row, column), cell in table.get_celld().items():
+        cell.set_edgecolor("white")
+        if row == 0:
+            role_colors = [BLUE_DARK, MUTED, GREEN_DARK, GREEN_DARK, GREEN_DARK, CORAL]
+            cell.set_facecolor(role_colors[column])
+            cell.set_text_props(color="white", fontweight="bold")
+        else:
+            cell.set_facecolor("#edf5fb" if row % 2 else "#f5f7f8")
+            if column == 5:
+                cell.set_text_props(fontweight="bold")
+    table_ax.text(.5, .09, "Исходная DataFrame: 6 строк × 6 столбцов с разными ролями",
+                  transform=table_ax.transAxes, ha="center", fontsize=11, color=MUTED)
+
+    split_ax.set_xlim(0, 1)
+    split_ax.set_ylim(0, 1)
+    split_ax.axis("off")
+    split_ax.text(.04, .50, "РАЗДЕЛИТЬ\nПО РОЛИ", ha="center", va="center",
+                  fontsize=10, fontweight="bold", color=INK)
+    arrow(split_ax, (.12, .50), (.28, .66))
+    arrow(split_ax, (.12, .50), (.28, .31))
+    split_ax.add_patch(FancyBboxPatch((.31, .52), .62, .30, boxstyle="round,pad=0.025",
+                                      facecolor="#e8f6e8", edgecolor=GREEN_DARK, linewidth=2))
+    split_ax.text(.62, .75, "X — признаки", ha="center", fontsize=14, fontweight="bold", color=INK)
+    split_ax.text(.62, .66, "days_since_login\ntariff\nsupport_tickets", ha="center", va="center", fontsize=11, color=INK)
+    split_ax.text(.62, .55, "shape = (6, 3)", ha="center", fontsize=11, fontweight="bold", color=GREEN_DARK)
+    split_ax.add_patch(FancyBboxPatch((.31, .17), .62, .23, boxstyle="round,pad=0.025",
+                                      facecolor="#fde8e4", edgecolor=CORAL, linewidth=2))
+    split_ax.text(.62, .33, "y — target", ha="center", fontsize=14, fontweight="bold", color=INK)
+    split_ax.text(.62, .265, "churn_after_30d", ha="center", fontsize=11, color=INK)
+    split_ax.text(.62, .20, "shape = (6,)", ha="center", fontsize=11, fontweight="bold", color=CORAL)
+    split_ax.text(.62, .06, "ID и GROUP не входят в X", ha="center", fontsize=11,
+                  fontweight="bold", color=INK)
+    save_png(fig, OUT / f"{topic_id}.png")
+    plt.close(fig)
+
+
+def model_fit_predict_visual(topic_id: str, title: str, suffix: str = ""):
+    """Render reproducible topic 4.2 diagrams using the same six-row dataset."""
+    fig, ax = plt.subplots(figsize=(15, 7.2), dpi=150)
+    fig.patch.set_facecolor("white")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    if suffix:
+        fig.suptitle("Объект-оцениватель до fit и модель после fit", x=.055, y=.96,
+                     ha="left", fontsize=20, fontweight="bold", color=INK)
+        fig.text(.055, .89, "Пример простой сравнительной модели на синтетических клиентах C101–C105.",
+                 ha="left", fontsize=11, color=MUTED)
+        panels = [
+            (.06, "ДО FIT: объект-оцениватель", "настройка:\nstrategy = most_frequent\n\nclasses_ отсутствует\nclass_prior_ отсутствует", "#e8f1fb", BLUE_DARK),
+            (.62, "ПОСЛЕ FIT: обученная модель", "classes_ = [да, нет]\nclass_prior_ = [2/5, 3/5]\n\nобученное правило:\nвозвращать класс «нет»", "#e8f6e8", GREEN_DARK),
+        ]
+        for x, heading, body, fill, edge in panels:
+            ax.add_patch(FancyBboxPatch((x, .23), .32, .52, boxstyle="round,pad=0.03",
+                                        facecolor=fill, edgecolor=edge, linewidth=2.2))
+            ax.text(x + .16, .67, heading, ha="center", fontsize=14, fontweight="bold", color=INK)
+            ax.text(x + .16, .47, body, ha="center", va="center", fontsize=11.5,
+                    linespacing=1.45, color=INK)
+        arrow(ax, (.40, .50), (.60, .50))
+        ax.text(.50, .57, "fit(X_train, y_train)", ha="center", fontsize=11,
+                fontweight="bold", color=GREEN_DARK)
+        ax.text(.50, .42, "состояние изменяется", ha="center", fontsize=10, color=MUTED)
+        ax.text(.50, .10, "Вывод: настройка задана заранее, доли классов и правило получены из пяти обучающих ответов.",
+                ha="center", fontsize=12, fontweight="bold", color=INK)
+        save_png(fig, OUT / f"{topic_id}{suffix}.png")
+        plt.close(fig)
+        return
+
+    fig.suptitle("Обучение и применение — две разные ветви", x=.055, y=.96,
+                 ha="left", fontsize=20, fontweight="bold", color=INK)
+    fig.text(.055, .89, "Target участвует только в training path; обычный predict не меняет обученные параметры.",
+             ha="left", fontsize=11, color=MUTED)
+
+    ax.text(.055, .72, "TRAINING PATH — ОБУЧЕНИЕ", fontsize=12, fontweight="bold", color=GREEN_DARK)
+    training = [
+        (.06, "X_train\nC101–C105\nshape (5, 3)", "#e8f1fb"),
+        (.27, "+ y_train\n[нет, да, нет, да, нет]\nshape (5,)", "#fde8e4"),
+        (.51, "fit\nоценивает состояние", "#fff4cf"),
+        (.73, "fitted model\nкласс «нет» чаще:\n3 из 5", "#e8f6e8"),
+    ]
+    for index, (x, text_value, color) in enumerate(training):
+        label_box(ax, x, .54, .17, .14, text_value, color=color, size=9.5)
+        if index < len(training) - 1:
+            arrow(ax, (x + .175, .61), (training[index + 1][0] - .01, .61))
+
+    ax.text(.055, .36, "INFERENCE PATH — ПРИМЕНЕНИЕ", fontsize=12, fontweight="bold", color=BLUE_DARK)
+    inference = [
+        (.06, "X_new\nC106: [24, pro, 3]\nshape (1, 3)", "#e8f1fb"),
+        (.35, "predict\nтолько применяет", "#fff4cf"),
+        (.64, "y_pred = [нет]\nshape (1,)", "#e8f6e8"),
+    ]
+    for index, (x, text_value, color) in enumerate(inference):
+        label_box(ax, x, .18, .22, .14, text_value, color=color, size=10)
+        if index < len(inference) - 1:
+            arrow(ax, (x + .225, .25), (inference[index + 1][0] - .01, .25), color=BLUE_DARK)
+    ax.text(.91, .25, "y не входит\nв predict", ha="center", va="center",
+            fontsize=10, fontweight="bold", color=CORAL)
+    ax.text(.50, .06, "Параметры fitted model при обычном predict остаются неизменными.",
+            ha="center", fontsize=12, fontweight="bold", color=INK)
+    save_png(fig, OUT / f"{topic_id}.png")
+    plt.close(fig)
 
 
 def array_visual(topic_id: str, title: str):
@@ -565,7 +752,11 @@ def scientific_visual(topic_id: str, title: str):
 
 
 def generate(topic_id: str, title: str):
-    if topic_id.startswith("numpy-"):
+    if topic_id == "ml-foundations-data-target":
+        data_target_visual(topic_id, title)
+    elif topic_id == "ml-foundations-model-fit-predict":
+        model_fit_predict_visual(topic_id, title)
+    elif topic_id.startswith("numpy-"):
         array_visual(topic_id,title)
     elif topic_id.startswith("pandas-"):
         dataframe_visual(topic_id,title)
@@ -597,7 +788,9 @@ def generate(topic_id: str, title: str):
         generic_pipeline(topic_id,title)
 
     if topic_id in EXTRA_TOPICS:
-        if topic_id.startswith("matplotlib-") or topic_id=="eda-correlation": matplotlib_visual(topic_id,title,"-2")
+        if topic_id == "ml-foundations-data-target": data_target_visual(topic_id,title,"-2")
+        elif topic_id == "ml-foundations-model-fit-predict": model_fit_predict_visual(topic_id,title,"-2")
+        elif topic_id.startswith("matplotlib-") or topic_id=="eda-correlation": matplotlib_visual(topic_id,title,"-2")
         elif topic_id=="ml-problem-types": model_problem_types(topic_id,title,"-2")
         elif topic_id in {"validation-split","cross-validation-search"}: split_visual(topic_id,title,"-2")
         elif topic_id=="metrics-confusion-matrix": confusion_visual(topic_id,title,"-2")
@@ -612,12 +805,32 @@ def generate(topic_id: str, title: str):
 
 def main():
     for topic_id, title in TOPICS:
-        if topic_id == "ml-foundations-model-fit-predict":
-            continue
         generate(topic_id,title)
     expected = len(TOPICS) + len(EXTRA_TOPICS)
     actual = len(list(OUT.glob("*.png")))
-    print(f"Generated {actual} PNG files; expected at least {expected} including the authored model illustration.")
+    required_assets = [
+        OUT / "ml-foundations-data-target.png",
+        OUT / "ml-foundations-data-target-2.png",
+        OUT / "ml-foundations-model-fit-predict.png",
+        OUT / "ml-foundations-model-fit-predict-2.png",
+    ]
+    for asset in required_assets:
+        if not asset.is_file():
+            raise RuntimeError(f"Required generated asset is missing: {asset}")
+        image = plt.imread(asset)
+        height, width = image.shape[:2]
+        if asset.stat().st_size < 10_000 or width < 1_000 or height < 600:
+            raise RuntimeError(
+                f"Generated asset failed validation: {asset} "
+                f"({width}x{height}, {asset.stat().st_size} bytes)"
+            )
+        print(
+            f"Validated {asset.relative_to(ROOT)}: {width}x{height}, "
+            f"source=scripts/generate-course-visuals.py"
+        )
+    if actual < expected:
+        raise RuntimeError(f"Generated {actual} PNG files; expected at least {expected}.")
+    print(f"Generated and validated {actual} PNG files; expected at least {expected}.")
 
 
 if __name__ == "__main__":

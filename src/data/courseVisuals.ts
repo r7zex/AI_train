@@ -28,24 +28,37 @@ const block4Visuals: Record<string, CourseVisual[]> = {
   'ml-foundations-data-target': [
     {
       src: '/course-visuals/ml-foundations-data-target.png',
-      alt: 'Линейная схема из четырёх блоков: данные, обучение, прогноз и метрика; признаки и целевая переменная входят в процесс до проверки результата.',
-      caption: 'Что показано: путь от таблицы признаков и цели к обучению, прогнозу и метрике. Как читать: слева направо по стрелкам. Главный вывод: данные X и y задают начало процесса, а качество прогноза проверяют в конце.',
-      placement: { stepId: 'ml-foundations-data-target-object', sectionId: 'apartment-table' },
+      alt: 'Таблица из шести синтетических клиентов с подписями ID, GROUP, FEATURE и TARGET разделяется на X формы 6 на 3 и y формы 6.',
+      caption: 'Что показано: все шесть строк исходной таблицы и разделение столбцов по ролям. Как читать: ID и GROUP исключаются, три FEATURE образуют X, TARGET образует y. Главный вывод: строки X и y совпадают, а target не входит в признаки.',
+      placement: { stepId: 'ml-foundations-data-target-object', sectionId: 'synthetic-client-table' },
       order: 1,
+      provenance: generatedVisual,
+    },
+    {
+      src: '/course-visuals/ml-foundations-data-target-2.png',
+      alt: 'Временная линия синтетического прогноза оттока отделяет три доступных до cutoff признака от target и даты закрытия аккаунта после cutoff.',
+      caption: 'Что показано: временная граница между доступными признаками и будущими событиями. Как читать: зелёные блоки слева разрешены к cutoff, красные блоки справа прямо подписаны как запрещённые для X. Главный вывод: архивный столбец допустим только при доступности тем же способом в момент решения.',
+      placement: { stepId: 'ml-foundations-data-target-leakage', sectionId: 'cutoff-timeline' },
+      order: 2,
       provenance: generatedVisual,
     },
   ],
   'ml-foundations-model-fit-predict': [
     {
       src: '/course-visuals/ml-foundations-model-fit-predict.png',
-      alt: 'Таблица объектов поступает в изображённую как механизм модель, а на выходе появляются числовая шкала и разделение точек на два класса.',
-      caption: 'Что показано: таблица признаков проходит через обученную модель и превращается в числовой либо классовый прогноз. Как читать: вход слева, два возможных вида ответа справа. Главный вывод: модель применяет выученное правило к новым признакам.',
-      placement: { stepId: 'ml-foundations-model-fit-predict-model', sectionId: 'definition' },
+      alt: 'Две подписанные ветви показывают обучение на X_train и y_train для клиентов C101-C105 и отдельный predict только по X_new клиента C106.',
+      caption: 'Что показано: training path изменяет состояние через fit, а inference path получает один y_pred без target. Как читать: верхняя ветвь использует X_train и y_train, нижняя - только X_new и уже fitted model. Главный вывод: y не входит в predict, а обычный прогноз не меняет параметры.',
+      placement: { stepId: 'ml-foundations-model-fit-predict-compare', sectionId: 'two-paths' },
       order: 1,
-      provenance: {
-        kind: 'curated',
-        source: 'public/course-visuals/ml-foundations-model-fit-predict.png',
-      },
+      provenance: generatedVisual,
+    },
+    {
+      src: '/course-visuals/ml-foundations-model-fit-predict-2.png',
+      alt: 'Панель объекта-оценивателя до fit содержит только стратегию most_frequent, а панель модели после fit содержит классы, доли 2 из 5 и 3 из 5 и правило возвращать нет.',
+      caption: 'Что показано: состояние одного объекта-оценивателя до и после обучения на пяти синтетических ответах. Как читать: стрелка fit добавляет classes_, class_prior_ и полученное правило. Главный вывод: гиперпараметр задан заранее, а обученное состояние оценивается по обучающим данным.',
+      placement: { stepId: 'ml-foundations-model-fit-predict-model', sectionId: 'state-before-after' },
+      order: 2,
+      provenance: generatedVisual,
     },
   ],
   'ml-foundations-train-test-baseline-metrics': [

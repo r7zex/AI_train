@@ -99,22 +99,98 @@ test('Matplotlib is a complete asynchronous module with local Russian definition
   await expect(page.getByText('сохранение рисунка (savefig)')).toBeVisible()
 })
 
-test('beginner ML terminology is Russian-first and baseline is explained as a model', async ({ page }) => {
+test('topics 4.1 and 4.2 keep one dataset across theory, code, quiz, and scoped visuals', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-object')
-  await expect(page.getByRole('heading', { name: 'Словарь названий столбцов из примеров' })).toBeVisible()
-  await expect(page.getByText('Площадь (area), м²', { exact: true })).toBeVisible()
-  await expect(page.getByText('дней с последнего входа', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Одна таблица - один вопрос' })).toBeVisible()
+  await expect(page.getByText('явно синтетический набор данных (dataset)', { exact: false })).toBeVisible()
+  await expect(page.getByText('C101', { exact: true })).toBeVisible()
+  await expect(page.getByText('C106', { exact: true })).toBeVisible()
+  await expect(page.getByText('feature', { exact: true })).toHaveCount(3)
+  await expect(page.getByText('target', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('id', { exact: true })).toBeVisible()
+  await expect(page.getByText('group', { exact: true })).toBeVisible()
+
+  const tableSplitFigure = page.getByRole('figure')
+  await expect(tableSplitFigure).toHaveCount(1)
+  await expect(tableSplitFigure.locator('img')).toHaveAttribute('src', '/course-visuals/ml-foundations-data-target.png')
+  await expect(tableSplitFigure.locator('img')).toHaveAttribute('alt', /шести синтетических клиентов/)
+  await expect(tableSplitFigure.locator('figcaption')).toContainText('Главный вывод: строки X и y совпадают')
+  await expect.poll(async () => tableSplitFigure.locator('img').evaluate((image) => (
+    (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 1000
+  ))).toBe(true)
+  await page.screenshot({ path: '/tmp/ai-train-step02-data-table-desktop.png', fullPage: true })
+
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-x-y')
+  await expect(page.getByRole('heading', { name: 'Шесть строк превращаются в X и y' })).toBeVisible()
+  await expect(page.getByText('X.shape = (6, 3)', { exact: false })).toBeVisible()
+  await expect(page.getByText('y.shape = (6,)', { exact: false })).toBeVisible()
+  await expect(page.locator('pre').filter({ hasText: 'days_since_login tariff' })).toContainText('basic')
+  await expect(page.getByText(/категориальный признак/)).toBeVisible()
+  await expect(page.getByText(/теме 4\.16/)).toBeVisible()
+
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-leakage')
+  await expect(page.getByRole('heading', { name: 'До и после момента решения' })).toBeVisible()
+  await expect(page.getByText(/Доступно до cutoff/)).toBeVisible()
+  for (const leakageType of ['target leakage', 'future leakage', 'preprocessing leakage', 'group/duplicate leakage']) {
+    await expect(page.getByText(new RegExp(leakageType.replace('/', '\\/')))).toBeVisible()
+  }
+  const leakageFigure = page.getByRole('figure')
+  await expect(leakageFigure.locator('img')).toHaveAttribute('src', '/course-visuals/ml-foundations-data-target-2.png')
+  await expect(leakageFigure.locator('figcaption')).toContainText('временная граница')
+
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-quiz')
+  await expect(page.getByText(/Для клиента C106 нужно предсказать отток/)).toBeVisible()
 
   await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model')
-  await expect(page.getByText('признаки (features) → модель (model) → прогноз (prediction)')).toBeVisible()
-  await expect(page.locator('code').filter({ hasText: /^predict$/ })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Вычислительное правило для прогноза' })).toBeVisible()
+  await expect(page.getByText(/До fit: алгоритм \+ настройки/)).toBeVisible()
+  await expect(page.getByText('estimator до fit', { exact: true })).toBeVisible()
+  await expect(page.getByText('model после fit', { exact: true })).toBeVisible()
+  const stateFigure = page.getByRole('figure')
+  await expect(stateFigure.locator('img')).toHaveAttribute('src', '/course-visuals/ml-foundations-model-fit-predict-2.png')
+  await expect(stateFigure.locator('figcaption')).toContainText('гиперпараметр задан заранее')
+
+  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-fit')
+  await expect(page.getByText(/оценивание параметров, правил или сводных значений/)).toBeVisible()
+  await expect(page.getByText('most-frequent dummy', { exact: true })).toBeVisible()
+  await expect(page.getByText(/Подробно.*теме 4\.15/)).toBeVisible()
+
+  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-predict')
+  await expect(page.getByText(/X_new\.shape = \(1, 3\)/)).toBeVisible()
+  await expect(page.getByText(/y_pred\.shape = \(1,\)/)).toBeVisible()
+  await expect(page.locator('pre').filter({ hasText: "['нет']" })).toBeVisible()
+  await expect(page.getByText('классификация, predict_proba', { exact: true })).toBeVisible()
+
+  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-compare')
+  await expect(page.getByText(/Путь обучения \(training path\)/)).toBeVisible()
+  await expect(page.getByText(/Путь применения \(inference path\)/)).toBeVisible()
+  await expect(page.getByText(/те же признаки, в том же порядке, в тех же единицах/)).toBeVisible()
+  await expect(page.getByText('missing column', { exact: true })).toBeVisible()
+  await expect(page.getByText('extra column', { exact: true })).toBeVisible()
+  await expect(page.getByText('reordered column', { exact: true })).toBeVisible()
+  await expect(page.getByText(/Pipeline.*конвейер/)).toBeVisible()
+  const pathsFigure = page.getByRole('figure')
+  await expect(pathsFigure.locator('img')).toHaveAttribute('src', '/course-visuals/ml-foundations-model-fit-predict.png')
+  await expect(pathsFigure.locator('figcaption')).toContainText('y не входит в predict')
+  await page.screenshot({ path: '/tmp/ai-train-step02-fit-predict-desktop.png', fullPage: true })
 
   await page.goto('/topics/ml-foundations-train-test-baseline-metrics/ml-foundations-train-test-baseline-metrics-baseline')
   await expect(page.getByRole('heading', { name: 'Простая сравнительная модель (baseline)' })).toBeVisible()
   await expect(page.getByText(/самое простое разумное решение, с которым сравнивают основной алгоритм/)).toBeVisible()
   await expect(page.getByText('простая сравнительная модель (baseline)').first()).toBeVisible()
-  await page.screenshot({ path: '/tmp/ai-train-baseline-desktop.png' })
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-leakage')
+  await expect(page.locator('.stepik-sidebar')).toBeHidden()
+  await expect(page.getByRole('figure').locator('figcaption')).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.screenshot({ path: '/tmp/ai-train-step02-data-mobile.png', fullPage: true })
+
+  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-compare')
+  await expect(page.getByRole('figure').locator('figcaption')).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.screenshot({ path: '/tmp/ai-train-step02-fit-predict-mobile.png', fullPage: true })
 })
 
 test('core ML theory has distinct raster visuals, plain-language explanations, and worked formulas', async ({ page }) => {
