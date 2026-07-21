@@ -1,4 +1,4 @@
-name: Run scoped topic 4.1 update from PR v2
+name: Run scoped topic 4.1 update from PR v3
 
 on:
   pull_request:
@@ -20,6 +20,9 @@ jobs:
         with:
           ref: agent/block4-topic-4-1-concise-data-target
           fetch-depth: 0
+
+      - name: Refresh main before editing
+        run: git fetch origin main
 
       - uses: actions/setup-node@v4
         with:
@@ -60,11 +63,21 @@ jobs:
                   raise RuntimeError(f'Empty run block: {name}')
               return '\n'.join(block).rstrip() + '\n'
 
-          Path('/tmp/apply-topic-4-1.sh').write_text(extract('Apply scoped source changes'), encoding='utf-8')
+          apply_script = extract('Apply scoped source changes')
+          apply_script = apply_script.replace(
+              ", 'Четыре разных источника утечки'",
+              '',
+          )
+          Path('/tmp/apply-topic-4-1.sh').write_text(apply_script, encoding='utf-8')
+
           commit_script = extract('Commit verified source and report')
           commit_script = commit_script.replace(
               'git rm .github/workflows/topic-4-1-autofix.yml',
               'git rm .github/workflows/topic-4-1-autofix.yml\ngit rm .github/workflows/topic-4-1-pr-runner-v2.yml',
+          )
+          commit_script = commit_script.replace(
+              '| `python scripts/generate-course-visuals.py` | 0 |',
+              '| `git fetch origin main` | 0 | Актуальный `origin/main` получен до редактирования |\n          | `python scripts/generate-course-visuals.py` | 0 |',
           )
           Path('/tmp/commit-topic-4-1.sh').write_text(commit_script, encoding='utf-8')
           print('Extracted apply lines:', len(Path('/tmp/apply-topic-4-1.sh').read_text().splitlines()))
