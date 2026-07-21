@@ -3,7 +3,7 @@ name: Validate final topic 4.1 polish
 on:
   pull_request:
     branches: [main]
-    types: [synchronize, reopened]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
