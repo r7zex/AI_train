@@ -1,0 +1,203 @@
+name: Final verified topic 4.1 implementation
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  implement-and-verify:
+    if: github.head_ref == 'agent/block4-topic-4-1-concise-data-target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/block4-topic-4-1-concise-data-target
+          fetch-depth: 0
+
+      - name: Refresh main before editing
+        run: git fetch origin main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Extract corrected scoped scripts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          lines = Path('.github/workflows/topic-4-1-autofix.yml').read_text(encoding='utf-8').splitlines()
+
+          def extract(name: str) -> str:
+              marker = f'- name: {name}'
+              start = next(i for i, line in enumerate(lines) if line.strip() == marker)
+              run_index = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == 'run: |')
+              run_indent = len(lines[run_index]) - len(lines[run_index].lstrip())
+              block = []
+              for line in lines[run_index + 1:]:
+                  indent = len(line) - len(line.lstrip()) if line.strip() else run_indent + 2
+                  if line.strip() and indent <= run_indent:
+                      break
+                  block.append(line[run_indent + 2:] if len(line) >= run_indent + 2 else '')
+              return '\n'.join(block).rstrip() + '\n'
+
+          apply_script = extract('Apply scoped source changes')
+          apply_script = apply_script.replace(", 'Четыре разных источника утечки'", '')
+          for assignment in ["data_target = '''", "consistency = '''", "source_test = '''"]:
+              apply_script = apply_script.replace(assignment, assignment.replace("= '''", "= r'''"), 1)
+          Path('/tmp/apply-topic-4-1.sh').write_text(apply_script, encoding='utf-8')
+
+          commit_script = extract('Commit verified source and report')
+          commit_script = commit_script.replace(
+              'git rm .github/workflows/topic-4-1-autofix.yml',
+              'git rm .github/workflows/topic-4-1-autofix.yml\n'
+              'git rm .github/workflows/topic-4-1-final-runner.yml\n'
+              'git rm .github/workflows/topic-4-1-audit-debug.yml',
+          )
+          commit_script = commit_script.replace(
+              '| `python scripts/generate-course-visuals.py` | 0 |',
+              '| `git fetch origin main` | 0 | Актуальный `origin/main` получен до редактирования |\n'
+              '          | `python scripts/generate-course-visuals.py` | 0 |',
+          )
+          Path('/tmp/commit-topic-4-1.sh').write_text(commit_script, encoding='utf-8')
+          PY
+
+      - name: Apply scoped source changes
+        run: bash /tmp/apply-topic-4-1.sh
+
+      - name: Require the 6x6 HTML table instead of topic 4.1 PNGs
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/audit-curriculum.mjs')
+          text = path.read_text(encoding='utf-8')
+          old = "  requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)\n  requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"
+          new = """  if (topic.id === 'ml-foundations-data-target') {
+            const structuredTables = topic.steps
+              .flatMap((step) => step.sections ?? [])
+              .map((section) => section.table)
+              .filter(Boolean)
+            const mainTable = structuredTables[0]
+            requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+            requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+            requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+            requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+          } else {
+            requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+          }
+          requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          if text.count(old) != 1:
+              raise RuntimeError(f'Expected one visual audit invariant, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          test_path = Path('tests/test_block4_topic_4_1_simplification.py')
+          test_text = test_path.read_text(encoding='utf-8')
+          marker = '    assert "Course PNG files missing from registry" in audit\n'
+          addition = (
+              marker
+              + '    assert "concise table-only design must not register PNG illustrations" in audit\n'
+              + '    assert "structured data table must contain six columns" in audit\n'
+              + '    assert "structured data table must contain six rows" in audit\n'
+          )
+          if test_text.count(marker) != 1:
+              raise RuntimeError('Could not extend scoped audit regression test')
+          test_path.write_text(test_text.replace(marker, addition, 1), encoding='utf-8')
+          PY
+
+      - name: Install Python verification dependencies
+        run: python -m pip install --disable-pip-version-check matplotlib numpy pillow scikit-learn pytest
+
+      - name: Install locked Node dependencies
+        run: npm ci
+
+      - name: Generate and validate remaining visuals
+        run: |
+          python scripts/generate-course-visuals.py
+          git checkout HEAD -- public/course-visuals
+          rm public/course-visuals/ml-foundations-data-target.png
+          rm public/course-visuals/ml-foundations-data-target-2.png
+
+      - name: Run scoped source regression tests
+        run: python -m pytest tests/test_block4_topic_4_1_simplification.py
+
+      - name: Audit curriculum
+        run: npm run audit:curriculum
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run targeted Playwright
+        run: npx playwright test tests/e2e/block4-step02-consistency.spec.ts tests/e2e/course.spec.ts --grep "topic 4.1|topics 4.1 and 4.2|step 02 keeps"
+
+      - name: Run full Playwright suite
+        run: npm run test:e2e
+
+      - name: Check scope, whitespace and protected counts
+        shell: bash
+        run: |
+          git diff --check
+          python - <<'PY'
+          import subprocess
+          from pathlib import Path
+
+          allowed = {
+              '.github/workflows/topic-4-1-autofix.yml',
+              '.github/workflows/topic-4-1-final-runner.yml',
+              '.github/workflows/topic-4-1-audit-debug.yml',
+              'src/data/curriculum/ml_foundations/data_target.ts',
+              'src/data/courseVisuals.ts',
+              'scripts/generate-course-visuals.py',
+              'scripts/audit-curriculum.mjs',
+              'tests/e2e/course.spec.ts',
+              'tests/e2e/block4-step02-consistency.spec.ts',
+              'tests/test_block4_topic_4_1_simplification.py',
+              'public/course-visuals/ml-foundations-data-target.png',
+              'public/course-visuals/ml-foundations-data-target-2.png',
+          }
+          changed = set(subprocess.check_output(['git', 'diff', '--name-only', 'HEAD'], text=True).splitlines())
+          unexpected = changed - allowed
+          if unexpected:
+              raise SystemExit(f'Files outside scope: {sorted(unexpected)}')
+
+          source = Path('src/data/curriculum/ml_foundations/data_target.ts').read_text(encoding='utf-8')
+          assert source.count('theoryStep(') == 3
+          assert source.count('quizStep(') == 1
+          assert source.count('practiceStep(') == 1
+          assert source.count("{ id: 's") == 2
+          assert source.count("{ id: 'h") == 3
+          print('Scoped files:', *sorted(changed), sep='\n- ')
+          PY
+
+      - name: Upload desktop and mobile review screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: topic-4-1-review
+          path: |
+            /tmp/ai-train-topic-4-1-desktop.png
+            /tmp/ai-train-topic-4-1-mobile.png
+          if-no-files-found: error
+
+      - name: Commit verified source and report
+        shell: bash
+        env:
+          BASE_SHA: 751f51256338c2b6e19220b33b592b97e066e67d
+        run: bash /tmp/commit-topic-4-1.sh
