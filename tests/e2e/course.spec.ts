@@ -144,6 +144,53 @@ test('core ML theory has distinct raster visuals, plain-language explanations, a
   await expect(page.getByText('Длина вектора; лежит в основе расстояний и L2-регуляризации.')).toHaveCount(0)
 })
 
+test('block 4 visuals have semantic captions and follow their declared pedagogical placement', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/topics/validation-split/validation-split-theory')
+
+  const validationFigures = page.getByRole('figure')
+  await expect(validationFigures).toHaveCount(2)
+  await expect(validationFigures.locator('figcaption')).toHaveCount(2)
+  await expect(validationFigures.locator('figcaption').first()).toContainText('Что показано:')
+  await expect(validationFigures.locator('figcaption').first()).toContainText('Как читать:')
+  await expect(validationFigures.locator('figcaption').first()).toContainText('Главный вывод:')
+
+  const validationDescriptions = await validationFigures.locator('img').evaluateAll((images) => images.map((image) => ({
+    alt: image.getAttribute('alt') ?? '',
+    caption: image.closest('figure')?.querySelector('figcaption')?.textContent ?? '',
+  })))
+  expect(new Set(validationDescriptions.map((item) => item.alt)).size).toBe(2)
+  expect(new Set(validationDescriptions.map((item) => item.caption)).size).toBe(2)
+  expect(validationDescriptions.every((item) => item.alt.length >= 40)).toBe(true)
+  expect(validationDescriptions.every((item) => !item.alt.includes('Учебная иллюстрация к теме'))).toBe(true)
+
+  const placementOrderIsValid = await page.evaluate(() => {
+    const headings = [...document.querySelectorAll('h2')]
+    const roles = headings.find((heading) => heading.textContent?.includes('У каждой части данных своя работа'))
+    const hundred = headings.find((heading) => heading.textContent?.includes('Пример со 100 объектами'))
+    const figures = [...document.querySelectorAll('figure')]
+    if (!roles || !hundred || figures.length !== 2) return false
+    return Boolean(roles.compareDocumentPosition(figures[0]) & Node.DOCUMENT_POSITION_FOLLOWING)
+      && Boolean(figures[0].compareDocumentPosition(hundred) & Node.DOCUMENT_POSITION_FOLLOWING)
+      && Boolean(hundred.compareDocumentPosition(figures[1]) & Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+  expect(placementOrderIsValid).toBe(true)
+  await page.screenshot({ path: '/tmp/ai-train-block4-visual-placement-desktop.png', fullPage: true })
+
+  await page.goto('/topics/ml-problem-types/ml-problem-types-theory')
+  await expect(page.getByRole('figure')).toHaveCount(1)
+  await expect(page.getByRole('figure').locator('img')).toHaveAttribute('src', '/course-visuals/ml-problem-types.png')
+
+  await page.goto('/topics/ml-problem-types/ml-problem-types-implementation')
+  await expect(page.getByRole('figure')).toHaveCount(1)
+  await expect(page.getByRole('figure').locator('img')).toHaveAttribute('src', '/course-visuals/ml-problem-types-2.png')
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.getByRole('figure').locator('figcaption')).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.screenshot({ path: '/tmp/ai-train-block4-visual-placement-mobile.png', fullPage: true })
+})
+
 test('local comments control changes real UI state', async ({ page }) => {
   await page.goto('/topics/matplotlib-basics/matplotlib-basics-theory')
   await page.getByPlaceholder('Написать комментарий').fill('Проверка обсуждения')

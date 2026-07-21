@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import CodeBlock, { ReadOnlyCodeCell } from '../components/CodeBlock'
 import CourseVisualGallery from '../components/CourseVisualGallery'
@@ -6,6 +6,7 @@ import CourseSidebar from '../components/CourseSidebar'
 import Formula from '../components/Formula'
 import RichText from '../components/RichText'
 import { getCourseGlossaryEntries } from '../data/courseGlossary'
+import { getCourseVisualsAtPlacement } from '../data/courseVisuals'
 import QuizWidget from '../features/quiz/QuizWidget'
 import {
   getFlowPrevNextStep,
@@ -513,8 +514,7 @@ function StepContent({
   onPracticePassed: (stepId: string) => void
 }) {
   const primaryConcept = step.conceptCards?.[0]
-  const firstTheoryStepId = topic.steps.find((item) => item.type === 'theory')?.id
-  const showTopicVisuals = step.id === firstTheoryStepId
+  const stepVisuals = getCourseVisualsAtPlacement(topic, step.id)
   const stepSurface = {
     theory: '',
     terminology: 'border-l-3 border-[#77918a] pl-4',
@@ -553,73 +553,82 @@ function StepContent({
       <div className="space-y-8">
         {primaryConcept && <ConceptCardView concept={primaryConcept} />}
 
-        {showTopicVisuals && <CourseVisualGallery topic={topic} />}
+        {stepVisuals.length > 0 && <CourseVisualGallery visuals={stepVisuals} />}
 
         {step.sections?.map((section) => {
+          const sectionVisuals = getCourseVisualsAtPlacement(topic, step.id, section.id)
           if (section.variant === 'function-card') {
-            return <FunctionCardSection key={section.id} section={section} />
+            return (
+              <Fragment key={section.id}>
+                <FunctionCardSection section={section} />
+                {sectionVisuals.length > 0 && <CourseVisualGallery visuals={sectionVisuals} />}
+              </Fragment>
+            )
           }
 
           return (
-            <section key={section.id}>
-              <h2 className="mb-3 text-[18px] font-bold leading-7 text-[#111827]">
-                <RichText text={section.title} />
-              </h2>
-              <div className="space-y-4 text-[15px] leading-[1.75] text-[#111827]">
-                {section.paragraphs.map((paragraph, index) => (
-                  <p key={`${section.id}-${index}`}>
-                    <RichText text={paragraph} />
-                  </p>
-                ))}
-              </div>
-              {section.bullets && (
-                <ul className="mt-4 list-disc space-y-2 pl-6 text-[15px] leading-[1.7] text-[#111827]">
-                  {section.bullets.map((bullet) => (
-                    <li key={bullet}>
-                      <RichText text={bullet} />
-                    </li>
+            <Fragment key={section.id}>
+              <section>
+                <h2 className="mb-3 text-[18px] font-bold leading-7 text-[#111827]">
+                  <RichText text={section.title} />
+                </h2>
+                <div className="space-y-4 text-[15px] leading-[1.75] text-[#111827]">
+                  {section.paragraphs.map((paragraph, index) => (
+                    <p key={`${section.id}-${index}`}>
+                      <RichText text={paragraph} />
+                    </p>
                   ))}
-                </ul>
-              )}
-              {section.callouts?.map((item) => (
-                <CalloutBlock key={`${section.id}-${item.title}-${item.body}`} title={item.title} body={item.body} tone={item.tone} />
-              ))}
-              {section.table && (
-                <div className="mt-5 overflow-x-auto border border-[#dfe4e7] bg-white shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
-                  <table className="min-w-full border-collapse text-left text-[14px] leading-5 text-[#111827]">
-                    <thead className="bg-[#f3f4f6]">
-                      <tr>
-                        {section.table.headers.map((header) => (
-                          <th key={header} className="border-b border-[#e5e7eb] px-3 py-2 font-bold">
-                            <RichText text={header} />
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {section.table.rows.map((row, rowIndex) => (
-                        <tr key={`${section.id}-row-${rowIndex}`} className="border-t border-[#e5e7eb]">
-                          {row.map((cell, cellIndex) => (
-                            <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-3 py-2 align-top">
-                              <RichText text={cell} />
-                            </td>
+                </div>
+                {section.bullets && (
+                  <ul className="mt-4 list-disc space-y-2 pl-6 text-[15px] leading-[1.7] text-[#111827]">
+                    {section.bullets.map((bullet) => (
+                      <li key={bullet}>
+                        <RichText text={bullet} />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {section.callouts?.map((item) => (
+                  <CalloutBlock key={`${section.id}-${item.title}-${item.body}`} title={item.title} body={item.body} tone={item.tone} />
+                ))}
+                {section.table && (
+                  <div className="mt-5 overflow-x-auto border border-[#dfe4e7] bg-white shadow-[0_1px_2px_rgba(17,24,39,0.03)]">
+                    <table className="min-w-full border-collapse text-left text-[14px] leading-5 text-[#111827]">
+                      <thead className="bg-[#f3f4f6]">
+                        <tr>
+                          {section.table.headers.map((header) => (
+                            <th key={header} className="border-b border-[#e5e7eb] px-3 py-2 font-bold">
+                              <RichText text={header} />
+                            </th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-              {section.codeExamples?.map((example, index) => (
-                <CodeBlock
-                  key={`${section.id}-code-${index}`}
-                  code={example.code}
-                  language={example.language}
-                  output={example.output}
-                  explanation={example.explanation[0]}
-                />
-              ))}
-            </section>
+                      </thead>
+                      <tbody>
+                        {section.table.rows.map((row, rowIndex) => (
+                          <tr key={`${section.id}-row-${rowIndex}`} className="border-t border-[#e5e7eb]">
+                            {row.map((cell, cellIndex) => (
+                              <td key={`${section.id}-cell-${rowIndex}-${cellIndex}`} className="px-3 py-2 align-top">
+                                <RichText text={cell} />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {section.codeExamples?.map((example, index) => (
+                  <CodeBlock
+                    key={`${section.id}-code-${index}`}
+                    code={example.code}
+                    language={example.language}
+                    output={example.output}
+                    explanation={example.explanation[0]}
+                  />
+                ))}
+              </section>
+              {sectionVisuals.length > 0 && <CourseVisualGallery visuals={sectionVisuals} />}
+            </Fragment>
           )
         })}
 

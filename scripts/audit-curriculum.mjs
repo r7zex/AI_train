@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
 const curriculumPath = path.join(root, 'src/data/aiCurriculum.ts')
 const glossaryPath = path.join(root, 'src/data/courseGlossary.ts')
+const courseVisualRegistryPath = path.join(root, 'src/data/courseVisuals.ts')
 const errors = []
 
 const expectedStepCounts = new Map([
@@ -152,6 +153,7 @@ function collectText(value) {
 
 const { curriculumBlocks, flowTopics } = loadCurriculum()
 const { getCourseGlossaryEntry, hasLatinLetters } = loadTsModule(glossaryPath)
+const { getCourseVisuals } = loadTsModule(courseVisualRegistryPath)
 
 if (process.env.CURRICULUM_PRINT_TERMS === '1') {
   const terms = [...new Set(flowTopics.flatMap((topic) => topic.terminology))].sort((left, right) => left.localeCompare(right))
@@ -179,31 +181,91 @@ requireCondition(
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
 requireCondition(totalSteps === 618, `Expected 618 total steps, got ${totalSteps}.`)
 
-const courseVisualsPath = path.join(root, 'public/course-visuals')
+const courseVisualsPath = process.env.CURRICULUM_VISUALS_DIR
+  ? path.resolve(process.env.CURRICULUM_VISUALS_DIR)
+  : path.join(root, 'public/course-visuals')
 requireCondition(fs.existsSync(courseVisualsPath), 'Course visual directory is missing.')
 const courseVisualFiles = fs.existsSync(courseVisualsPath)
   ? fs.readdirSync(courseVisualsPath).filter((file) => file.endsWith('.png'))
   : []
 requireCondition(courseVisualFiles.length === 101, `Expected exactly 101 course PNG files, got ${courseVisualFiles.length}.`)
+
+function readPngDimensions(filePath) {
+  const buffer = fs.readFileSync(filePath)
+  const pngSignature = '89504e470d0a1a0a'
+  if (buffer.length < 24 || buffer.subarray(0, 8).toString('hex') !== pngSignature) return null
+  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) }
+}
+
 const visualHashes = new Map()
 for (const file of courseVisualFiles) {
-  const digest = createHash('sha256').update(fs.readFileSync(path.join(courseVisualsPath, file))).digest('hex')
+  const filePath = path.join(courseVisualsPath, file)
+  const fileBuffer = fs.readFileSync(filePath)
+  const digest = createHash('sha256').update(fileBuffer).digest('hex')
   const matchingFiles = visualHashes.get(digest) ?? []
   matchingFiles.push(file)
   visualHashes.set(digest, matchingFiles)
+  requireCondition(fileBuffer.length >= 10_000, `${file} is suspiciously small (${fileBuffer.length} bytes).`)
+  const dimensions = readPngDimensions(filePath)
+  requireCondition(Boolean(dimensions), `${file}: expected a readable PNG header.`)
+  if (dimensions) {
+    requireCondition(dimensions.width >= 1_000, `${file}: width ${dimensions.width}px is below the 1000px minimum.`)
+    requireCondition(dimensions.height >= 600, `${file}: height ${dimensions.height}px is below the 600px minimum.`)
+  }
 }
 for (const matchingFiles of visualHashes.values()) {
   requireCondition(matchingFiles.length === 1, `Course visuals must be distinct; duplicate files: ${matchingFiles.join(', ')}.`)
 }
+
+const registeredVisuals = flowTopics.flatMap((topic) => getCourseVisuals(topic).map((visual) => ({ topic, visual })))
+const normalizedDescriptions = new Map()
+const registeredFiles = new Set()
+
+for (const { topic, visual } of registeredVisuals) {
+  const prefix = `${topic.id}: ${visual.src}`
+  requireCondition(/^\/course-visuals\/[a-z0-9-]+\.png$/.test(visual.src), `${prefix}: invalid public visual src.`)
+  const file = visual.src.replace('/course-visuals/', '')
+  registeredFiles.add(file)
+  requireCondition(courseVisualFiles.includes(file), `${prefix}: registered asset is missing.`)
+  requireCondition(visual.alt.trim().length >= 40, `${prefix}: semantic alt is missing or too short.`)
+  requireCondition(visual.caption.includes('Что показано:'), `${prefix}: caption must say what is shown.`)
+  requireCondition(visual.caption.includes('Как читать:'), `${prefix}: caption must explain how to read the visual.`)
+  requireCondition(visual.caption.includes('Главный вывод:'), `${prefix}: caption must state the main conclusion.`)
+  requireCondition(!/Учебная иллюстрация к теме|Дополнительная учебная иллюстрация/iu.test(visual.alt), `${prefix}: generic placeholder alt is forbidden.`)
+  requireCondition(Number.isInteger(visual.order) && visual.order > 0, `${prefix}: order must be a positive integer.`)
+  requireCondition(['generated', 'curated'].includes(visual.provenance?.kind), `${prefix}: invalid provenance kind.`)
+  requireCondition(Boolean(visual.provenance?.source?.trim()), `${prefix}: provenance source is required.`)
+
+  const targetStep = topic.steps.find((step) => step.id === visual.placement?.stepId)
+  requireCondition(Boolean(targetStep), `${prefix}: placement step ${visual.placement?.stepId ?? '(missing)'} does not exist.`)
+  if (visual.placement?.sectionId) {
+    const targetSection = targetStep?.sections?.find((section) => section.id === visual.placement.sectionId)
+    requireCondition(Boolean(targetSection), `${prefix}: placement section ${visual.placement.sectionId} does not exist in ${visual.placement.stepId}.`)
+  }
+
+  for (const [kind, value] of [['alt', visual.alt], ['caption', visual.caption]]) {
+    const normalized = value.trim().toLocaleLowerCase('ru-RU')
+    const matchingDescriptions = normalizedDescriptions.get(`${kind}:${normalized}`) ?? []
+    matchingDescriptions.push(visual.src)
+    normalizedDescriptions.set(`${kind}:${normalized}`, matchingDescriptions)
+  }
+}
+
+for (const [description, matchingSources] of normalizedDescriptions) {
+  requireCondition(matchingSources.length === 1, `Duplicate ${description.split(':', 1)[0]} text: ${matchingSources.join(', ')}.`)
+}
+
+const unregisteredFiles = courseVisualFiles.filter((file) => !registeredFiles.has(file))
+requireCondition(unregisteredFiles.length === 0, `Course PNG files missing from registry: ${unregisteredFiles.join(', ')}.`)
+requireCondition(registeredFiles.size === registeredVisuals.length, 'Each registered visual src must be unique.')
+
 for (const topic of flowTopics) {
   const visualPattern = new RegExp(`^${topic.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:-\\d+)?\\.png$`)
   const topicVisuals = courseVisualFiles.filter((file) => visualPattern.test(file))
   requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
   requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)
-  for (const file of topicVisuals) {
-    const size = fs.statSync(path.join(courseVisualsPath, file)).size
-    requireCondition(size >= 10_000, `${topic.id}: ${file} is suspiciously small (${size} bytes).`)
-  }
+  const topicRegistryFiles = getCourseVisuals(topic).map((visual) => visual.src.replace('/course-visuals/', '')).sort()
+  requireCondition(topicRegistryFiles.join(',') === topicVisuals.sort().join(','), `${topic.id}: PNG files and visual registry entries do not match.`)
 }
 
 const researchTopics = flowTopics.filter((topic) => topic.blockId === 'research-statistics'
