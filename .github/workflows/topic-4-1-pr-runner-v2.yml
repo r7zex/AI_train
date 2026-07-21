@@ -1,4 +1,4 @@
-name: Run scoped topic 4.1 update from PR v3
+name: Run scoped topic 4.1 update from PR v4
 
 on:
   pull_request:
@@ -106,6 +106,47 @@ jobs:
         run: |
           tail -n 80 /tmp/topic-4-1-apply.log
           exit 1
+
+      - name: Keep the visual audit strict for the table-only topic
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/audit-curriculum.mjs')
+          text = path.read_text(encoding='utf-8')
+          old = "  requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)\n  requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"
+          new = """  if (topic.id === 'ml-foundations-data-target') {
+            const structuredTables = topic.steps
+              .flatMap((step) => step.sections ?? [])
+              .map((section) => section.table)
+              .filter(Boolean)
+            const mainTable = structuredTables[0]
+            requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+            requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+            requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+            requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+          } else {
+            requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+          }
+          requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          if text.count(old) != 1:
+              raise RuntimeError(f'Expected one visual audit invariant, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          test_path = Path('tests/test_block4_topic_4_1_simplification.py')
+          test_text = test_path.read_text(encoding='utf-8')
+          marker = '    assert "Course PNG files missing from registry" in audit\n'
+          addition = (
+              marker
+              + '    assert "concise table-only design must not register PNG illustrations" in audit\n'
+              + '    assert "structured data table must contain six columns" in audit\n'
+              + '    assert "structured data table must contain six rows" in audit\n'
+          )
+          if test_text.count(marker) != 1:
+              raise RuntimeError('Could not extend the scoped audit regression test')
+          test_path.write_text(test_text.replace(marker, addition, 1), encoding='utf-8')
+          PY
 
       - name: Install Python verification dependencies
         run: python -m pip install --disable-pip-version-check matplotlib numpy pillow scikit-learn pytest
