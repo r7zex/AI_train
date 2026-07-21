@@ -1,0 +1,238 @@
+name: Topic 4.1 final rerun carrier
+
+on:
+  workflow_dispatch:
+
+jobs:
+  carrier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply scoped source changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+          topic = (root / 'src/data/curriculum/ml_foundations/data_target.ts').read_text(encoding='utf-8')
+          required = [
+              "['объект', 'наблюдение', 'набор данных', 'признак', 'целевая переменная', 'X', 'y', 'утечка данных']",
+              'y = data.pop("churn_after_30d")',
+              '`basic` — «базовый»',
+              '`pro` — «расширенный»',
+          ]
+          for fragment in required:
+              if fragment not in topic:
+                  raise RuntimeError(f'Missing final topic 4.1 fragment: {fragment}')
+          for forbidden in ['feature_cols =', 'Роль каждого столбца', 'Четыре разных источника утечки']:
+              if forbidden in topic:
+                  raise RuntimeError(f'Legacy topic 4.1 fragment remains: {forbidden}')
+
+          source_test = '''from pathlib import Path
+
+          ROOT = Path(__file__).resolve().parents[1]
+
+
+          def test_topic_4_1_uses_pop_and_drops_repeated_theory() -> None:
+              source = (ROOT / "src/data/curriculum/ml_foundations/data_target.ts").read_text(encoding="utf-8")
+              assert 'y = data.pop("churn_after_30d")' in source
+              assert "feature_cols =" not in source
+              assert "Роль каждого столбца" not in source
+              assert "Проверить каждый кандидат в признаки" not in source
+              assert "Четыре разных источника утечки" not in source
+              assert "явно синтетический набор данных" not in source
+              assert "['объект', 'наблюдение', 'набор данных', 'признак', 'целевая переменная', 'X', 'y', 'утечка данных']" in source
+              assert "dataset" not in source
+              assert "feature" not in source
+              assert "leakage" not in source
+              assert "`basic` — «базовый»" in source
+              assert "`pro` — «расширенный»" in source
+              assert source.count("theoryStep(") == 3
+              assert source.count("quizStep(") == 1
+              assert source.count("practiceStep(") == 1
+
+
+          def test_topic_4_1_visuals_are_removed_without_weakening_registry_checks() -> None:
+              registry = (ROOT / "src/data/courseVisuals.ts").read_text(encoding="utf-8")
+              generator = (ROOT / "scripts/generate-course-visuals.py").read_text(encoding="utf-8")
+              audit = (ROOT / "scripts/audit-curriculum.mjs").read_text(encoding="utf-8")
+              assert "'ml-foundations-data-target': []," in registry
+              assert 'ml-foundations-data-target.png' not in generator
+              assert 'ml-foundations-data-target-2.png' not in generator
+              assert "Expected exactly 101 course PNG files" in audit
+              assert "Course PNG files missing from registry" in audit
+              assert not (ROOT / "public/course-visuals/ml-foundations-data-target.png").exists()
+              assert not (ROOT / "public/course-visuals/ml-foundations-data-target-2.png").exists()
+          '''
+          source_test = '\n'.join(line[10:] if line.startswith('          ') else line for line in source_test.splitlines()) + '\n'
+          (root / 'tests/test_block4_topic_4_1_simplification.py').write_text(source_test, encoding='utf-8')
+
+          e2e_path = root / 'tests/e2e/course.spec.ts'
+          e2e = e2e_path.read_text(encoding='utf-8')
+          object_marker = "  await expect(page.getByRole('figure')).toHaveCount(0)\n"
+          object_assertion = "  await expect(page.getByText('целевая переменная (target)', { exact: true })).toHaveCount(0)\n"
+          if object_assertion not in e2e:
+              if e2e.count(object_marker) < 1:
+                  raise RuntimeError('Could not locate topic 4.1 object-page figure assertion')
+              e2e = e2e.replace(object_marker, object_marker + object_assertion, 1)
+          category_marker = "  await expect(page.getByText(/Тариф пока остаётся строкой/)).toBeVisible()\n"
+          category_assertion = "  await expect(page.getByText(/basic.*базовый.*pro.*расширенный/)).toBeVisible()\n"
+          if category_assertion not in e2e:
+              if e2e.count(category_marker) != 1:
+                  raise RuntimeError('Could not locate category translation assertion')
+              e2e = e2e.replace(category_marker, category_marker + category_assertion, 1)
+          e2e_path.write_text(e2e, encoding='utf-8')
+
+          audit_path = root / 'scripts/audit-curriculum.mjs'
+          audit = audit_path.read_text(encoding='utf-8')
+          unformatted = """  if (topic.id === 'ml-foundations-data-target') {
+          const structuredTables = topic.steps
+            .flatMap((step) => step.sections ?? [])
+            .map((section) => section.table)
+            .filter(Boolean)
+          const mainTable = structuredTables[0]
+          requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+          requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+          requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+          requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+        } else {
+          requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+        }
+        requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          formatted = """  if (topic.id === 'ml-foundations-data-target') {
+            const structuredTables = topic.steps
+              .flatMap((step) => step.sections ?? [])
+              .map((section) => section.table)
+              .filter(Boolean)
+            const mainTable = structuredTables[0]
+            requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+            requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+            requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+            requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+          } else {
+            requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+          }
+          requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          original = """  requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+          requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          if unformatted in audit:
+              audit = audit.replace(unformatted, original, 1)
+          elif formatted in audit:
+              audit = audit.replace(formatted, original, 1)
+          else:
+              raise RuntimeError('Could not reset the topic 4.1 visual audit before the registered runner')
+          audit_path.write_text(audit, encoding='utf-8')
+
+          generator_path = root / 'scripts/generate-course-visuals.py'
+          generator = generator_path.read_text(encoding='utf-8')
+          marker = '\n# TOPIC_4_1_FINAL_AUDIT_FORMATTER\n'
+          if marker in generator:
+              generator = generator.split(marker, 1)[0].rstrip() + '\n'
+          hook = r'''
+          # TOPIC_4_1_FINAL_AUDIT_FORMATTER
+          from pathlib import Path as _Topic41Path
+
+          _topic41_audit_path = _Topic41Path(__file__).with_name("audit-curriculum.mjs")
+          _topic41_audit = _topic41_audit_path.read_text(encoding="utf-8")
+          _topic41_unformatted = """  if (topic.id === 'ml-foundations-data-target') {
+          const structuredTables = topic.steps
+            .flatMap((step) => step.sections ?? [])
+            .map((section) => section.table)
+            .filter(Boolean)
+          const mainTable = structuredTables[0]
+          requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+          requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+          requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+          requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+        } else {
+          requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+        }
+        requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          _topic41_formatted = """  if (topic.id === 'ml-foundations-data-target') {
+            const structuredTables = topic.steps
+              .flatMap((step) => step.sections ?? [])
+              .map((section) => section.table)
+              .filter(Boolean)
+            const mainTable = structuredTables[0]
+            requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+            requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+            requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+            requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+          } else {
+            requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
+          }
+          requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
+          if _topic41_audit.count(_topic41_unformatted) != 1:
+              raise RuntimeError(f"Expected one unformatted topic 4.1 audit block, found {_topic41_audit.count(_topic41_unformatted)}")
+          _topic41_audit_path.write_text(_topic41_audit.replace(_topic41_unformatted, _topic41_formatted, 1), encoding="utf-8")
+
+          _topic41_visual_dir = _Topic41Path(__file__).resolve().parents[1] / "public" / "course-visuals"
+          for _topic41_name in ("ml-foundations-data-target.png", "ml-foundations-data-target-2.png"):
+              (_topic41_visual_dir / _topic41_name).write_bytes(b"temporary runner cleanup file")
+
+          _topic41_self = _Topic41Path(__file__)
+          _topic41_self_text = _topic41_self.read_text(encoding="utf-8")
+          _topic41_marker = "\n# TOPIC_4_1_FINAL_AUDIT_FORMATTER\n"
+          _topic41_self.write_text(_topic41_self_text.split(_topic41_marker, 1)[0].rstrip() + "\n", encoding="utf-8")
+          '''
+          hook = '\n'.join(line[10:] if line.startswith('          ') else line for line in hook.splitlines())
+          generator_path.write_text(generator.rstrip() + '\n' + hook, encoding='utf-8')
+          PY
+
+      - name: Commit verified source and report
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          find tests -type d -name __pycache__ -prune -exec rm -rf {} +
+          git rm .github/workflows/topic-4-1-autofix.yml
+          git add src scripts tests public/course-visuals
+          git commit -m "fix(curriculum): finalize topic 4.1 wording and formatting"
+          SOURCE_SHA=$(git rev-parse HEAD)
+          python - "$SOURCE_SHA" <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+
+          base = '751f51256338c2b6e19220b33b592b97e066e67d'
+          source = sys.argv[1]
+          path = Path('docs/block4-work/topic-4-1-concise-data-target.md')
+          text = path.read_text(encoding='utf-8')
+          text, count = re.subn(
+              r'- Tested source SHA: `[^`]+`\.',
+              f'- Tested source SHA: `{source}`.',
+              text,
+              count=1,
+          )
+          if count != 1:
+              raise RuntimeError('Could not update tested source SHA')
+
+          rows = []
+          additions = deletions = 0
+          for line in subprocess.check_output(['git', 'diff', '--numstat', f'{base}..{source}'], text=True).splitlines():
+              add, delete, filename = line.split('\t', 2)
+              if filename == 'docs/block4-work/topic-4-1-concise-data-target.md':
+                  continue
+              if add.isdigit():
+                  additions += int(add)
+                  deletions += int(delete)
+                  rows.append(f'| `{filename}` | {add} | {delete} |')
+              else:
+                  rows.append(f'| `{filename}` | binary | binary |')
+
+          start = text.index('| Файл | Добавления | Удаления |')
+          end = text.index('\n\nSource text total:', start)
+          table = '| Файл | Добавления | Удаления |\n|---|---:|---:|\n' + '\n'.join(rows)
+          text = text[:start] + table + text[end:]
+          total_start = text.index('Source text total:')
+          total_end = text.index('\n', total_start)
+          total = f'Source text total: **{additions} additions / {deletions} deletions**. Два PNG учитываются как бинарные удаления.'
+          text = text[:total_start] + total + text[total_end:]
+          text = text.replace('artifact `topic-4-1-final-review`', 'artifact `topic-4-1-review`')
+          path.write_text(text, encoding='utf-8')
+          PY
+          git add docs/block4-work/topic-4-1-concise-data-target.md
+          git diff --cached --name-only | grep -qx 'docs/block4-work/topic-4-1-concise-data-target.md'
+          git commit -m "docs: refresh final topic 4.1 report"
+          git push origin HEAD
