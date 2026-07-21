@@ -74,12 +74,13 @@ jobs:
           source_test_path = Path('tests/test_block4_topic_4_1_simplification.py')
           source_test = source_test_path.read_text(encoding='utf-8')
           marker = '    assert "явно синтетический набор данных" not in source\n'
+          terminology = "['объект', 'наблюдение', 'набор данных', 'признак', 'целевая переменная', 'X', 'y', 'утечка данных']"
           addition = (
               marker
-              + '    assert "dataset" not in source.split("[", 2)[2].split("]", 1)[0]\n'
-              + '    assert "feature" not in source.split("[", 2)[2].split("]", 1)[0]\n'
-              + '    assert "target" not in source.split("[", 2)[2].split("]", 1)[0]\n'
-              + '    assert "leakage" not in source.split("[", 2)[2].split("]", 1)[0]\n'
+              + f'    assert {terminology!r} in source\n'
+              + '    assert "dataset" not in source\n'
+              + '    assert "feature" not in source\n'
+              + '    assert "leakage" not in source\n'
               + '    assert "`basic` — «базовый»" in source\n'
               + '    assert "`pro` — «расширенный»" in source\n'
           )
@@ -136,6 +137,7 @@ jobs:
       - name: Check scope, whitespace and protected counts
         shell: bash
         run: |
+          find tests -type d -name __pycache__ -prune -exec rm -rf {} +
           git diff --check
           python - <<'PY'
           import subprocess
@@ -176,7 +178,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          find tests -type d -name __pycache__ -prune -exec rm -rf {} +
           git rm .github/workflows/topic-4-1-final-polish.yml
           git add scripts/audit-curriculum.mjs tests/e2e/course.spec.ts tests/test_block4_topic_4_1_simplification.py
           git commit -m "fix(curriculum): finalize topic 4.1 wording and formatting"
@@ -190,17 +191,21 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import os
+          import re
           import subprocess
 
           base = '751f51256338c2b6e19220b33b592b97e066e67d'
           source = os.environ['SOURCE_SHA']
           path = Path('docs/block4-work/topic-4-1-concise-data-target.md')
           text = path.read_text(encoding='utf-8')
-          text = text.replace(
-              '- Tested source SHA: `5ef5b430493703034388cfdfba92e9e3ab4edbf0`.',
+          text, count = re.subn(
+              r'- Tested source SHA: `[^`]+`\.',
               f'- Tested source SHA: `{source}`.',
-              1,
+              text,
+              count=1,
           )
+          if count != 1:
+              raise RuntimeError('Could not refresh tested source SHA in report')
 
           rows = []
           additions = deletions = 0
