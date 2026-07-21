@@ -62,8 +62,7 @@ jobs:
           commit_script = commit_script.replace(
               'git rm .github/workflows/topic-4-1-autofix.yml',
               'git rm .github/workflows/topic-4-1-autofix.yml\n'
-              'git rm .github/workflows/topic-4-1-final-runner.yml\n'
-              'git rm .github/workflows/topic-4-1-audit-debug.yml',
+              'git rm .github/workflows/topic-4-1-final-runner.yml',
           )
           commit_script = commit_script.replace(
               '| `python scripts/generate-course-visuals.py` | 0 |',
@@ -76,14 +75,24 @@ jobs:
       - name: Apply scoped source changes
         run: bash /tmp/apply-topic-4-1.sh
 
-      - name: Require the 6x6 HTML table instead of topic 4.1 PNGs
+      - name: Register the table-only design and keep its audit strict
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          path = Path('scripts/audit-curriculum.mjs')
-          text = path.read_text(encoding='utf-8')
+          registry_path = Path('src/data/courseVisuals.ts')
+          registry = registry_path.read_text(encoding='utf-8')
+          registry_marker = "const block4Visuals: Record<string, CourseVisual[]> = {\n"
+          registry_entry = "  'ml-foundations-data-target': [],\n"
+          if registry.count(registry_marker) != 1:
+              raise RuntimeError('Could not locate block4 visual registry')
+          if registry_entry not in registry:
+              registry = registry.replace(registry_marker, registry_marker + registry_entry, 1)
+          registry_path.write_text(registry, encoding='utf-8')
+
+          audit_path = Path('scripts/audit-curriculum.mjs')
+          audit = audit_path.read_text(encoding='utf-8')
           old = "  requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)\n  requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"
           new = """  if (topic.id === 'ml-foundations-data-target') {
             const structuredTables = topic.steps
@@ -99,12 +108,17 @@ jobs:
             requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
           }
           requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)"""
-          if text.count(old) != 1:
-              raise RuntimeError(f'Expected one visual audit invariant, found {text.count(old)}')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          if audit.count(old) != 1:
+              raise RuntimeError(f'Expected one visual audit invariant, found {audit.count(old)}')
+          audit_path.write_text(audit.replace(old, new, 1), encoding='utf-8')
 
           test_path = Path('tests/test_block4_topic_4_1_simplification.py')
           test_text = test_path.read_text(encoding='utf-8')
+          test_text = test_text.replace(
+              "    assert \"'ml-foundations-data-target': [\" not in registry\n",
+              "    assert \"'ml-foundations-data-target': [],\" in registry\n",
+              1,
+          )
           marker = '    assert "Course PNG files missing from registry" in audit\n'
           addition = (
               marker
@@ -118,7 +132,7 @@ jobs:
           PY
 
       - name: Install Python verification dependencies
-        run: python -m pip install --disable-pip-version-check matplotlib numpy pillow scikit-learn pytest
+        run: python -m pip install --disable-pip-version-check matplotlib numpy pandas pillow scikit-learn pytest
 
       - name: Install locked Node dependencies
         run: npm ci
@@ -162,7 +176,6 @@ jobs:
           allowed = {
               '.github/workflows/topic-4-1-autofix.yml',
               '.github/workflows/topic-4-1-final-runner.yml',
-              '.github/workflows/topic-4-1-audit-debug.yml',
               'src/data/curriculum/ml_foundations/data_target.ts',
               'src/data/courseVisuals.ts',
               'scripts/generate-course-visuals.py',
