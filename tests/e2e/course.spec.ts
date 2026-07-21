@@ -108,6 +108,7 @@ test('topics 4.1 and 4.2 keep one dataset while topic 4.1 stays concise', async 
   await expect(page.getByRole('heading', { name: 'Роль каждого столбца' })).toHaveCount(0)
   await expect(page.getByText(/явно синтетический набор данных/)).toHaveCount(0)
   await expect(page.getByRole('figure')).toHaveCount(0)
+  await expect(page.getByText('целевая переменная (target)', { exact: true })).toHaveCount(0)
   await page.screenshot({ path: '/tmp/ai-train-topic-4-1-desktop.png', fullPage: true })
 
   await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-x-y')
@@ -116,6 +117,7 @@ test('topics 4.1 and 4.2 keep one dataset while topic 4.1 stays concise', async 
   await expect(page.locator('pre').filter({ hasText: 'feature_cols =' })).toHaveCount(0)
   await expect(page.getByText('X: (6, 3) y: (6,)', { exact: false })).toBeVisible()
   await expect(page.getByText(/Тариф пока остаётся строкой/)).toBeVisible()
+  await expect(page.getByText(/basic.*базовый.*pro.*расширенный/)).toBeVisible()
   await expect(page.getByText(/теме 4\.16/)).toBeVisible()
 
   await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-leakage')

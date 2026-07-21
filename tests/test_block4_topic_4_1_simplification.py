@@ -11,6 +11,10 @@ def test_topic_4_1_uses_pop_and_drops_repeated_theory() -> None:
     assert "Проверить каждый кандидат в признаки" not in source
     assert "Четыре разных источника утечки" not in source
     assert "явно синтетический набор данных" not in source
+    assert "['объект', 'наблюдение', 'набор данных', 'признак', 'целевая переменная', 'X', 'y', 'утечка данных']" in source
+    assert "['объект', 'наблюдение', 'dataset', 'feature', 'target', 'X', 'y', 'leakage']" not in source
+    assert "`basic` — «базовый»" in source
+    assert "`pro` — «расширенный»" in source
     assert source.count("theoryStep(") == 3
     assert source.count("quizStep(") == 1
     assert source.count("practiceStep(") == 1
