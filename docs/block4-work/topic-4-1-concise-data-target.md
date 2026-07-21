@@ -27,7 +27,6 @@
 | `scripts/generate-course-visuals.py` | 3 | 126 |
 | `src/data/courseVisuals.ts` | 1 | 18 |
 | `src/data/curriculum/ml_foundations/data_target.ts` | 106 | 164 |
-| `tests/__pycache__/test_block4_topic_4_1_simplification.cpython-311-pytest-9.1.1.pyc` | binary | binary |
 | `tests/e2e/block4-step02-consistency.spec.ts` | 11 | 3 |
 | `tests/e2e/course.spec.ts` | 18 | 44 |
 | `tests/test_block4_topic_4_1_simplification.py` | 32 | 0 |
@@ -88,4 +87,5 @@ Source text total: **185 additions / 357 deletions**. Два PNG учитыва�
 ## Blockers и открытые решения
 
 - Локальная сеть sandbox не разрешила `git clone` (`Could not resolve host: github.com`, exit 128), поэтому воспроизводимый checkout и все проверки выполнены на GitHub Actions runner.
+- Сгенерированный pytest bytecode удалён отдельным cleanup-коммитом и отсутствует в итоговом PR diff.
 - PR остаётся draft до независимой проверки artifact и фактического GitHub diff.
