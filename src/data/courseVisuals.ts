@@ -25,24 +25,7 @@ const generatedVisual: CourseVisualProvenance = {
 }
 
 const block4Visuals: Record<string, CourseVisual[]> = {
-  'ml-foundations-data-target': [
-    {
-      src: '/course-visuals/ml-foundations-data-target.png',
-      alt: 'Таблица из шести синтетических клиентов с подписями ID, GROUP, FEATURE и TARGET разделяется на X формы 6 на 3 и y формы 6.',
-      caption: 'Что показано: все шесть строк исходной таблицы и разделение столбцов по ролям. Как читать: ID и GROUP исключаются, три FEATURE образуют X, TARGET образует y. Главный вывод: строки X и y совпадают, а target не входит в признаки.',
-      placement: { stepId: 'ml-foundations-data-target-object', sectionId: 'synthetic-client-table' },
-      order: 1,
-      provenance: generatedVisual,
-    },
-    {
-      src: '/course-visuals/ml-foundations-data-target-2.png',
-      alt: 'Временная линия синтетического прогноза оттока отделяет три доступных до cutoff признака от target и даты закрытия аккаунта после cutoff.',
-      caption: 'Что показано: временная граница между доступными признаками и будущими событиями. Как читать: зелёные блоки слева разрешены к cutoff, красные блоки справа прямо подписаны как запрещённые для X. Главный вывод: архивный столбец допустим только при доступности тем же способом в момент решения.',
-      placement: { stepId: 'ml-foundations-data-target-leakage', sectionId: 'cutoff-timeline' },
-      order: 2,
-      provenance: generatedVisual,
-    },
-  ],
+  'ml-foundations-data-target': [],
   'ml-foundations-model-fit-predict': [
     {
       src: '/course-visuals/ml-foundations-model-fit-predict.png',

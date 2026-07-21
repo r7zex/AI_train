@@ -188,7 +188,7 @@ requireCondition(fs.existsSync(courseVisualsPath), 'Course visual directory is m
 const courseVisualFiles = fs.existsSync(courseVisualsPath)
   ? fs.readdirSync(courseVisualsPath).filter((file) => file.endsWith('.png'))
   : []
-requireCondition(courseVisualFiles.length === 103, `Expected exactly 103 course PNG files, got ${courseVisualFiles.length}.`)
+requireCondition(courseVisualFiles.length === 101, `Expected exactly 101 course PNG files, got ${courseVisualFiles.length}.`)
 
 function readPngDimensions(filePath) {
   const buffer = fs.readFileSync(filePath)
@@ -262,8 +262,20 @@ requireCondition(registeredFiles.size === registeredVisuals.length, 'Each regist
 for (const topic of flowTopics) {
   const visualPattern = new RegExp(`^${topic.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:-\\d+)?\\.png$`)
   const topicVisuals = courseVisualFiles.filter((file) => visualPattern.test(file))
+  if (topic.id === 'ml-foundations-data-target') {
+  const structuredTables = topic.steps
+    .flatMap((step) => step.sections ?? [])
+    .map((section) => section.table)
+    .filter(Boolean)
+  const mainTable = structuredTables[0]
+  requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
+  requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
+  requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
+  requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
+} else {
   requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
-  requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)
+}
+requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)
   const topicRegistryFiles = getCourseVisuals(topic).map((visual) => visual.src.replace('/course-visuals/', '')).sort()
   requireCondition(topicRegistryFiles.join(',') === topicVisuals.sort().join(','), `${topic.id}: PNG files and visual registry entries do not match.`)
 }

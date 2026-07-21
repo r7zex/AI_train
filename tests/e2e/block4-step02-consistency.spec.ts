@@ -1,9 +1,17 @@
 import { expect, test } from '@playwright/test'
 
-test('step 02 keeps class order consistent and does not present inference as test evaluation', async ({ page }) => {
+test('step 02 keeps topic 4.1 concise and class order consistent in topic 4.2', async ({ page }) => {
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-object')
+  await expect(page.getByRole('heading', { name: 'Роль каждого столбца' })).toHaveCount(0)
+  await expect(page.getByRole('figure')).toHaveCount(0)
+
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-x-y')
+  await expect(page.locator('pre').filter({ hasText: 'y = data.pop("churn_after_30d")' })).toBeVisible()
+  await expect(page.locator('pre').filter({ hasText: 'feature_cols =' })).toHaveCount(0)
+
   await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-leakage')
-  await expect(page.getByText(/строки связанной группы H1 попали и в train, и в test/)).toBeVisible()
-  await expect(page.getByText(/строки связанной группы H3 попали и в train, и в test/)).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Четыре разных источника утечки' })).toHaveCount(0)
+  await expect(page.getByText(/строки связанной группы H1 попали и в train, и в test/)).toHaveCount(0)
 
   await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model')
   await expect(page.getByText(/classes_ = \[да, нет\].*\[2\/5, 3\/5\]/)).toBeVisible()
