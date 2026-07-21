@@ -156,7 +156,7 @@ export const topicMlDataTarget: FlowTopic = mlFoundationsTopic(
               ['утечка цели (target leakage)', '`churn_after_30d` включён в X', 'сам правильный ответ'],
               ['утечка из будущего (future leakage)', '`account_closed_at` известно только после cutoff', 'будущее относительно решения'],
               ['утечка подготовки (preprocessing leakage)', 'медиану рассчитали сразу по train и test', 'статистика отложенных данных'],
-              ['утечка групп/дубликатов (group/duplicate leakage)', 'строки связанной группы H3 попали и в train, и в test', 'почти тот же связанный объект из проверки'],
+              ['утечка групп/дубликатов (group/duplicate leakage)', 'строки связанной группы H1 попали и в train, и в test', 'почти тот же связанный объект из проверки'],
             ],
           },
           callouts: [
