@@ -64,9 +64,9 @@ const block4Visuals: Record<string, CourseVisual[]> = {
   'ml-foundations-train-test-baseline-metrics': [
     {
       src: '/course-visuals/ml-foundations-train-test-baseline-metrics.png',
-      alt: 'Одна полоса данных разделена на большую обучающую, меньшую проверочную и отдельную тестовую части; под тестом стоит запрет использовать его при выборе.',
-      caption: 'Что показано: три роли данных - обучение, промежуточная проверка и финальный тест. Как читать: модель учится на зелёной части, решения принимаются без доступа к красной. Главный вывод: тест нельзя расходовать на подбор модели.',
-      placement: { stepId: 'ml-foundations-train-test-baseline-metrics-split', sectionId: 'why' },
+      alt: 'Четыре вертикально объединённые панели показывают роли train 60, validation 20 и test 20, сравнение MAE baseline 4,00 и модели 2,33, regression errors 1, 2, 4 и confusion matrix TN 72, FP 18, FN 2, TP 8 со шкалой порога.',
+      caption: 'Что показано: четыре обязательных visual concepts темы - роли 60/20/20, baseline-vs-model, единый regression example и confusion/threshold. Как читать: панели идут сверху вниз от протокола оценки к числовым ошибкам и классификации; подписи и узоры дублируют цвет. Главный вывод: честное сравнение сохраняет роли данных, общий evaluation set, единые числа и порог, выбранный без test.',
+      placement: { stepId: 'ml-foundations-train-test-baseline-metrics-split', sectionId: 'roles' },
       order: 1,
       provenance: generatedVisual,
     },
@@ -74,9 +74,9 @@ const block4Visuals: Record<string, CourseVisual[]> = {
   'ml-foundations-project-cycle': [
     {
       src: '/course-visuals/ml-foundations-project-cycle.png',
-      alt: 'Последовательность из блоков данных, обучения, прогноза и метрики показывает контрольные точки базового цикла ML-проекта.',
-      caption: 'Что показано: укрупнённый цикл работы с моделью. Как читать: каждый следующий блок использует результат предыдущего. Главный вывод: проект не заканчивается обучением - прогноз обязательно проверяют выбранной метрикой.',
-      placement: { stepId: 'ml-foundations-project-cycle-pipeline', sectionId: 'pipeline' },
+      alt: 'Две вертикально объединённые панели показывают operational problem canvas с семью полями churn-вопроса и gate, затем полный project cycle от вопроса через оценку к monitoring с условной стрелкой возврата.',
+      caption: 'Что показано: operational problem canvas с объектом, cutoff, horizon, действием, target, primary metric и baseline, а ниже project cycle with monitoring. Как читать: первая панель проверяет постановку и gate, вторая разделяет offline, decision и business уровни и возвращает monitoring к вопросу. Главный вывод: без label/действия обучение не начинается, а рост F1 сам по себе не доказывает бизнес-эффект.',
+      placement: { stepId: 'ml-foundations-project-cycle-churn-case', sectionId: 'case' },
       order: 1,
       provenance: generatedVisual,
     },
