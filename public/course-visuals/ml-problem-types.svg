@@ -1,150 +1,109 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
-  <title id="title">Линейная и нелинейная структура данных</title>
-  <desc id="desc">Слева точки с высокой линейной корреляцией и прямой. Справа точки образуют кольцо, хотя линейная корреляция близка к нулю.</desc>
-  <defs>
-    <style>
-      .title { font: 700 38px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #102a66; }
-      .panel-title { font: 700 25px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #102a66; }
-      .axis-label { font: 700 20px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #102a66; }
-      .tick { font: 500 15px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #244493; }
-      .legend { font: 600 16px system-ui, -apple-system, "Segoe UI", sans-serif; fill: #102a66; }
-      .note { font: 700 21px system-ui, -apple-system, "Segoe UI", sans-serif; fill: white; }
-      .grid { stroke: #c9daf7; stroke-width: 1.4; }
-      .axis { stroke: #244493; stroke-width: 2; }
-      .point { fill: #244493; stroke: white; stroke-width: 2.2; }
-    </style>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="5" stdDeviation="9" flood-color="#102a66" flood-opacity="0.14"/>
-    </filter>
-  </defs>
-
-  <rect width="1400" height="820" fill="#ffffff"/>
-  <text x="700" y="56" text-anchor="middle" class="title">Линейная и нелинейная структура данных</text>
-
-  <!-- Left panel -->
-  <g filter="url(#shadow)">
-    <rect x="55" y="92" width="620" height="565" rx="18" fill="#edf4ff"/>
-  </g>
-  <text x="365" y="132" text-anchor="middle" class="panel-title">Сильная линейная связь</text>
-
-  <!-- Left grid -->
-  <g>
-    <line x1="125" y1="175" x2="125" y2="585" class="grid"/>
-    <line x1="215" y1="175" x2="215" y2="585" class="grid"/>
-    <line x1="305" y1="175" x2="305" y2="585" class="grid"/>
-    <line x1="395" y1="175" x2="395" y2="585" class="grid"/>
-    <line x1="485" y1="175" x2="485" y2="585" class="grid"/>
-    <line x1="575" y1="175" x2="575" y2="585" class="grid"/>
-    <line x1="95" y1="205" x2="635" y2="205" class="grid"/>
-    <line x1="95" y1="285" x2="635" y2="285" class="grid"/>
-    <line x1="95" y1="365" x2="635" y2="365" class="grid"/>
-    <line x1="95" y1="445" x2="635" y2="445" class="grid"/>
-    <line x1="95" y1="525" x2="635" y2="525" class="grid"/>
-  </g>
-  <line x1="95" y1="585" x2="635" y2="585" class="axis"/>
-  <line x1="95" y1="175" x2="95" y2="585" class="axis"/>
-  <text x="365" y="627" text-anchor="middle" class="axis-label">Признак x</text>
-  <text x="32" y="380" text-anchor="middle" class="axis-label" transform="rotate(-90 32 380)">Целевая величина y</text>
-  <text x="125" y="607" text-anchor="middle" class="tick">1</text>
-  <text x="215" y="607" text-anchor="middle" class="tick">3</text>
-  <text x="305" y="607" text-anchor="middle" class="tick">5</text>
-  <text x="395" y="607" text-anchor="middle" class="tick">7</text>
-  <text x="485" y="607" text-anchor="middle" class="tick">9</text>
-  <text x="78" y="530" text-anchor="end" class="tick">2</text>
-  <text x="78" y="450" text-anchor="end" class="tick">4</text>
-  <text x="78" y="370" text-anchor="end" class="tick">6</text>
-  <text x="78" y="290" text-anchor="end" class="tick">8</text>
-
-  <line x1="118" y1="555" x2="615" y2="190" stroke="#244493" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="125" cy="548" r="8" class="point"/>
-  <circle cx="180" cy="498" r="8" class="point"/>
-  <circle cx="235" cy="510" r="8" class="point"/>
-  <circle cx="290" cy="408" r="8" class="point"/>
-  <circle cx="345" cy="430" r="8" class="point"/>
-  <circle cx="400" cy="315" r="8" class="point"/>
-  <circle cx="455" cy="342" r="8" class="point"/>
-  <circle cx="520" cy="215" r="8" class="point"/>
-  <circle cx="590" cy="252" r="8" class="point"/>
-
-  <g>
-    <rect x="112" y="476" width="300" height="94" rx="9" fill="#ffffff" stroke="#b8cdf3" stroke-width="1.5"/>
-    <circle cx="135" cy="498" r="7" fill="#244493"/>
-    <text x="155" y="504" class="legend">наблюдения</text>
-    <line x1="128" y1="526" x2="151" y2="526" stroke="#244493" stroke-width="4"/>
-    <text x="160" y="532" class="legend">линейная модель</text>
-    <text x="128" y="558" class="legend">коэффициент корреляции: r = 0,96</text>
-  </g>
-
-  <!-- Right panel -->
-  <g filter="url(#shadow)">
-    <rect x="725" y="92" width="620" height="565" rx="18" fill="#edf4ff"/>
-  </g>
-  <text x="1035" y="132" text-anchor="middle" class="panel-title">Кольцевая нелинейная структура</text>
-
-  <!-- Right grid -->
-  <g>
-    <line x1="795" y1="175" x2="795" y2="585" class="grid"/>
-    <line x1="885" y1="175" x2="885" y2="585" class="grid"/>
-    <line x1="975" y1="175" x2="975" y2="585" class="grid"/>
-    <line x1="1065" y1="175" x2="1065" y2="585" class="grid"/>
-    <line x1="1155" y1="175" x2="1155" y2="585" class="grid"/>
-    <line x1="1245" y1="175" x2="1245" y2="585" class="grid"/>
-    <line x1="765" y1="205" x2="1305" y2="205" class="grid"/>
-    <line x1="765" y1="285" x2="1305" y2="285" class="grid"/>
-    <line x1="765" y1="365" x2="1305" y2="365" class="grid"/>
-    <line x1="765" y1="445" x2="1305" y2="445" class="grid"/>
-    <line x1="765" y1="525" x2="1305" y2="525" class="grid"/>
-  </g>
-  <line x1="765" y1="585" x2="1305" y2="585" class="axis"/>
-  <line x1="765" y1="175" x2="765" y2="585" class="axis"/>
-  <text x="1035" y="627" text-anchor="middle" class="axis-label">Признак x</text>
-  <text x="702" y="380" text-anchor="middle" class="axis-label" transform="rotate(-90 702 380)">Целевая величина y</text>
-  <text x="795" y="607" text-anchor="middle" class="tick">1</text>
-  <text x="885" y="607" text-anchor="middle" class="tick">3</text>
-  <text x="975" y="607" text-anchor="middle" class="tick">5</text>
-  <text x="1065" y="607" text-anchor="middle" class="tick">7</text>
-  <text x="1155" y="607" text-anchor="middle" class="tick">9</text>
-  <text x="748" y="530" text-anchor="end" class="tick">2</text>
-  <text x="748" y="450" text-anchor="end" class="tick">4</text>
-  <text x="748" y="370" text-anchor="end" class="tick">6</text>
-  <text x="748" y="290" text-anchor="end" class="tick">8</text>
-
-  <!-- Symmetric ring: covariance and Pearson correlation are approximately zero -->
-  <g>
-    <circle cx="1245" cy="375" r="8" class="point"/>
-    <circle cx="1238" cy="331" r="8" class="point"/>
-    <circle cx="1219" cy="290" r="8" class="point"/>
-    <circle cx="1188" cy="255" r="8" class="point"/>
-    <circle cx="1148" cy="228" r="8" class="point"/>
-    <circle cx="1102" cy="211" r="8" class="point"/>
-    <circle cx="1053" cy="205" r="8" class="point"/>
-    <circle cx="1004" cy="211" r="8" class="point"/>
-    <circle cx="958" cy="228" r="8" class="point"/>
-    <circle cx="918" cy="255" r="8" class="point"/>
-    <circle cx="887" cy="290" r="8" class="point"/>
-    <circle cx="868" cy="331" r="8" class="point"/>
-    <circle cx="861" cy="375" r="8" class="point"/>
-    <circle cx="868" cy="419" r="8" class="point"/>
-    <circle cx="887" cy="460" r="8" class="point"/>
-    <circle cx="918" cy="495" r="8" class="point"/>
-    <circle cx="958" cy="522" r="8" class="point"/>
-    <circle cx="1004" cy="539" r="8" class="point"/>
-    <circle cx="1053" cy="545" r="8" class="point"/>
-    <circle cx="1102" cy="539" r="8" class="point"/>
-    <circle cx="1148" cy="522" r="8" class="point"/>
-    <circle cx="1188" cy="495" r="8" class="point"/>
-    <circle cx="1219" cy="460" r="8" class="point"/>
-    <circle cx="1238" cy="419" r="8" class="point"/>
-  </g>
-
-  <g>
-    <rect x="782" y="490" width="330" height="78" rx="9" fill="#ffffff" stroke="#b8cdf3" stroke-width="1.5"/>
-    <circle cx="807" cy="514" r="7" fill="#244493"/>
-    <text x="827" y="520" class="legend">наблюдения</text>
-    <text x="798" y="552" class="legend">коэффициент корреляции: r ≈ 0,00</text>
-  </g>
-
-  <rect x="215" y="694" width="970" height="91" rx="13" fill="#244493"/>
-  <text x="700" y="730" text-anchor="middle" class="note">Корреляция и прямая не описывают форму кольца.</text>
-  <text x="700" y="762" text-anchor="middle" class="note">Для такой зависимости нужны нелинейные методы машинного обучения.</text>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="804pt" height="446pt" version="1.1" viewBox="0 0 804 446" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+</defs>
+<path d="m0 446h804v-446h-804z" fill="#fff"/>
+<path d="m42 371h352v-313h-352z" fill="#fff"/>
+<path d="m55 371v-313" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<defs>
+<path id="e" d="m0 0v3.5" stroke="#1746a2" stroke-width=".8"/>
+</defs>
+<use x="55.146117" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 55 386)" x="55.146117" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">0.0</text>
+<path d="m138 371v-313" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="137.819297" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 138 386)" x="137.819297" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">2.5</text>
+<path d="m220 371v-313" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="220.492477" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 220 386)" x="220.492477" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">5.0</text>
+<path d="m303 371v-313" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="303.165657" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 303 386)" x="303.165657" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">7.5</text>
+<path d="m386 371v-313" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="385.838837" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 386 386)" x="385.838837" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">10.0</text>
+<text transform="rotate(-0 218 400)" x="217.679046" y="400.268406" font-family="'DejaVu Sans'" font-size="11px" font-weight="700" text-anchor="middle">Признак x</text>
+<path d="m42 359h352" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<defs>
+<path id="d" d="m0 0h-3.5" stroke="#1746a2" stroke-width=".8"/>
+</defs>
+<use x="41.570938" y="359.081306" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 35 363)" x="34.570938" y="362.880525" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">0</text>
+<path d="m42 288h352" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="41.570938" y="287.903385" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 35 292)" x="34.570938" y="291.702603" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">3</text>
+<path d="m42 217h352" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="41.570938" y="216.725463" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 35 221)" x="34.570938" y="220.524682" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">6</text>
+<path d="m42 146h352" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="41.570938" y="145.547542" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 35 149)" x="34.570938" y="149.346761" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">9</text>
+<path d="m42 74h352" clip-path="url(#b)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="41.570938" y="74.36962" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 35 78)" x="34.570938" y="78.168839" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">12</text>
+<text transform="rotate(-90 15 215)" x="15.472344" y="214.56" font-family="'DejaVu Sans'" font-size="11px" font-weight="700" text-anchor="middle">Целевая величина y</text>
+<path d="m42 371v-313" fill="none" stroke="#1746a2" stroke-linecap="square" stroke-width=".8"/>
+<path d="m42 371h352" fill="none" stroke="#1746a2" stroke-linecap="square" stroke-width=".8"/>
+<path d="m58 357h.01m5.1-19h.01m2.7-41h.01m4.3 23h.01m4.8-21h.01m1.8 6.8h.01m7.9 23h.01m0.79-29h.01m1.4 19h.01m6.7-4.9h.01m1.1-11h.01m3.3 36h.01m0.6-65h.01m3.3 42h.01m0.015-40h.01m4.1 17h.01m0.65-34h.01m2.3 50h.01m1.9-9.7h.01m7.4-21h.01m1.7 59h.01m1.7-73h.01m4.9-21h.01m4.1 6.8h.01m0.11 8.7h.01m2.2 20h.01m16-46h.01m2.3 3.2h.01m1.7 15h.01m2.6 7.2h.01m0.81 8.1h.01m2.8 19h.01m4.5-62h.01m9.5 73h.01m2.4-45h.01m2.9-15h.01m0.11-17h.01m3.4-24h.01m2.1 17h.01m6.3 26h.01m0.71-25h.01m9.3 40h.01m0.14-64h.01m0.57 37h.01m1.5 11h.01m0.91-1.5h.01m1.4-15h.01m2.8 5.7h.01m0.98-64h.01m1.6 70h.01m0.94-19h.01m0.51-0.28h.01m1.5-1.2h.01m8.4-7h.01m17-0.35h.01m0.33 2.2h.01m0.81 6h.01m0.72 14h.01m2-42h.01m1.2-19h.01m20 21h.01m0.46 0.024h.01m1-6.5h.01m3 1.1h.01m6 19h.01m0.79-67h.01m0.18 22h.01m1.2 26h.01m0.47-24h.01m4.2 14h.01m0.18-5.5h.01m4.4-17h.01m0.35-14h.01m0.96-14h.01m1.6-5.6h.01m5.7 42h.01m7.4 0.37h.01m4.4-18h.01m1-1.4h.01m1.3 20h.01m3-4.9h.01m1.5-35h.01m0.78-20h.01m1 44h.01m0.72 9.5h.01m0.28-8.9h.01m5.9 12h.01m3.1-19h.01m2.9-19h.01m1.6 11h.01m1.5-32h.01m0.14 26h.01m6.9-13h.01m1.7 14h.01m11-43h.01m11 52h.01m12-31h.01m1.9 19h.01m1.1-48h.01m1.6-1.8h.01" clip-path="url(#b)" fill="none" stroke="#1746a2" stroke-width="4.7" style="stroke-linecap:round"/>
+<text transform="rotate(-0 218 52)" x="217.679046" y="51.888" font-family="'DejaVu Sans'" font-size="14px" font-weight="700" text-anchor="middle">Сильная линейная связь</text>
+<path d="m58 330 320-238v0" clip-path="url(#b)" fill="none" stroke="#1746a2" stroke-linecap="square" stroke-width="2.2"/>
+<path d="m48 367h187q1.7 0 1.7-1.7v-37q0-1.7-1.7-1.7h-187q-1.7 0-1.7 1.7v37q0 1.7 1.7 1.7z" fill="#fff" stroke="#d6e3f8"/>
+<defs>
+<path id="f" d="m0 3c0.8 0 1.6-0.32 2.1-0.88 0.56-0.56 0.88-1.3 0.88-2.1s-0.32-1.6-0.88-2.1c-0.56-0.56-1.3-0.88-2.1-0.88s-1.6 0.32-2.1 0.88c-0.56 0.56-0.88 1.3-0.88 2.1s0.32 1.6 0.88 2.1c0.56 0.56 1.3 0.88 2.1 0.88z" stroke="#1746a2"/>
+</defs>
+<use x="57.720938" y="333.886453" fill="#1746a2" stroke="#1746a2" xlink:href="#f"/>
+<text transform="rotate(-0 73 337)" x="73.020938" y="336.861453" font-family="'DejaVu Sans'" font-size="8.5px">Наблюдения</text>
+<path d="m49 346h17" fill="none" stroke="#1746a2" stroke-linecap="square" stroke-width="2.2"/>
+<text transform="rotate(-0 73 349)" x="73.020938" y="349.337859" font-family="'DejaVu Sans'" font-size="8.5px">Линейная модель</text>
+<text transform="rotate(-0 73 362)" x="73.020938" y="361.814266" font-family="'DejaVu Sans'" font-size="8.5px">Коэффициент корреляции: r = 0.95</text>
+<path d="m498 371h299v-313h-299z" fill="#fff"/>
+<path d="m561 371v-313" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="560.84144" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 561 386)" x="560.84144" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">3.0</text>
+<path d="m625 371v-313" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="624.910543" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 625 386)" x="624.910543" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">4.5</text>
+<path d="m689 371v-313" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="688.979647" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 689 386)" x="688.979647" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">6.0</text>
+<path d="m753 371v-313" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="753.048751" y="371.232" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#e"/>
+<text transform="rotate(-0 753 386)" x="753.048751" y="385.830437" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="middle">7.5</text>
+<text transform="rotate(-0 647 400)" x="647.382829" y="400.268406" font-family="'DejaVu Sans'" font-size="11px" font-weight="700" text-anchor="middle">Признак x</text>
+<path d="m498 364h299" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="497.743462" y="363.70528" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 491 368)" x="490.743462" y="367.504498" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">1.5</text>
+<path d="m498 300h299" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="497.743462" y="299.636176" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 491 303)" x="490.743462" y="303.435395" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">3.0</text>
+<path d="m498 236h299" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="497.743462" y="235.567072" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 491 239)" x="490.743462" y="239.366291" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">4.5</text>
+<path d="m498 172h299" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="497.743462" y="171.497969" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 491 175)" x="490.743462" y="175.297187" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">6.0</text>
+<path d="m498 107h299" clip-path="url(#c)" fill="none" stroke="#d6e3f8" stroke-linecap="square" stroke-width=".8"/>
+<use x="497.743462" y="107.428865" fill="#1746a2" stroke="#1746a2" stroke-width=".8" xlink:href="#d"/>
+<text transform="rotate(-0 491 111)" x="490.743462" y="111.228084" fill="#1746a2" font-family="'DejaVu Sans'" font-size="10px" text-anchor="end">7.5</text>
+<text transform="rotate(-90 468 215)" x="468.466743" y="214.56" font-family="'DejaVu Sans'" font-size="11px" font-weight="700" text-anchor="middle">Целевая величина y</text>
+<path d="m498 371v-313" fill="none" stroke="#1746a2" stroke-linecap="square" stroke-width=".8"/>
+<path d="m498 371h299" fill="none" stroke="#1746a2" stroke-linecap="square" stroke-width=".8"/>
+<path d="m616 72h.01m139 211h.01m-50 58h.01m-93-251h.01m104 242h.01m31-49h.01m-127-187h.01m133 203h.01m-210-161h.01m-4.8 129h.01m156-182h.01m18 241h.01m33-24h.01m-212-104h.01m-4.1 53h.01m148-155h.01m8.5 253h.01m86-190h.01m-13 108h.01m-196-124h.01m-28 11h.01m97-75h.01m132 146h.01m-236 28h.01m78-154h.01m-55 21h.01m121 218h.01m-66-15h.01m-94-63h.01m19-116h.01m239-11h.01m-250 123h.01m-1.3-19h.01m250-23h.01m-252-71h.01m182 214h.01m-141-81h.01m124 51h.01m-106-20h.01m118-201h.01m-161 37h.01m-7.8 51h.01m15 103h.01m95-208h.01m137 181h.01m12-17h.01m-262 11h.01m248-25h.01m-257-55h.01m114 155h.01m24 2.5h.01m133-158h.01m-236 115h.01m202-158h.01m-211 165h.01m76-218h.01m127 224h.01m-198-160h.01m175-58h.01m-8.2 15h.01m-12 216h.01m-7.6-234h.01m57 222h.01m-133 28h.01m-8.6 12h.01m5.8-259h.01m19 242h.01m3.6-237h.01m90 26h.01m-7.4-23h.01m-107 0.011h.01m166 77h.01m-232 102h.01m225 5.8h.01m-192 22h.01m-41-31h.01m185 32h.01m40-77h.01m0.34 25h.01m12-65h.01m-84 155h.01m-146-77h.01m32 66h.01m59-238h.01m-78 218h.01m174-191h.01m-168 169h.01m50-201h.01m32 255h.01m39-255h.01m-38 256h.01m-71-7.1h.01m-22-204h.01m-37 107h.01m174-161h.01m-69 11h.01m139 74h.01m-61-63h.01m-82 227h.01m41 8.8h.01" clip-path="url(#c)" fill="none" stroke="#1746a2" stroke-width="4.7" style="stroke-linecap:round"/>
+<text transform="rotate(-0 647 52)" x="647.382829" y="51.888" font-family="'DejaVu Sans'" font-size="14px" font-weight="700" text-anchor="middle">Кольцевая нелинейная структура</text>
+<path d="m504 367h187q1.7 0 1.7-1.7v-24q0-1.7-1.7-1.7h-187q-1.7 0-1.7 1.7v24q0 1.7 1.7 1.7z" fill="#fff" stroke="#d6e3f8"/>
+<use x="513.893462" y="346.362859" fill="#1746a2" stroke="#1746a2" xlink:href="#f"/>
+<text transform="rotate(-0 529 349)" x="529.193462" y="349.337859" font-family="'DejaVu Sans'" font-size="8.5px">Наблюдения</text>
+<text transform="rotate(-0 529 362)" x="529.193462" y="361.814266" font-family="'DejaVu Sans'" font-size="8.5px">Коэффициент корреляции: r ≈ 0.00</text>
+<text transform="rotate(-0 404 21)" x="404.450938" y="20.955937" font-family="'DejaVu Sans'" font-size="18px" font-weight="700" text-anchor="middle">Линейная и нелинейная структура данных</text>
+<path d="m17 446h775q6.8 0 6.8-6.8v-11q0-6.8-6.8-6.8h-775q-6.8 0-6.8 6.8v11q0 6.8 6.8 6.8z" fill="#1746a2" stroke="#1746a2"/>
+<text transform="rotate(-0 404 436)" x="404.450938" y="436.467773" fill="#ffffff" font-family="'DejaVu Sans'" font-size="10px" font-weight="700" text-anchor="middle">Корреляция и прямая не описывают форму кольца. Для такой зависимости нужны нелинейные методы машинного обучения.</text>
+<defs>
+<clipPath id="b">
+<rect x="42" y="58" width="352" height="313"/>
+</clipPath>
+<clipPath id="c">
+<rect x="498" y="58" width="299" height="313"/>
+</clipPath>
+</defs>
 </svg>
