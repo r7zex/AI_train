@@ -1,5 +1,6 @@
 import { curriculumBlocks, flowTopics } from './aiCurriculum'
 import { stepTypeMeta } from './aiCurriculumTypes'
+import { randomizeFourOptionSingleChoiceQuiz } from '../lib/randomizeQuizOptions'
 import type {
   ConceptCard,
   ConceptCodeExample,
@@ -64,8 +65,26 @@ export function getFlowTopicById(topicId: string) {
   return flowTopics.find((topic) => topic.id === topicId) ?? null
 }
 
+let openedStepCache: { key: string; step: FlowStep } | null = null
+
+function currentHistoryEntryKey() {
+  if (typeof window === 'undefined') return 'server'
+  const state = window.history.state as { key?: string; idx?: number } | null
+  return state?.key ?? `${window.location.pathname}:${state?.idx ?? 'unknown'}`
+}
+
 export function getFlowStep(topicId: string, stepId: string) {
-  return getFlowTopicById(topicId)?.steps.find((step) => step.id === stepId) ?? null
+  const step = getFlowTopicById(topicId)?.steps.find((item) => item.id === stepId) ?? null
+  if (!step) return null
+
+  const cacheKey = `${topicId}:${stepId}:${currentHistoryEntryKey()}`
+  if (openedStepCache?.key === cacheKey) return openedStepCache.step
+
+  const openedStep = step.quiz
+    ? { ...step, quiz: randomizeFourOptionSingleChoiceQuiz(step.quiz) }
+    : step
+  openedStepCache = { key: cacheKey, step: openedStep }
+  return openedStep
 }
 
 export function getFlowStepHref(topicId: string, stepId: string) {

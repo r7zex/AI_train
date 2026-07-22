@@ -1,10 +1,16 @@
+import { useMemo } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { getQuizById } from '../data/quizzes'
 import QuizWidget from '../features/quiz/QuizWidget'
+import { randomizeFourOptionSingleChoiceQuiz } from '../lib/randomizeQuizOptions'
 
 const QuizDetailPage: React.FC = () => {
   const { quizId } = useParams<{ quizId: string }>()
-  const quiz = quizId ? getQuizById(quizId) : undefined
+  const sourceQuiz = quizId ? getQuizById(quizId) : undefined
+  const quiz = useMemo(
+    () => sourceQuiz ? randomizeFourOptionSingleChoiceQuiz(sourceQuiz) : undefined,
+    [sourceQuiz],
+  )
 
   if (!quiz) {
     return <Navigate to="/quiz" replace />
