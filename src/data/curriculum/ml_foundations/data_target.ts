@@ -31,7 +31,7 @@ export const topicMlDataTarget: FlowTopic = mlFoundationsTopic(
               '`days_since_login`',
               '`tariff`',
               '`support_tickets`',
-              '`target`',
+              '`churn_after_30d`',
             ],
             rows: [
               ['C101', 'H1', '2', 'pro', '0', 'нет'],
@@ -43,16 +43,19 @@ export const topicMlDataTarget: FlowTopic = mlFoundationsTopic(
             ],
           },
         }),
+        section('column-translations', 'Перевод названий столбцов', [
+          '`client_id` — идентификатор клиента; `household_group` — группа связанных клиентов; `days_since_login` — число дней с последнего входа; `tariff` — тариф; `support_tickets` — количество обращений в поддержку; `churn_after_30d` — уйдёт ли клиент в течение следующих 30 дней.',
+        ]),
         section('feature-and-target', 'Признаки и целевая переменная', [
           '**Признак** — характеристика объекта, по которой модель ищет закономерности. В примере признаками служат число дней без входа, тариф и количество обращений в поддержку.',
-          '**Целевая переменная** — величина, которую требуется предсказать. Столбец `target` показывает, уйдёт ли клиент в следующие 30 дней. Выбор цели определяется задачей: для тех же клиентов целью могла бы быть будущая сумма покупок, и тогда получилась бы другая задача.',
+          '**Целевая переменная** — величина, которую требуется предсказать. Столбец `churn_after_30d` показывает, уйдёт ли клиент в следующие 30 дней. Выбор цели определяется задачей: для тех же клиентов целью могла бы быть будущая сумма покупок, и тогда получилась бы другая задача.',
         ]),
         section('service-columns', 'Идентификаторы и служебные столбцы — не признаки', [
           '`client_id` только отличает одну запись от другой, а `household_group` помогает не разделить связанных клиентов при проверке модели. Эти столбцы нужны для учёта и организации данных, но не описывают закономерность, по которой должен строиться прогноз.',
-          'Идентификатор или групповой столбец не включают в признаки только потому, что он записан числом или строкой. Сначала определяют смысл каждого столбца, затем явно отделяют служебные сведения от данных для модели.',
+          '`client_id` и `household_group` исключают из признаков не из-за того, что они записаны числами или строками, а из-за их служебного смысла. Перед формированием `X` определяют назначение каждого столбца и оставляют только характеристики, по которым модель должна строить прогноз.',
         ], {
           callouts: [
-            callout('Роли в сквозном примере', '`days_since_login`, `tariff` и `support_tickets` — признаки; `target` — требуемый ответ; `client_id` и `household_group` — служебные столбцы.', 'important'),
+            callout('Роли в сквозном примере', '`days_since_login`, `tariff` и `support_tickets` — признаки; `churn_after_30d` — требуемый ответ; `client_id` и `household_group` — служебные столбцы.', 'important'),
           ],
         }),
       ],
@@ -63,25 +66,32 @@ export const topicMlDataTarget: FlowTopic = mlFoundationsTopic(
       'Сначала исключаем служебные столбцы, затем создаём X и y из одной и той же таблицы.',
       [
         section('split-columns', 'Разделение словами и кодом', [
-          '`X` — таблица признаков: три столбца, которые модель получает на вход. `y` — один столбец с правильными ответами. Обе части содержат те же шесть строк в одинаковом порядке.',
-          'Вначале из исходной таблицы удаляются `client_id` и `household_group`. После этого строка `X = df.drop(columns=["target"])` создаёт признаки без целевой переменной, а строка `y = df["target"]` отдельно выбирает ответы.',
+          'Таблица ниже уже хранится в переменной `df`. `X` — таблица признаков: три столбца, которые модель получает на вход. `y` — один столбец с правильными ответами. Обе части содержат те же шесть строк в одинаковом порядке.',
+          'Сначала из `df` удаляются `client_id` и `household_group`. После этого строка `X = df.drop(columns=["churn_after_30d"])` создаёт признаки без целевой переменной, а строка `y = df["churn_after_30d"]` отдельно выбирает ответы.',
         ], {
+          table: {
+            headers: [
+              '`client_id`',
+              '`household_group`',
+              '`days_since_login`',
+              '`tariff`',
+              '`support_tickets`',
+              '`churn_after_30d`',
+            ],
+            rows: [
+              ['C101', 'H1', '2', 'pro', '0', 'нет'],
+              ['C102', 'H1', '18', 'basic', '2', 'да'],
+              ['C103', 'H2', '5', 'pro', '1', 'нет'],
+              ['C104', 'H2', '31', 'basic', '4', 'да'],
+              ['C105', 'H3', '9', 'basic', '0', 'нет'],
+              ['C106', 'H3', '24', 'pro', '3', 'да'],
+            ],
+          },
           codeExamples: [
             code('python', `
-              import pandas as pd
-
-              source_df = pd.DataFrame({
-                  "client_id": ["C101", "C102", "C103", "C104", "C105", "C106"],
-                  "household_group": ["H1", "H1", "H2", "H2", "H3", "H3"],
-                  "days_since_login": [2, 18, 5, 31, 9, 24],
-                  "tariff": ["pro", "basic", "pro", "basic", "basic", "pro"],
-                  "support_tickets": [0, 2, 1, 4, 0, 3],
-                  "target": ["нет", "да", "нет", "да", "нет", "да"],
-              })
-
-              df = source_df.drop(columns=["client_id", "household_group"])
-              X = df.drop(columns=["target"])
-              y = df["target"]
+              df = df.drop(columns=["client_id", "household_group"])
+              X = df.drop(columns=["churn_after_30d"])
+              y = df["churn_after_30d"]
 
               print(X.columns.tolist())
               print(y.tolist())
@@ -99,25 +109,6 @@ export const topicMlDataTarget: FlowTopic = mlFoundationsTopic(
         ]),
       ],
     ),
-    theoryStep(
-      'ml-foundations-data-target-leakage',
-      'Проверить состав признаков перед обучением',
-      'В X нельзя оставлять сам ответ и сведения, которые появятся только после момента прогноза.',
-      [
-        section('exclude-target', 'Целевая переменная не входит в признаки', [
-          'Если оставить `target` внутри `X`, модель получит правильный ответ прямо во входной строке. Она сможет показать искусственно высокое качество, но при реальном прогнозе такого значения ещё не будет.',
-          'Поэтому целевую переменную хранят отдельно в `y`. Проверка названий столбцов `X` перед обучением должна подтвердить, что `target` отсутствует, а каждый оставшийся столбец действительно доступен модели.',
-        ]),
-        section('future-information', 'Не включать информацию из будущего', [
-          'На дату прогноза известны текущий тариф, число дней без входа и уже зарегистрированные обращения. Дата последующего закрытия аккаунта и обращения, созданные после этой даты, станут известны позже и не могут быть признаками.',
-          'Попадание будущих сведений называется утечкой данных. Проверка на сохранённой таблице тогда не отражает реальную работу: модель использует информацию, которой в момент применения не существует.',
-        ], {
-          callouts: [
-            callout('Короткая проверка X', 'Нет целевой переменной; нет идентификаторов и служебных столбцов; каждый признак доступен в момент, когда требуется прогноз.', 'remember'),
-          ],
-        }),
-      ],
-    ),
     quizStep(
       'ml-foundations-data-target-quiz',
       'Определить целевую переменную',
@@ -132,7 +123,7 @@ export const topicMlDataTarget: FlowTopic = mlFoundationsTopic(
           { id: 'a', text: '`days_since_login`' },
           { id: 'b', text: '`tariff`' },
           { id: 'c', text: '`support_tickets`' },
-          { id: 'd', text: '`target`' },
+          { id: 'd', text: '`churn_after_30d`' },
         ],
         'd',
         '`y` хранит требуемый ответ задачи — факт ухода клиента в следующие 30 дней.',
@@ -156,7 +147,7 @@ export const topicMlDataTarget: FlowTopic = mlFoundationsTopic(
         `,
         [
           { id: 's1', description: 'Квартиры', input: 'area rooms district price\nprice', expectedOutput: 'area rooms district' },
-          { id: 's2', description: 'Клиенты со служебными столбцами', input: 'client_id household_group days_since_login tariff support_tickets target\ntarget\nclient_id\nhousehold_group', expectedOutput: 'days_since_login tariff support_tickets' },
+          { id: 's2', description: 'Клиенты со служебными столбцами', input: 'client_id household_group days_since_login tariff support_tickets churn_after_30d\nchurn_after_30d\nclient_id\nhousehold_group', expectedOutput: 'days_since_login tariff support_tickets' },
         ],
         [
           { id: 'h1', description: 'Клиенты (сохранённый сценарий)', input: 'age purchases churn\nchurn', expectedOutput: 'age purchases' },
