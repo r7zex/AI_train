@@ -188,7 +188,7 @@ requireCondition(fs.existsSync(courseVisualsPath), 'Course visual directory is m
 const courseVisualFiles = fs.existsSync(courseVisualsPath)
   ? fs.readdirSync(courseVisualsPath).filter((file) => file.endsWith('.png'))
   : []
-requireCondition(courseVisualFiles.length === 101, `Expected exactly 101 course PNG files, got ${courseVisualFiles.length}.`)
+requireCondition(courseVisualFiles.length === 99, `Expected exactly 99 course PNG files, got ${courseVisualFiles.length}.`)
 
 function readPngDimensions(filePath) {
   const buffer = fs.readFileSync(filePath)

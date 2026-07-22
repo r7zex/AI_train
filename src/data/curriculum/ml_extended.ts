@@ -67,42 +67,6 @@ interface PedagogyProfile {
 }
 
 const pedagogyProfiles: Record<string, PedagogyProfile> = {
-  'ml-problem-types': {
-    theoryTitle: 'Как по требуемому ответу определить задачу',
-    theorySummary: 'Сначала формулируем, что должно оказаться в одной ячейке прогноза, и только затем выбираем семейство методов.',
-    sections: [
-      {
-        id: 'answer-first',
-        title: 'Один вопрос отделяет три задачи',
-        paragraphs: [
-          'Представьте одного нового пациента. Если ответ должен быть названием категории — например «болен» или «здоров», — это классификация. Если ответом должно быть число — например длительность госпитализации в днях, — это регрессия. Если правильного ответа в исторической таблице вообще нет и требуется лишь найти похожие группы, это кластеризация.',
-          'Тип столбца в pandas сам по себе ничего не решает. Коды стадий 1, 2, 3 могут быть классами, а количество визитов 1, 2, 3 — числовой величиной. Смысл задаёт исследовательский вопрос.',
-        ],
-        table: {
-          headers: ['Что требуется получить', 'Тип задачи', 'Пример ответа'],
-          rows: [
-            ['одну из заранее известных категорий', 'классификация', '«есть мутация» / «нет мутации»'],
-            ['число на непрерывной или счётной шкале', 'регрессия', '18.4 месяца'],
-            ['группы без готовых правильных меток', 'кластеризация', 'кластер 0, 1 или 2'],
-          ],
-        },
-      },
-      {
-        id: 'problem-check',
-        title: 'Что проверить до выбора алгоритма',
-        paragraphs: ['Уточните единицу наблюдения, момент прогноза и смысл целевой переменной. После этого станет понятно, есть ли готовые ответы для обучения и как оценивать результат.'],
-        bullets: ['Для классификации проверяют качество классов.', 'Для регрессии измеряют величину числовой ошибки.', 'Для кластеризации проверяют устойчивость и предметный смысл найденных групп.'],
-      },
-    ],
-    parametersTitle: 'Настройки постановки, а не модели',
-    parametersSummary: 'Здесь параметры означают решения о задаче: что предсказываем, с чем сравниваем и как измеряем качество.',
-    parametersIntro: ['В этой теме нет универсальной сетки гиперпараметров: сначала фиксируют target, простую сравнительную модель и основную метрику. Ошибка на этом уровне не исправляется более сложным алгоритмом.'],
-    implementationTitle: 'Три минимальных примера в scikit-learn',
-    implementationSummary: 'Смотрим, чем отличаются вызовы predict и результат трёх постановок.',
-    implementationIntro: ['Классификатор возвращает метку класса, регрессор — число, а KMeans присваивает номер найденного кластера. Номер кластера условен: «кластер 0» не лучше и не хуже «кластера 1».'],
-    codeExplanation: 'Три фрагмента используют разные типы ответа: класс, число и номер найденной группы.',
-    cheatsheet: ['Категория → классификация.', 'Число → регрессия.', 'Нет готового ответа → кластеризация.'],
-  },
   'validation-split': {
     theoryTitle: 'Почему ответы части объектов нужно спрятать',
     theorySummary: 'Разбиение имитирует встречу модели с новыми данными и разделяет обучение, выбор решений и финальную проверку.',
@@ -454,7 +418,7 @@ const formulaExamples: Record<string, Array<FormulaCard['example']>> = {
 
 function buildExtendedTopic(spec: ExtendedTopicSpec): FlowTopic {
   const profile = pedagogyProfiles[spec.id]
-  const formulas = ['ml-problem-types', 'validation-split'].includes(spec.id)
+  const formulas = spec.id === 'validation-split'
     ? []
     : spec.formulas.map((formula, index) => ({ ...formula, example: formulaExamples[spec.id]?.[index] }))
   const theorySections = profile
@@ -663,63 +627,6 @@ q3 = (values[2] + values[3]) / 2
 print(f"{mean:g} {(q3 - q1):g}")`,
       samples: [{ id: 's1', description: 'Ровный ряд', input: '1 2 3 4', expectedOutput: '2.5 2' }],
       hidden: [{ id: 'h1', description: 'Одинаковые значения', input: '5 5 5 5', expectedOutput: '5 0' }, { id: 'h2', description: 'Отрицательные значения', input: '-4 -2 2 4', expectedOutput: '0 6' }],
-    },
-  },
-  {
-    id: 'ml-problem-types',
-    title: '4.5 Виды задач: классификация, регрессия и кластеризация',
-    order: 5,
-    blockId: 'ml-foundations',
-    blockTitle: 'Основы машинного обучения',
-    blockIcon: '04',
-    summary: 'Тип целевой переменной (target) определяет постановку: класс — классификация, число — регрессия, отсутствие готового ответа и поиск групп — кластеризация.',
-    intuition: 'Один и тот же набор признаков можно использовать для разных задач, но алгоритм, метрика и способ проверки выбираются по тому, какой ответ нужен.',
-    terminology: ['supervised learning', 'unsupervised learning', 'classification', 'regression', 'clustering', 'target', 'label'],
-    formulas: [
-      { label: 'Классификация', expression: String.raw`\hat{y}\in\{1,\ldots,K\}`, meaning: 'Модель выбирает один из K классов.', notation: ['K — число классов', 'hat{y} — предсказанный класс'] },
-      { label: 'Регрессия', expression: String.raw`\hat{y}\in\mathbb{R}`, meaning: 'Модель предсказывает вещественное число.', notation: ['mathbb{R} — множество вещественных чисел'] },
-      { label: 'Кластеризация', expression: String.raw`c_i\in\{1,\ldots,K\}`, meaning: 'Алгоритм присваивает объекту номер найденной группы без готового target.', notation: ['c_i — кластер объекта i'] },
-    ],
-    parameterRows: [
-      ['целевая переменная (`target`)', 'задаётся данными', 'класс / число / отсутствует', 'тип задачи'],
-      ['простая сравнительная модель (`baseline`)', 'нет универсальной', 'частый класс / среднее / случайное правило', 'минимальный ориентир'],
-      ['метрика качества (`metric`)', 'нет универсальной', 'F1 / MAE / силуэт', 'критерий качества'],
-      ['зерно случайности (`random_state`)', '`None`', '`42` или другое фиксированное целое число', 'воспроизводимость'],
-    ],
-    implementationNotes: ['Не определяйте задачу только по dtype: целые числа могут быть как классами, так и числовым target.', 'Для кластеризации нет правильных меток по умолчанию, поэтому используют внутренние метрики и предметную интерпретацию групп.'],
-    code: `from sklearn.datasets import load_iris, load_diabetes, make_blobs
-from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.cluster import KMeans
-
-X_cls, y_cls = load_iris(return_X_y=True)
-classifier = LogisticRegression(max_iter=1000).fit(X_cls, y_cls)
-
-X_reg, y_reg = load_diabetes(return_X_y=True)
-regressor = LinearRegression().fit(X_reg, y_reg)
-
-X_cluster, _ = make_blobs(n_samples=100, centers=3, random_state=42)
-clusters = KMeans(n_clusters=3, random_state=42).fit_predict(X_cluster)
-
-print(classifier.predict(X_cls[:1])[0])
-print(round(regressor.predict(X_reg[:1])[0], 2))
-print(clusters[:5])`,
-    quiz: {
-      question: 'В таблице нет target, а требуется найти группы похожих клиентов. Как называется задача?',
-      options: [{ id: 'a', text: 'Кластеризация' }, { id: 'b', text: 'Регрессия' }, { id: 'c', text: 'Бинарная классификация' }, { id: 'd', text: 'Ранжирование с учителем' }],
-      correctAnswer: 'a',
-      explanation: 'Кластеризация ищет структуру без размеченной целевой переменной.',
-    },
-    practice: {
-      title: 'Определить тип задачи',
-      statement: 'Считайте слово `class`, `number` или `none`. Выведите `classification`, `regression` или `clustering`.',
-      starterCode: `target_kind = input().strip()
-# TODO: сопоставьте вид target и задачу
-# TODO: подготовьте ответ`,
-      solution: `target_kind = input().strip()
-mapping = {"class": "classification", "number": "regression", "none": "clustering"}
-print(mapping[target_kind])`,
-      samples: [{ id: 's1', description: 'Категориальный target', input: 'class', expectedOutput: 'classification' }],
-      hidden: [{ id: 'h1', description: 'Числовой target', input: 'number', expectedOutput: 'regression' }, { id: 'h2', description: 'Target отсутствует', input: 'none', expectedOutput: 'clustering' }],
     },
   },
   {

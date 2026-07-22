@@ -29,19 +29,11 @@ const block4Visuals: Record<string, CourseVisual[]> = {
   'ml-foundations-model-fit-predict': [
     {
       src: '/course-visuals/ml-foundations-model-fit-predict.png',
-      alt: 'Две подписанные ветви показывают обучение на X_train и y_train для клиентов C101-C105 и отдельный predict только по X_new клиента C106.',
-      caption: 'Что показано: training path изменяет состояние через fit, а inference path получает один y_pred без target. Как читать: верхняя ветвь использует X_train и y_train, нижняя - только X_new и уже fitted model. Главный вывод: y не входит в predict, а обычный прогноз не меняет параметры.',
-      placement: { stepId: 'ml-foundations-model-fit-predict-compare', sectionId: 'two-paths' },
+      alt: 'Синие обучающие точки расположены вокруг прямой линейной регрессии, а новый x пунктиром соединён с отдельной точкой числового прогноза на линии.',
+      caption: 'Что показано: обучающие точки, найденная линия линейной регрессии и прогноз для нового x. Как читать: от нового x поднимитесь по пунктиру до линии и прочитайте соответствующее значение по вертикальной оси. Главный вывод: обученная прямая превращает новое значение признака в числовой прогноз.',
+      placement: { stepId: 'ml-foundations-model-fit-predict-model', sectionId: 'numeric-prediction' },
       order: 1,
-      provenance: generatedVisual,
-    },
-    {
-      src: '/course-visuals/ml-foundations-model-fit-predict-2.png',
-      alt: 'Панель объекта-оценивателя до fit содержит только стратегию most_frequent, а панель модели после fit содержит классы, доли 2 из 5 и 3 из 5 и правило возвращать нет.',
-      caption: 'Что показано: состояние одного объекта-оценивателя до и после обучения на пяти синтетических ответах. Как читать: стрелка fit добавляет classes_, class_prior_ и полученное правило. Главный вывод: гиперпараметр задан заранее, а обученное состояние оценивается по обучающим данным.',
-      placement: { stepId: 'ml-foundations-model-fit-predict-model', sectionId: 'state-before-after' },
-      order: 2,
-      provenance: generatedVisual,
+      provenance: { kind: 'curated', source: 'provided asset 01_linear_regression_prediction.png; prediction marker edited to match the lesson specification' },
     },
   ],
   'ml-foundations-train-test-baseline-metrics': [
@@ -67,19 +59,11 @@ const block4Visuals: Record<string, CourseVisual[]> = {
   'ml-problem-types': [
     {
       src: '/course-visuals/ml-problem-types.png',
-      alt: 'Три панели сравнивают числовой прогноз по линии регрессии, разделение точек на два известных класса и поиск двух групп без готовых ответов.',
-      caption: 'Что показано: разные формы ответа для регрессии, классификации и кластеризации. Как читать: слева требуется число, в центре - известный класс, справа - структура без целевой метки. Главный вывод: вид задачи определяется требуемым ответом.',
-      placement: { stepId: 'ml-problem-types-theory', sectionId: 'answer-first' },
+      alt: 'Три координатных графика показывают классификацию двух известных классов, числовой прогноз регрессии по линии и три группы, найденные кластеризацией без готовых меток.',
+      caption: 'Что показано: классификация, регрессия и кластеризация на трёх реальных графиках точек. Как читать: слева модель выбирает известный класс, в центре получает число на линии, справа находит группы без готовых ответов. Главный вывод: категория требует классификации, число — регрессии, а поиск групп без меток — кластеризации.',
+      placement: { stepId: 'ml-problem-types-task-kinds', sectionId: 'clustering' },
       order: 1,
-      provenance: generatedVisual,
-    },
-    {
-      src: '/course-visuals/ml-problem-types-2.png',
-      alt: 'Новый объект поступает в обученную модель, после чего схема разветвляется на три вида результата: класс, число или кластер.',
-      caption: 'Что показано: три возможных формата выхода модели. Как читать: проследите стрелки от нового объекта к одному из ответов. Главный вывод: код обучения выбирают после того, как определён смысл требуемого результата.',
-      placement: { stepId: 'ml-problem-types-implementation', sectionId: 'ml-problem-types-implementation-code' },
-      order: 2,
-      provenance: generatedVisual,
+      provenance: { kind: 'curated', source: 'provided asset 03_three_ml_task_types.png' },
     },
   ],
   'validation-split': [
