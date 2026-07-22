@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { SubTopic } from '../data/steps'
 import { stepTypeConfig } from '../data/steps'
 import QuizWidget from '../features/quiz/QuizWidget'
 import { getQuizById } from '../data/quizzes'
+import { randomizeFourOptionSingleChoiceQuiz } from '../lib/randomizeQuizOptions'
 
 const PROGRESS_KEY = 'ml-trainer-step-progress'
 
@@ -30,6 +31,11 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
 
   const steps = subTopic.steps
   const currentStep = steps[currentIndex]
+  const currentQuiz = useMemo(() => {
+    if (currentStep.type !== 'quiz' || !currentStep.quizId) return undefined
+    const quiz = getQuizById(currentStep.quizId)
+    return quiz ? randomizeFourOptionSingleChoiceQuiz(quiz) : undefined
+  }, [currentStep.quizId, currentStep.type])
 
   const markCompleted = (stepId: string) => {
     setProgress(prev => {
@@ -128,10 +134,9 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
             </div>
           )}
 
-          {currentStep.type === 'quiz' && currentStep.quizId && (() => {
-            const quiz = getQuizById(currentStep.quizId)
-            return quiz ? (
-              <QuizWidget key={quiz.id} quiz={quiz} />
+          {currentStep.type === 'quiz' && currentStep.quizId && (
+            currentQuiz ? (
+              <QuizWidget key={`${currentStep.id}-${currentQuiz.id}`} quiz={currentQuiz} />
             ) : (
               <div className="text-center py-8 text-gray-400">
                 <p>Квиз не найден: {currentStep.quizId}</p>
@@ -140,7 +145,7 @@ export default function StepNavigator({ subTopic }: StepNavigatorProps) {
                 </Link>
               </div>
             )
-          })()}
+          )}
 
           {currentStep.type === 'code' && currentStep.codeTaskId && (
             <div className="text-center py-8">
