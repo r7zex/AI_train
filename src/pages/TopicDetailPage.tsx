@@ -5,7 +5,7 @@ import CourseVisualGallery from '../components/CourseVisualGallery'
 import CourseSidebar from '../components/CourseSidebar'
 import Formula from '../components/Formula'
 import RichText from '../components/RichText'
-import { getCourseGlossaryEntries } from '../data/courseGlossary'
+import { getCourseGlossaryEntries, getCourseGlossaryEntry } from '../data/courseGlossary'
 import { getCourseVisualsAtPlacement } from '../data/courseVisuals'
 import QuizWidget from '../features/quiz/QuizWidget'
 import {
@@ -139,10 +139,22 @@ function escapeRegExp(value: string) {
 function termsUsedInStep(terms: string[], step: FlowStep) {
   const searchableText = JSON.stringify(step).toLocaleLowerCase('ru-RU')
   return terms.filter((term) => {
-    const normalized = term.toLocaleLowerCase('ru-RU').trim()
-    if (!normalized) return false
-    const pattern = new RegExp(`(^|[^a-zа-яё0-9_])${escapeRegExp(normalized)}([^a-zа-яё0-9_]|$)`, 'iu')
-    return pattern.test(searchableText)
+    const glossaryEntry = getCourseGlossaryEntry(term)
+    return [term, glossaryEntry?.original, glossaryEntry?.russian]
+      .filter((candidate): candidate is string => Boolean(candidate))
+      .some((candidate) => {
+      const normalized = candidate.toLocaleLowerCase('ru-RU').trim()
+      if (!normalized) return false
+      const flexibleRussian = normalized
+        .split(/(\s+)/u)
+        .map((part) => {
+          if (!/^[а-яё]{5,}$/u.test(part)) return escapeRegExp(part)
+          return `${escapeRegExp(part.slice(0, Math.max(4, part.length - 3)))}[а-яё]*`
+        })
+        .join('')
+      const pattern = new RegExp(`(^|[^a-zа-яё0-9_])${flexibleRussian}([^a-zа-яё0-9_]|$)`, 'iu')
+      return pattern.test(searchableText)
+    })
   })
 }
 
@@ -153,8 +165,10 @@ function LocalGlossary({ terms, step }: { terms: string[]; step: FlowStep }) {
 
   return (
     <section className="mt-10 border-t border-[#dfe4e7] pt-6" aria-labelledby="local-glossary-title">
-      <h2 id="local-glossary-title" className="text-[19px] font-bold leading-7 text-[#111827]">Термины текущего шага</h2>
-      <p className="mt-2 text-[14px] leading-6 text-[#5d6670]">Здесь перечислены только английские термины, которые встретились на текущем шаге.</p>
+      <h2 id="local-glossary-title" className="text-[19px] font-bold leading-7 text-[#111827]">Английские слова из этого шага</h2>
+      <p className="mt-2 text-[14px] leading-6 text-[#5d6670]">
+        Сначала прочитайте перевод и простое объяснение. Английское написание оставлено рядом, потому что оно встречается в коде и документации.
+      </p>
       <dl className="mt-4 divide-y divide-[#e6eaed] border-y border-[#e0e5e8]">
         {entries.map((entry) => (
           <div key={entry.original} className="grid gap-1 py-3 sm:grid-cols-[minmax(190px,0.7fr),minmax(0,1.3fr)] sm:gap-5">
@@ -662,6 +676,8 @@ function StepContent({
 
         {step.codeExample && <CodeExampleBlock example={step.codeExample} title="Примеры кода" />}
 
+        {(step.quiz || step.practiceTasks?.length) && <LocalGlossary terms={topic.terminology} step={step} />}
+
         {step.quiz && (
           <QuizWidget
             key={`${step.id}-${step.quiz.id}`}
@@ -696,7 +712,7 @@ function StepContent({
           </section>
         )}
 
-        <LocalGlossary terms={topic.terminology} step={step} />
+        {!step.quiz && !step.practiceTasks?.length && <LocalGlossary terms={topic.terminology} step={step} />}
       </div>
 
       <footer className="mt-9 flex items-center justify-between border-t border-[#e3e6e9] pt-4 text-[13px] text-[#7a828a]">

@@ -256,10 +256,10 @@ z
    </g>
    <g id="patch_29">
     <path d="M 638.96976 143.82324
-L 758.69424 143.82324
-Q 765.92592 143.82324 765.92592 148.31388
-L 765.92592 169.2702
-Q 765.92592 173.76084 758.69424 173.76084
+L 766.72944 143.82324
+Q 773.96112 143.82324 773.96112 148.31388
+L 773.96112 169.2702
+Q 773.96112 173.76084 766.72944 173.76084
 L 638.96976 173.76084
 Q 631.73808 173.76084 631.73808 169.2702
 L 631.73808 148.31388
@@ -283,7 +283,7 @@ L 787.2192 90.684
 " clip-path="url(#p8c755e3773)" style="fill: none; stroke: #d9e3ec; stroke-linecap: square"/>
    </g>
    <g id="text_1">
-    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="47.9808" y="54.03465" transform="rotate(-0 47.9808 54.03465)">Остаток, MAE и сравнение с baseline</text>
+    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="47.9808" y="54.03465" transform="rotate(-0 47.9808 54.03465)">Остаток, MAE и сравнение с простым ориентиром</text>
    </g>
    <g id="text_2">
     <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="47.9808" y="74.281625" transform="rotate(-0 47.9808 74.281625)">Один набор чисел связывает истинные значения, прогнозы и итоговую ошибку.</text>
@@ -370,10 +370,10 @@ L 787.2192 90.684
     <text style="font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="88.1568" y="388.237988" transform="rotate(-0 88.1568 388.237988)">Средняя абсолютная ошибка — 2 единицы цели</text>
    </g>
    <g id="text_30">
-    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="698.832" y="161.606603" transform="rotate(-0 698.832 161.606603)">BASELINE</text>
+    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="702.8496" y="161.606603" transform="rotate(-0 702.8496 161.606603)">ПРОСТОЙ ОРИЕНТИР</text>
    </g>
    <g id="text_31">
-    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="698.832" y="208.813481" transform="rotate(-0 698.832 208.813481)">Среднее y_train</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="698.832" y="208.77645" transform="rotate(-0 698.832 208.77645)">Среднее y на обучении</text>
    </g>
    <g id="text_32">
     <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #5d6b78" x="698.832" y="247.5399" transform="rotate(-0 698.832 247.5399)">MAE = 4,00</text>
@@ -388,7 +388,7 @@ L 787.2192 90.684
     <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #138a57" x="698.832" y="387.679238" transform="rotate(-0 698.832 387.679238)">ниже на 1,67</text>
    </g>
    <g id="text_36">
-    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="417.6" y="473.262281" transform="rotate(-0 417.6 473.262281)">Обе модели оцениваются на одном и том же test.</text>
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="417.6" y="473.262281" transform="rotate(-0 417.6 473.262281)">Обе модели оцениваются на одной и той же тестовой части.</text>
    </g>
   </g>
  </g>

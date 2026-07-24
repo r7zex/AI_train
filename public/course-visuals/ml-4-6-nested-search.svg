@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="835.2pt" height="530.64pt" viewBox="0 0 835.2 530.64" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="836.39205pt" height="530.64pt" viewBox="0 0 836.39205 530.64" xmlns="http://www.w3.org/2000/svg" version="1.1">
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -21,8 +21,8 @@
  <g id="figure_1">
   <g id="patch_1">
    <path d="M 0 530.64
-L 835.2 530.64
-L 835.2 0
+L 836.39205 530.64
+L 836.39205 0
 L 0 0
 z
 " style="fill: #ffffff"/>
@@ -148,7 +148,7 @@ L 787.2192 90.684
 " clip-path="url(#p8c755e3773)" style="fill: none; stroke: #d9e3ec; stroke-linecap: square"/>
    </g>
    <g id="text_1">
-    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="47.9808" y="54.8184" transform="rotate(-0 47.9808 54.8184)">Подбор гиперпараметров без использования test</text>
+    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="47.9808" y="54.8184" transform="rotate(-0 47.9808 54.8184)">Подбор настроек без использования финального теста</text>
    </g>
    <g id="text_2">
     <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="47.9808" y="74.281625" transform="rotate(-0 47.9808 74.281625)">Внутренний цикл выбирает конфигурацию, внешний оценивает процедуру выбора.</text>
@@ -160,31 +160,31 @@ L 787.2192 90.684
     <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #0758b4" x="88.1568" y="189.61055" transform="rotate(-0 88.1568 189.61055)">Оценивает всю процедуру подбора</text>
    </g>
    <g id="text_5">
-    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="242.642478" transform="rotate(-0 96.192 242.642478)">Внешний фолд 1</text>
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="242.600916" transform="rotate(-0 96.192 242.600916)">Внешняя часть 1</text>
    </g>
    <g id="text_6">
     <text style="font-weight: 700; font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #7657e8" x="240.8256" y="231.861872" transform="rotate(-0 240.8256 231.861872)">ВНУТРИ:</text>
    </g>
    <g id="text_7">
-    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="252.352163" transform="rotate(-0 240.8256 252.352163)">Grid / Random search → лучшая конфигурация</text>
+    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="252.352163" transform="rotate(-0 240.8256 252.352163)">Полный / случайный поиск → лучшая настройка</text>
    </g>
    <g id="text_8">
-    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="307.507278" transform="rotate(-0 96.192 307.507278)">Внешний фолд 2</text>
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="307.465716" transform="rotate(-0 96.192 307.465716)">Внешняя часть 2</text>
    </g>
    <g id="text_9">
     <text style="font-weight: 700; font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #7657e8" x="240.8256" y="296.726672" transform="rotate(-0 240.8256 296.726672)">ВНУТРИ:</text>
    </g>
    <g id="text_10">
-    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="317.216963" transform="rotate(-0 240.8256 317.216963)">Grid / Random search → лучшая конфигурация</text>
+    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="317.216963" transform="rotate(-0 240.8256 317.216963)">Полный / случайный поиск → лучшая настройка</text>
    </g>
    <g id="text_11">
-    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="372.372078" transform="rotate(-0 96.192 372.372078)">Внешний фолд 3</text>
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="372.330516" transform="rotate(-0 96.192 372.330516)">Внешняя часть 3</text>
    </g>
    <g id="text_12">
     <text style="font-weight: 700; font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #7657e8" x="240.8256" y="361.591472" transform="rotate(-0 240.8256 361.591472)">ВНУТРИ:</text>
    </g>
    <g id="text_13">
-    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="382.081763" transform="rotate(-0 240.8256 382.081763)">Grid / Random search → лучшая конфигурация</text>
+    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="382.081763" transform="rotate(-0 240.8256 382.081763)">Полный / случайный поиск → лучшая настройка</text>
    </g>
    <g id="text_14">
     <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7657e8" x="706.8672" y="237.991238" transform="rotate(-0 706.8672 237.991238)">ВНЕШНЯЯ</text>
@@ -199,7 +199,7 @@ L 787.2192 90.684
     <text style="font-size: 8.8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #5d6b78" x="706.8672" y="337.0213" transform="rotate(-0 706.8672 337.0213)">среднее + разброс</text>
    </g>
    <g id="text_18">
-    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="706.8672" y="414.146925" transform="rotate(-0 706.8672 414.146925)">TEST</text>
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="706.8672" y="414.146925" transform="rotate(-0 706.8672 414.146925)">ТЕСТ</text>
    </g>
    <g id="text_19">
     <text style="font-size: 8.7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="706.8672" y="436.587441" transform="rotate(-0 706.8672 436.587441)">один раз в конце</text>

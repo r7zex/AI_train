@@ -28,15 +28,15 @@ class RevisedMetricConsistencyTest(unittest.TestCase):
 
     def test_classification_definitions_and_imbalance_are_consistent(self) -> None:
         for definition in [
-            "TP: реально 1, предсказано 1",
-            "TN: реально 0, предсказано 0",
-            "FP: реально 0, предсказано 1",
-            "FN: реально 1, предсказано 0",
+            "TP — верно положительный",
+            "TN — верно отрицательный",
+            "FP — ложно положительный",
+            "FN — ложно отрицательный",
         ]:
             self.assertIn(definition, self.topic)
         self.assertIn("99 объектов класса 0 и один объект класса 1", self.topic)
-        self.assertIn("Accuracy=99%", self.topic)
-        self.assertIn("Recall положительного класса равен 0", self.topic)
+        self.assertIn("Accuracy (доля правильных ответов) равна 99%", self.topic)
+        self.assertIn("Recall (полнота) положительного класса равна 0", self.topic)
         self.assertIn("precision_score", self.topic)
         self.assertIn("recall_score", self.topic)
         self.assertIn("f1_score", self.topic)

@@ -192,7 +192,7 @@ L 755.0784 290.268
     <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; fill: #5d6b78" transform="translate(126.941038 352.843219)">и корреляций</text>
    </g>
    <g id="text_8">
-    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="417.6" y="161.606603" transform="rotate(-0 417.6 161.606603)">PERMUTATION</text>
+    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="417.6" y="161.606603" transform="rotate(-0 417.6 161.606603)">ПЕРЕМЕШИВАНИЕ</text>
    </g>
    <g id="text_9">
     <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="337.248" y="208.5387" transform="rotate(-0 337.248 208.5387)">Насколько упадёт выбранная метрика</text>
@@ -205,10 +205,10 @@ L 755.0784 290.268
    </g>
    <g id="text_12">
     <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; fill: #5d6b78" transform="translate(369.361094 342.541231)">зависит от метрики</text>
-    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; fill: #5d6b78" transform="translate(384.287375 352.843219)">и test-данных</text>
+    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; fill: #5d6b78" transform="translate(370.3465 352.843219)">и данных проверки</text>
    </g>
    <g id="text_13">
-    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="674.7264" y="161.606603" transform="rotate(-0 674.7264 161.606603)">SHAP</text>
+    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="674.7264" y="161.606603" transform="rotate(-0 674.7264 161.606603)">SHAP-ОБЪЯСНЕНИЕ</text>
    </g>
    <g id="text_14">
     <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="594.3744" y="208.125919" transform="rotate(-0 594.3744 208.125919)">Как признак сдвинул прогноз</text>
@@ -227,7 +227,7 @@ L 755.0784 290.268
     <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="417.6" y="464.802769" transform="rotate(-0 417.6 464.802769)">СВЯЗЬ ≠ ПРИЧИННОСТЬ</text>
    </g>
    <g id="text_19">
-    <text style="font-size: 9.7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="417.6" y="487.243284" transform="rotate(-0 417.6 487.243284)">Ни коэффициент, ни permutation importance, ни SHAP не доказывают причинный эффект.</text>
+    <text style="font-size: 9.7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="417.6" y="487.243284" transform="rotate(-0 417.6 487.243284)">Ни коэффициент, ни важность перестановкой, ни SHAP не доказывают причинный эффект.</text>
    </g>
   </g>
  </g>

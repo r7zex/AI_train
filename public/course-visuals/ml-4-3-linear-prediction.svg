@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="848.162391pt" height="530.64pt" viewBox="0 0 848.162391 530.64" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1076.023191pt" height="530.64pt" viewBox="0 0 1076.023191 530.64" xmlns="http://www.w3.org/2000/svg" version="1.1">
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -21,8 +21,8 @@
  <g id="figure_1">
   <g id="patch_1">
    <path d="M 0 530.64
-L 848.162391 530.64
-L 848.162391 0
+L 1076.023191 530.64
+L 1076.023191 0
 L 0 0
 z
 " style="fill: #ffffff"/>
@@ -190,10 +190,10 @@ L 422.527191 260.3304
 " clip-path="url(#pd21c994fb2)" style="fill: none; stroke-dasharray: 5.55,2.4; stroke-dashoffset: 0; stroke: #7657e8; stroke-width: 1.5"/>
    </g>
    <g id="text_1">
-    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="60.943191" y="54.13965" transform="rotate(-0 60.943191 54.13965)">Линейная регрессия: fit → параметры → predict</text>
+    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="60.943191" y="54.8184" transform="rotate(-0 60.943191 54.8184)">Линейная регрессия: обучить → сохранить правило → получить прогноз</text>
    </g>
    <g id="text_2">
-    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="60.943191" y="74.281625" transform="rotate(-0 60.943191 74.281625)">Обученная прямая превращает новый x в числовой прогноз.</text>
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="60.943191" y="74.094281" transform="rotate(-0 60.943191 74.094281)">Английские команды fit и predict подписаны рядом с русским смыслом.</text>
    </g>
    <g id="text_3">
     <text style="font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="306.016791" y="462.903159" transform="rotate(-0 306.016791 462.903159)">Площадь, м²</text>
@@ -208,25 +208,25 @@ L 422.527191 260.3304
     <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="607.336791" y="170.782175" transform="rotate(-0 607.336791 170.782175)">1</text>
    </g>
    <g id="text_7">
-    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="639.477591" y="158.537559" transform="rotate(-0 639.477591 158.537559)">SPLIT 80/20</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="639.477591" y="158.537559" transform="rotate(-0 639.477591 158.537559)">РАЗДЕЛИТЬ 80/20</text>
    </g>
    <g id="text_8">
-    <text style="font-size: 8.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="639.477591" y="182.3437" transform="rotate(-0 639.477591 182.3437)">Отделить test до обучения</text>
+    <text style="font-size: 8.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="639.477591" y="182.3437" transform="rotate(-0 639.477591 182.3437)">Отложить тест до обучения</text>
    </g>
    <g id="text_9">
     <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="607.336791" y="260.594975" transform="rotate(-0 607.336791 260.594975)">2</text>
    </g>
    <g id="text_10">
-    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="639.477591" y="248.350359" transform="rotate(-0 639.477591 248.350359)">FIT НА TRAIN</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="639.477591" y="248.350359" transform="rotate(-0 639.477591 248.350359)">ОБУЧИТЬ (fit)</text>
    </g>
    <g id="text_11">
-    <text style="font-size: 8.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="639.477591" y="272.006625" transform="rotate(-0 639.477591 272.006625)">Найти w и b</text>
+    <text style="font-size: 8.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="639.477591" y="272.006625" transform="rotate(-0 639.477591 272.006625)">Найти w и b на train</text>
    </g>
    <g id="text_12">
     <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="607.336791" y="350.407775" transform="rotate(-0 607.336791 350.407775)">3</text>
    </g>
    <g id="text_13">
-    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="639.477591" y="338.163159" transform="rotate(-0 639.477591 338.163159)">PREDICT</text>
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="639.477591" y="338.163159" transform="rotate(-0 639.477591 338.163159)">ПРОГНОЗ (predict)</text>
    </g>
    <g id="text_14">
     <text style="font-size: 8.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="639.477591" y="361.9693" transform="rotate(-0 639.477591 361.9693)">Применить к X_test и новому объекту</text>

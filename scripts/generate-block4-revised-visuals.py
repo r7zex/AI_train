@@ -243,8 +243,8 @@ def leakage():
 
 def linear_prediction():
     fig, ax = setup(
-        "Линейная регрессия: fit → параметры → predict",
-        "Обученная прямая превращает новый x в числовой прогноз.",
+        "Линейная регрессия: обучить → сохранить правило → получить прогноз",
+        "Английские команды fit и predict подписаны рядом с русским смыслом.",
     )
     plot_x0, plot_y0, plot_w, plot_h = 7, 24, 55, 58
     ax.plot([plot_x0, plot_x0], [plot_y0, plot_y0 + plot_h], color=INK, linewidth=1.4)
@@ -263,9 +263,9 @@ def linear_prediction():
     text(ax, new_x + 1.5, new_y - 5, "новый объект", size=9.5, weight="bold", color=VIOLET)
 
     steps = [
-        (68, 24, "1", "SPLIT 80/20", "Отделить test до обучения"),
-        (68, 42, "2", "FIT НА TRAIN", "Найти w и b"),
-        (68, 60, "3", "PREDICT", "Применить к X_test и новому объекту"),
+        (68, 24, "1", "РАЗДЕЛИТЬ 80/20", "Отложить тест до обучения"),
+        (68, 42, "2", "ОБУЧИТЬ (fit)", "Найти w и b на train"),
+        (68, 60, "3", "ПРОГНОЗ (predict)", "Применить к X_test и новому объекту"),
     ]
     for x, y, number, heading, body in steps:
         card(ax, x, y, 27, 13, face=BLUE_SOFT if number != "2" else VIOLET_SOFT, edge=BLUE if number != "2" else VIOLET)
@@ -302,7 +302,7 @@ def outlier_extrapolation():
             ax.plot([px0 + 3, px0 + 23], [py0 + 31, py0 + 14], color=BLUE, linewidth=2)
             ax.plot([px0 + 23, px0 + 34], [py0 + 14, py0 + 5], color=AMBER, linewidth=2, linestyle="--")
             ax.axvspan(px0 + 23, px0 + 34, ymin=0.18, ymax=0.70, facecolor=AMBER, alpha=0.08)
-            text(ax, px0 + 28.5, py0 + 2, "нет train-точек", size=8.5, color=AMBER, ha="center")
+            text(ax, px0 + 28.5, py0 + 2, "нет точек обучения", size=8.5, color=AMBER, ha="center")
             text(ax, x + 22, 80, "Линия продолжается,", size=10, color=AMBER, weight="bold", ha="center")
             text(ax, x + 22, 84, "но данных уже нет", size=10, color=AMBER, weight="bold", ha="center")
     save(fig, "ml-4-3-outlier-extrapolation.svg")
@@ -310,7 +310,7 @@ def outlier_extrapolation():
 
 def regression_metrics():
     fig, ax = setup(
-        "Остаток, MAE и сравнение с baseline",
+        "Остаток, MAE и сравнение с простым ориентиром",
         "Один набор чисел связывает истинные значения, прогнозы и итоговую ошибку.",
     )
     headers = ["Объект", "Истина y", "Прогноз ŷ", "Остаток y−ŷ", "|ошибка|"]
@@ -333,29 +333,29 @@ def regression_metrics():
     text(ax, 9, 73, "Средняя абсолютная ошибка — 2 единицы цели", size=10.5, color=MUTED)
 
     card(ax, 74, 23, 22, 57, face=GREEN_SOFT, edge="#8BD0AA")
-    pill(ax, 77, 26, "BASELINE", face=GREEN, width=16)
-    text(ax, 85, 37, "Среднее y_train", size=11, weight="bold", ha="center")
+    pill(ax, 77, 26, "ПРОСТОЙ ОРИЕНТИР", face=GREEN, width=17)
+    text(ax, 85, 37, "Среднее y на обучении", size=10.5, weight="bold", ha="center")
     text(ax, 85, 44, "MAE = 4,00", size=16, weight="bold", color=MUTED, ha="center")
     arrow(ax, (85, 50), (85, 57), color=GREEN)
     text(ax, 85, 59, "Линейная модель", size=11, weight="bold", ha="center")
     text(ax, 85, 66, "MAE = 2,33", size=16, weight="bold", color=GREEN, ha="center")
     text(ax, 85, 73, "ниже на 1,67", size=10, color=GREEN, weight="bold", ha="center")
-    text(ax, 50, 90, "Обе модели оцениваются на одном и том же test.", size=11, color=INK, weight="bold", ha="center")
+    text(ax, 50, 90, "Обе модели оцениваются на одной и той же тестовой части.", size=11, color=INK, weight="bold", ha="center")
     save(fig, "ml-4-4-regression-metrics.svg")
 
 
 def confusion_imbalance():
     fig, ax = setup(
-        "Матрица ошибок и ловушка 99% Accuracy",
+        "Матрица ошибок и ловушка «99% правильных ответов»",
         "FP и FN различаются реальным классом; редкий класс проверяется отдельно.",
     )
     text(ax, 27, 20, "ПРОГНОЗ", size=11, weight="bold", color=BLUE_DARK, ha="center")
     text(ax, 4, 48, "ИСТИНА", size=11, weight="bold", color=BLUE_DARK, va="center")
     matrix = [
-        (13, 27, "TN", "реально 0\nпрогноз 0", GREEN_SOFT, GREEN),
-        (34, 27, "FP", "реально 0\nпрогноз 1", RED_SOFT, RED),
-        (13, 47, "FN", "реально 1\nпрогноз 0", RED_SOFT, RED),
-        (34, 47, "TP", "реально 1\nпрогноз 1", GREEN_SOFT, GREEN),
+        (13, 27, "TN", "верно\nотрицательный", GREEN_SOFT, GREEN),
+        (34, 27, "FP", "ложная\nтревога", RED_SOFT, RED),
+        (13, 47, "FN", "положительный\nпропущен", RED_SOFT, RED),
+        (34, 47, "TP", "положительный\nнайден", GREEN_SOFT, GREEN),
     ]
     for x, y, label, body, face, accent in matrix:
         card(ax, x, y, 19, 17, face=face, edge=accent)
@@ -376,8 +376,8 @@ def confusion_imbalance():
     text(ax, 77.5, 61, "1 объект класса 1", size=10, ha="center", color=RED, weight="bold")
     text(ax, 77.5, 68, "всегда прогнозируем 0", size=10, ha="center", color=MUTED)
     card(ax, 60, 78, 35, 13, face=RED_SOFT, edge="#EFA19D")
-    text(ax, 77.5, 81, "Accuracy = 99%", size=14, weight="bold", color=INK, ha="center")
-    text(ax, 77.5, 87, "Recall класса 1 = 0%", size=14, weight="bold", color=RED, ha="center")
+    text(ax, 77.5, 81, "Доля правильных = 99%", size=13, weight="bold", color=INK, ha="center")
+    text(ax, 77.5, 87, "Полнота класса 1 = 0%", size=13, weight="bold", color=RED, ha="center")
     save(fig, "ml-4-4-confusion-imbalance.svg")
 
 
@@ -391,7 +391,7 @@ def project_cycle():
         ("2", "Объект\nи момент", VIOLET),
         ("3", "Данные\nи цель", GREEN),
         ("4", "Разбиение", BLUE),
-        ("5", "Baseline\nи модель", VIOLET),
+        ("5", "Ориентир\nи модель", VIOLET),
         ("6", "Проверка", GREEN),
         ("7", "Внедрение", BLUE),
         ("8", "Мониторинг", AMBER),
@@ -415,62 +415,92 @@ def project_cycle():
 
 def split_strategies():
     fig, ax = setup(
-        "Четыре стратегии разделения",
-        "Граница должна учитывать классы, группы, источники и время.",
+        "Случайное или стратифицированное разделение",
+        "Оба варианта подходят только для независимых строк из одного источника.",
     )
     panels = [
-        (4, "СЛУЧАЙНОЕ", "независимые объекты", BLUE),
-        (28, "СТРАТИФИЦИРОВАННОЕ", "сохраняет доли классов", VIOLET),
-        (52, "ГРУППОВОЕ", "пациент целиком", GREEN),
-        (76, "ВРЕМЕННОЕ", "прошлое → будущее", AMBER),
+        (6, "СЛУЧАЙНОЕ", "объекты перемешиваются", BLUE),
+        (53, "СТРАТИФИЦИРОВАННОЕ", "доли классов сохраняются", VIOLET),
     ]
     for x, heading, subtitle, accent in panels:
-        card(ax, x, 22, 20, 62, face="white", edge=accent)
-        text(ax, x + 10, 27, heading, size=9.5, weight="bold", color=accent, ha="center")
-        text(ax, x + 10, 32, subtitle, size=8.8, color=MUTED, ha="center")
+        card(ax, x, 22, 41, 62, face="white", edge=accent)
+        text(ax, x + 20.5, 27, heading, size=11.5, weight="bold", color=accent, ha="center")
+        text(ax, x + 20.5, 33, subtitle, size=10, color=MUTED, ha="center")
         if heading == "СЛУЧАЙНОЕ":
-            for index in range(18):
-                col, row = index % 6, index // 6
-                face = BLUE if index in {1, 4, 8, 13} else "#B9C6D0"
-                ax.add_patch(Circle((x + 3 + col * 2.8, 43 + row * 6), 0.9, facecolor=face, edgecolor="none"))
-            ax.plot([x + 13.5, x + 13.5], [39, 63], color=RED, linestyle="--", linewidth=1.7)
-        elif heading == "СТРАТИФИЦИРОВАННОЕ":
-            for row in range(3):
-                for col in range(5):
-                    color = VIOLET if col == 4 else "#B9C6D0"
-                    ax.add_patch(Circle((x + 3 + col * 3, 43 + row * 7), 0.9, facecolor=color, edgecolor="none"))
-            text(ax, x + 10, 68, "20% редкого класса\nв каждой части", size=8.8, color=VIOLET, weight="bold", ha="center", va="center")
-        elif heading == "ГРУППОВОЕ":
-            groups = [("P1", BLUE), ("P2", GREEN), ("P3", VIOLET)]
-            for row, (label, color) in enumerate(groups):
-                text(ax, x + 3, 43 + row * 10, label, size=9, weight="bold", color=color)
-                for col in range(4):
-                    ax.add_patch(Rectangle((x + 7 + col * 2.8, 40 + row * 10), 2, 5, facecolor=color, alpha=0.75, edgecolor="none"))
-            ax.plot([x + 13.5, x + 13.5], [38, 67], color=RED, linestyle="--", linewidth=1.7)
-            text(ax, x + 10, 72, "группа не пересекает границу", size=8.5, color=GREEN, weight="bold", ha="center")
+            for index in range(30):
+                col, row = index % 10, index // 10
+                face = RED if index in {2, 17, 24} else "#B9C6D0"
+                ax.add_patch(Circle((x + 5 + col * 3.2, 45 + row * 7), 1, facecolor=face, edgecolor="none"))
+            ax.plot([x + 29, x + 29], [40, 65], color=BLUE, linestyle="--", linewidth=1.8)
+            text(ax, x + 13, 70, "обучение", size=9.5, color=BLUE, weight="bold", ha="center")
+            text(ax, x + 34, 70, "проверка", size=9.5, color=VIOLET, weight="bold", ha="center")
+            text(ax, x + 20.5, 77, "Доли могут случайно отличаться", size=9.5, color=RED, weight="bold", ha="center")
         else:
-            years = [2019, 2020, 2021, 2022, 2023]
-            for index, year in enumerate(years):
-                color = BLUE if year < 2023 else AMBER
-                ax.add_patch(Rectangle((x + 2 + index * 3.5, 42), 2.6, 17, facecolor=color, alpha=0.8, edgecolor="none"))
-                text(ax, x + 3.3 + index * 3.5, 62, str(year)[-2:], size=8, ha="center")
-            text(ax, x + 6, 69, "train", size=9, weight="bold", color=BLUE, ha="center")
-            text(ax, x + 17, 69, "test", size=9, weight="bold", color=AMBER, ha="center")
+            for side in range(2):
+                x_start = x + 5 + side * 20
+                for index in range(15):
+                    col, row = index % 5, index // 5
+                    color = RED if col == 4 else "#B9C6D0"
+                    ax.add_patch(Circle((x_start + col * 3, 45 + row * 7), 1, facecolor=color, edgecolor="none"))
+            ax.plot([x + 20.5, x + 20.5], [40, 65], color=VIOLET, linestyle="--", linewidth=1.8)
+            text(ax, x + 10, 70, "обучение", size=9.5, color=BLUE, weight="bold", ha="center")
+            text(ax, x + 31, 70, "проверка", size=9.5, color=VIOLET, weight="bold", ha="center")
+            text(ax, x + 20.5, 77, "В обеих частях: 20% красных", size=9.5, color=VIOLET, weight="bold", ha="center")
     card(ax, 12, 88, 76, 7, face=RED_SOFT, edge="#EFA19D")
-    text(ax, 50, 91.5, "ОШИБКА: визиты одного пациента оказались по обе стороны разделения.", size=10.5, color=RED, weight="bold", ha="center", va="center")
+    text(ax, 50, 91.5, "Если строки связаны пациентом, источником или временем — нужна другая граница.", size=10.5, color=RED, weight="bold", ha="center", va="center")
     save(fig, "ml-4-5-split-strategies.svg")
+
+
+def dependency_splits():
+    fig, ax = setup(
+        "Три границы для связанных данных",
+        "Сначала найдите, что связывает строки: объект, источник или время.",
+    )
+    panels = [
+        (4, "ПО ГРУППЕ", "один пациент целиком", GREEN),
+        (36, "ПО ИСТОЧНИКУ", "одна клиника целиком", VIOLET),
+        (68, "ПО ВРЕМЕНИ", "прошлое → будущее", AMBER),
+    ]
+    for x, heading, subtitle, accent in panels:
+        card(ax, x, 22, 28, 62, face="white", edge=accent)
+        text(ax, x + 14, 27, heading, size=10.5, weight="bold", color=accent, ha="center")
+        text(ax, x + 14, 33, subtitle, size=9.2, color=MUTED, ha="center")
+        if heading == "ПО ГРУППЕ":
+            for row, (label, color) in enumerate([("P1", BLUE), ("P2", GREEN), ("P3", VIOLET)]):
+                text(ax, x + 4, 44 + row * 10, label, size=9.5, weight="bold", color=color)
+                for col in range(4):
+                    ax.add_patch(Rectangle((x + 9 + col * 3.5, 41 + row * 10), 2.5, 5, facecolor=color, alpha=0.78, edgecolor="none"))
+            ax.plot([x + 18.5, x + 18.5], [39, 70], color=RED, linestyle="--", linewidth=1.8)
+            text(ax, x + 14, 76, "Пациент не пересекает границу", size=8.7, color=GREEN, weight="bold", ha="center")
+        elif heading == "ПО ИСТОЧНИКУ":
+            for index, label in enumerate(["Клиника А", "Клиника Б", "Клиника В"]):
+                color = BLUE if index < 2 else VIOLET
+                card(ax, x + 5, 41 + index * 10, 18, 6, face=BLUE_SOFT if index < 2 else VIOLET_SOFT, edge=color, radius=0.6)
+                text(ax, x + 14, 44 + index * 10, label, size=8.8, weight="bold", color=color, ha="center", va="center")
+            text(ax, x + 14, 76, "Вся клиника В — проверка", size=8.7, color=VIOLET, weight="bold", ha="center")
+        else:
+            years = [2020, 2021, 2022, 2023, 2024]
+            for index, year in enumerate(years):
+                color = BLUE if year < 2024 else AMBER
+                ax.add_patch(Rectangle((x + 4 + index * 4.5, 43), 3.2, 21, facecolor=color, alpha=0.82, edgecolor="none"))
+                text(ax, x + 5.6 + index * 4.5, 68, str(year)[-2:], size=8.5, ha="center")
+            text(ax, x + 10, 76, "обучение", size=8.8, color=BLUE, weight="bold", ha="center")
+            text(ax, x + 23, 76, "проверка", size=8.8, color=AMBER, weight="bold", ha="center")
+    card(ax, 12, 88, 76, 7, face=GREEN_SOFT, edge="#8BD0AA")
+    text(ax, 50, 91.5, "Правильная граница похожа на появление действительно нового объекта после запуска.", size=10.5, color=GREEN, weight="bold", ha="center", va="center")
+    save(fig, "ml-4-5-group-source-time.svg")
 
 
 def cross_validation():
     fig, ax = setup(
-        "5-fold cross-validation и внефолдовые прогнозы",
-        "Каждый фолд один раз служит validation, а остальные — обучением.",
+        "Кросс-валидация по пяти частям",
+        "Каждая часть один раз служит проверкой, остальные четыре — обучением.",
     )
-    start_x, start_y = 16, 25
-    text(ax, 9, 21, "СТРОКИ — ИТЕРАЦИИ", size=9.5, weight="bold", color=MUTED)
-    text(ax, 48, 21, "СТОЛБЦЫ — ФОЛДЫ", size=9.5, weight="bold", color=MUTED, ha="center")
+    start_x, start_y = 16, 29
+    text(ax, 9, 20, "СТРОКИ — ИТЕРАЦИИ", size=9.2, weight="bold", color=MUTED)
+    text(ax, 48, 20, "СТОЛБЦЫ — ЧАСТИ ДАННЫХ", size=9.2, weight="bold", color=MUTED, ha="center")
     for col in range(5):
-        text(ax, start_x + col * 13 + 5.5, start_y - 4, f"Фолд {col + 1}", size=9.5, weight="bold", color=INK, ha="center")
+        text(ax, start_x + col * 13 + 5.5, start_y - 4, f"Часть {col + 1}", size=9.5, weight="bold", color=INK, ha="center")
     for row in range(5):
         text(ax, 12, start_y + row * 10 + 3.5, f"Итерация {row + 1}", size=9.2, color=INK, ha="right", va="center")
         for col in range(5):
@@ -482,7 +512,7 @@ def cross_validation():
                 ax,
                 start_x + col * 13 + 5.5,
                 start_y + row * 10 + 3.5,
-                "валидация" if validation else "обучение",
+                "проверка" if validation else "обучение",
                 size=8,
                 weight="bold" if validation else "normal",
                 color="white" if validation else BLUE_DARK,
@@ -490,7 +520,7 @@ def cross_validation():
                 va="center",
             )
     card(ax, 16, 80, 64, 10, face=VIOLET_SOFT, edge="#C4B8FA")
-    text(ax, 48, 85, "OOF: прогноз объекта получен моделью, которая на нём не обучалась.", size=10.5, color=VIOLET, weight="bold", ha="center", va="center")
+    text(ax, 48, 85, "Внефолдовый прогноз: модель не обучалась на проверяемом объекте.", size=10.5, color=VIOLET, weight="bold", ha="center", va="center")
     card(ax, 83, 25, 13, 45, face=PALE, edge=LINE)
     text(ax, 89.5, 30, "МЕТРИКА", size=10, weight="bold", color=INK, ha="center")
     values = [0.80, 0.85, 0.90, 0.75, 0.95]
@@ -503,9 +533,31 @@ def cross_validation():
     save(fig, "ml-4-5-cross-validation.svg")
 
 
+def parameters_hyperparameters():
+    fig, ax = setup(
+        "Параметр или гиперпараметр?",
+        "Разница определяется тем, когда и кем выбирается значение.",
+    )
+    cards = [
+        (5, "ПАРАМЕТР МОДЕЛИ", "Находит обучение", "После model.fit(...)", "коэффициент w\nзначение в листе дерева", BLUE),
+        (52, "ГИПЕРПАРАМЕТР", "Задаёт человек или поиск", "До model.fit(...)", "глубина дерева\nсила регуляризации", VIOLET),
+    ]
+    for x, heading, owner, moment, examples, accent in cards:
+        card(ax, x, 22, 43, 61, face=BLUE_SOFT if accent == BLUE else VIOLET_SOFT, edge=accent)
+        pill(ax, x + 5, 26, heading, face=accent, width=31)
+        text(ax, x + 21.5, 39, owner, size=12, weight="bold", color=INK, ha="center")
+        arrow(ax, (x + 21.5, 45), (x + 21.5, 52), color=accent)
+        card(ax, x + 8, 53, 27, 9, face="white", edge=accent, radius=0.8)
+        text(ax, x + 21.5, 57.5, moment, size=10, weight="bold", color=accent, ha="center", va="center")
+        text(ax, x + 21.5, 71, examples, size=10.5, color=MUTED, ha="center", va="center")
+    card(ax, 17, 87, 66, 8, face=GREEN_SOFT, edge="#8BD0AA")
+    text(ax, 50, 91, "coef_ появился после обучения → параметр.  max_depth=5 задан заранее → гиперпараметр.", size=10, color=GREEN, weight="bold", ha="center", va="center")
+    save(fig, "ml-4-6-parameters-hyperparameters.svg")
+
+
 def nested_search():
     fig, ax = setup(
-        "Подбор гиперпараметров без использования test",
+        "Подбор настроек без использования финального теста",
         "Внутренний цикл выбирает конфигурацию, внешний оценивает процедуру выбора.",
     )
     card(ax, 5, 20, 64, 66, face=BLUE_SOFT, edge=BLUE)
@@ -513,10 +565,10 @@ def nested_search():
     text(ax, 9, 33, "Оценивает всю процедуру подбора", size=11.5, weight="bold", color=BLUE_DARK)
     for outer in range(3):
         y = 40 + outer * 13
-        text(ax, 10, y + 4, f"Внешний фолд {outer + 1}", size=9.5, weight="bold", color=INK)
+        text(ax, 10, y + 4, f"Внешняя часть {outer + 1}", size=9.5, weight="bold", color=INK)
         card(ax, 25, y, 39, 9, face="white", edge="#9BCBFA")
         text(ax, 28, y + 2, "ВНУТРИ:", size=8.5, weight="bold", color=VIOLET)
-        text(ax, 28, y + 6, "Grid / Random search → лучшая конфигурация", size=9.2, color=INK)
+        text(ax, 28, y + 6, "Полный / случайный поиск → лучшая настройка", size=9.2, color=INK)
     arrow(ax, (69, 54), (77, 54), color=BLUE)
     card(ax, 77, 38, 18, 31, face=VIOLET_SOFT, edge=VIOLET)
     text(ax, 86, 43, "ВНЕШНЯЯ", size=10, weight="bold", color=VIOLET, ha="center")
@@ -524,7 +576,7 @@ def nested_search():
     text(ax, 86, 56, "Q₁  Q₂  Q₃", size=12, weight="bold", color=INK, ha="center")
     text(ax, 86, 63, "среднее + разброс", size=8.8, color=MUTED, ha="center")
     card(ax, 77, 74, 18, 12, face=RED_SOFT, edge=RED)
-    text(ax, 86, 78, "TEST", size=12, weight="bold", color=RED, ha="center")
+    text(ax, 86, 78, "ТЕСТ", size=12, weight="bold", color=RED, ha="center")
     text(ax, 86, 83, "один раз в конце", size=8.7, color=RED, ha="center")
     card(ax, 14, 90, 72, 6, face=AMBER_SOFT, edge="#F2C36F")
     text(ax, 50, 93, "Больше комбинаций ≠ более честная оценка.", size=10.5, color=AMBER, weight="bold", ha="center", va="center")
@@ -533,8 +585,8 @@ def nested_search():
 
 def pipeline():
     fig, ax = setup(
-        "Безопасный ColumnTransformer и Pipeline",
-        "Обучаемые преобразования оценивают параметры только по train-фолду.",
+        "Безопасный конвейер подготовки данных",
+        "ColumnTransformer и Pipeline обучают преобразования только по обучающей части.",
     )
     card(ax, 4, 22, 18, 48, face=PALE, edge=LINE)
     pill(ax, 7, 25, "ТАБЛИЦА", width=12)
@@ -551,11 +603,11 @@ def pipeline():
     card(ax, 29, 24, 29, 24, face=BLUE_SOFT, edge=BLUE)
     text(ax, 43.5, 28, "ЧИСЛОВАЯ ВЕТКА", size=10.5, weight="bold", color=BLUE_DARK, ha="center")
     text(ax, 43.5, 35, "медиана → масштабирование", size=9.5, color=INK, ha="center")
-    text(ax, 43.5, 42, "fit только по train", size=9, weight="bold", color=BLUE, ha="center")
+    text(ax, 43.5, 42, "обучение только по train", size=9, weight="bold", color=BLUE, ha="center")
     card(ax, 29, 53, 29, 24, face=VIOLET_SOFT, edge=VIOLET)
     text(ax, 43.5, 57, "КАТЕГОРИАЛЬНАЯ ВЕТКА", size=10.2, weight="bold", color=VIOLET, ha="center")
-    text(ax, 43.5, 64, "частое → one-hot", size=9.5, color=INK, ha="center")
-    text(ax, 43.5, 71, "unknown → ignore", size=9, weight="bold", color=VIOLET, ha="center")
+    text(ax, 43.5, 64, "частое → отдельные 0/1", size=9.5, color=INK, ha="center")
+    text(ax, 43.5, 71, "новая категория → без ошибки", size=8.8, weight="bold", color=VIOLET, ha="center")
     arrow(ax, (58, 36), (66, 48), color=BLUE)
     arrow(ax, (58, 65), (66, 52), color=VIOLET)
     card(ax, 66, 39, 13, 23, face=CYAN_SOFT, edge=GREEN)
@@ -564,9 +616,9 @@ def pipeline():
     arrow(ax, (79, 50), (85, 50), color=GREEN)
     card(ax, 85, 39, 11, 23, face=GREEN_SOFT, edge=GREEN)
     text(ax, 90.5, 45, "МОДЕЛЬ", size=10, weight="bold", color=GREEN, ha="center")
-    text(ax, 90.5, 54, "fit / predict", size=9, color=INK, ha="center")
+    text(ax, 90.5, 54, "обучить /\nполучить прогноз", size=8.7, color=INK, ha="center", va="center")
     card(ax, 12, 82, 76, 10, face=RED_SOFT, edge="#EFA19D")
-    text(ax, 50, 87, "Неправильно: fit_transform(X) → split.  Правильно: split/CV → Pipeline.fit(train).", size=10.5, color=RED, weight="bold", ha="center", va="center")
+    text(ax, 50, 87, "Неправильно: подготовить всю таблицу → разделить.  Правильно: разделить → обучить Pipeline на train.", size=10.1, color=RED, weight="bold", ha="center", va="center")
     save(fig, "ml-4-7-pipeline.svg")
 
 
@@ -604,75 +656,134 @@ def learning_rates():
 
 def batches_dot_product():
     fig, ax = setup(
-        "Скалярное произведение и три режима шага",
-        "Математика прогноза слева, размер выборки для одного шага справа.",
+        "Скалярное произведение: из двух списков получается одно число",
+        "Умножаем значения попарно и складываем — это основа линейного прогноза.",
     )
-    card(ax, 4, 22, 40, 62, face=BLUE_SOFT, edge=BLUE)
-    pill(ax, 8, 25, "ПРОГНОЗ", width=13)
-    text(ax, 8, 36, "x = [2, 3]", size=13, weight="bold", color=INK)
-    text(ax, 8, 43, "w = [0,8; −0,4]", size=13, weight="bold", color=INK)
-    text(ax, 8, 53, "xᵀw = 2·0,8 + 3·(−0,4)", size=11.5, color=MUTED)
-    text(ax, 8, 61, "= 1,6 − 1,2 = 0,4", size=16, weight="bold", color=BLUE_DARK)
-    text(ax, 8, 72, "одна строка X × веса → одно число", size=10.5, color=BLUE_DARK, weight="bold")
+    card(ax, 8, 22, 84, 58, face=BLUE_SOFT, edge=BLUE)
+    text(ax, 23, 31, "ПРИЗНАКИ", size=10.5, weight="bold", color=BLUE_DARK, ha="center")
+    text(ax, 23, 39, "x = [ 2 , 3 ]", size=18, weight="bold", color=INK, ha="center")
+    text(ax, 50, 31, "ПОПАРНО УМНОЖИТЬ", size=10.5, weight="bold", color=VIOLET, ha="center")
+    text(ax, 50, 39, "2 × 0,8     3 × (−0,4)", size=14, weight="bold", color=INK, ha="center")
+    text(ax, 77, 31, "ВЕСА", size=10.5, weight="bold", color=GREEN, ha="center")
+    text(ax, 77, 39, "w = [ 0,8 , −0,4 ]", size=16, weight="bold", color=INK, ha="center")
+    arrow(ax, (23, 45), (42, 52), color=BLUE)
+    arrow(ax, (77, 45), (58, 52), color=GREEN)
+    card(ax, 28, 53, 44, 16, face="white", edge=VIOLET)
+    text(ax, 50, 58, "1,6 + (−1,2) = 0,4", size=18, weight="bold", color=VIOLET, ha="center")
+    text(ax, 50, 65, "одно число — сырой результат модели", size=10, color=MUTED, ha="center")
+    card(ax, 14, 85, 72, 9, face=AMBER_SOFT, edge="#F2C36F")
+    text(ax, 50, 89.5, "Важно: число признаков и число весов должны совпадать.", size=11, color=AMBER, weight="bold", ha="center", va="center")
+    save(fig, "ml-4-8-batches-dot-product.svg")
 
+
+def batch_types():
+    fig, ax = setup(
+        "Сколько объектов использовать для одного шага?",
+        "Определение ошибки не меняется — меняется объём данных для оценки направления.",
+    )
     modes = [
-        (50, 22, "BATCH", "вся выборка", BLUE),
-        (50, 44, "SGD", "один объект", RED),
-        (50, 66, "MINI-BATCH", "небольшая группа", VIOLET),
+        (4, "ПОЛНЫЙ ПАКЕТ", "все 12 объектов", BLUE, 12, "точнее, но дороже"),
+        (36, "ОДИН ОБЪЕКТ (SGD)", "1 из 12 объектов", RED, 1, "быстро, но шумно"),
+        (68, "МИНИ-ПАКЕТ", "4 из 12 объектов", VIOLET, 4, "частый компромисс"),
     ]
-    for x, y, heading, body, accent in modes:
-        card(ax, x, y, 45, 16, face="white", edge=accent)
-        text(ax, x + 4, y + 4, heading, size=10.5, weight="bold", color=accent)
-        text(ax, x + 4, y + 10, body, size=9.5, color=MUTED)
-        count = 12 if heading == "BATCH" else (1 if heading == "SGD" else 4)
+    for x, heading, body, accent, count, note in modes:
+        card(ax, x, 22, 28, 61, face="white", edge=accent)
+        text(ax, x + 14, 27, heading, size=9.8, weight="bold", color=accent, ha="center")
+        text(ax, x + 14, 34, body, size=9.3, color=MUTED, ha="center")
         for index in range(12):
             color = accent if index < count else "#D5DDE4"
-            ax.add_patch(Circle((x + 23 + (index % 6) * 3.2, y + 5 + (index // 6) * 5.5), 0.8, facecolor=color, edgecolor="none"))
-    text(ax, 72.5, 89, "Разные масштабы признаков меняют геометрию и скорость оптимизации.", size=10.5, color=AMBER, weight="bold", ha="center")
-    save(fig, "ml-4-8-batches-dot-product.svg")
+            ax.add_patch(Circle((x + 6 + (index % 4) * 5.4, 46 + (index // 4) * 7), 1.4, facecolor=color, edgecolor="white", linewidth=0.7))
+        arrow(ax, (x + 14, 68), (x + 14, 73), color=accent)
+        text(ax, x + 14, 77, note, size=9.5, color=accent, weight="bold", ha="center")
+    card(ax, 15, 88, 70, 7, face=GREEN_SOFT, edge="#8BD0AA")
+    text(ax, 50, 91.5, "Мини-пакет меняет способ оптимизации, а не смысл функции потерь.", size=10.5, color=GREEN, weight="bold", ha="center", va="center")
+    save(fig, "ml-4-8-batch-types.svg")
+
+
+def probability_basics():
+    fig, ax = setup(
+        "Базовая и условная вероятность",
+        "Сначала смотрим, как часто событие встречается вообще, затем — среди похожих объектов.",
+    )
+    card(ax, 5, 22, 42, 60, face=BLUE_SOFT, edge=BLUE)
+    pill(ax, 9, 26, "БАЗОВАЯ ЧАСТОТА", width=23)
+    text(ax, 26, 37, "10 ушли из 100 клиентов", size=12, weight="bold", color=INK, ha="center")
+    for index in range(100):
+        row, col = divmod(index, 20)
+        color = RED if index >= 90 else "#B9C6D0"
+        ax.add_patch(Circle((9 + col * 1.7, 47 + row * 5), 0.58, facecolor=color, edgecolor="none"))
+    text(ax, 26, 75, "P(уход) = 10 / 100 = 0,10", size=12, weight="bold", color=BLUE_DARK, ha="center")
+
+    card(ax, 53, 22, 42, 60, face=VIOLET_SOFT, edge=VIOLET)
+    pill(ax, 57, 26, "ПРИ ИЗВЕСТНОМ УСЛОВИИ", face=VIOLET, width=29)
+    text(ax, 74, 37, "из 20 похожих клиентов ушли 8", size=11.5, weight="bold", color=INK, ha="center")
+    for index in range(20):
+        row, col = divmod(index, 10)
+        color = RED if index >= 12 else "#B9C6D0"
+        ax.add_patch(Circle((59 + col * 3.3, 50 + row * 9), 1, facecolor=color, edgecolor="none"))
+    text(ax, 74, 75, "P(уход | признаки) = 8 / 20 = 0,40", size=11.5, weight="bold", color=VIOLET, ha="center")
+    arrow(ax, (46, 51), (52, 51), color=VIOLET)
+    card(ax, 12, 88, 76, 7, face=AMBER_SOFT, edge="#F2C36F")
+    text(ax, 50, 91.5, "Вертикальная черта | читается: «при известном условии».", size=10.5, color=AMBER, weight="bold", ha="center", va="center")
+    save(fig, "ml-4-9-probability-basics.svg")
 
 
 def threshold_calibration():
     fig, ax = setup(
-        "Порог и калибровка вероятностей",
-        "Порог меняет решение; калибровка сравнивает вероятность с частотой.",
+        "Порог превращает вероятность в решение",
+        "Один и тот же набор вероятностей даёт разные классы при разных порогах.",
     )
-    card(ax, 4, 22, 44, 61, face=BLUE_SOFT, edge=BLUE)
-    pill(ax, 8, 25, "ПОРОГ", width=12)
-    ax.plot([9, 42], [47, 47], color=INK, linewidth=2)
+    card(ax, 6, 22, 88, 61, face=BLUE_SOFT, edge=BLUE)
+    pill(ax, 10, 26, "ВЕРОЯТНОСТИ МОДЕЛИ", width=25)
+    ax.plot([12, 88], [48, 48], color=INK, linewidth=2)
     for value in [0.12, 0.34, 0.56, 0.72, 0.87]:
-        x = 9 + value * 33
-        ax.scatter(x, 47, s=80, facecolor=BLUE, edgecolor="white", linewidth=1.2)
-        text(ax, x, 51, f"{value:.2f}".replace(".", ","), size=8.5, ha="center")
-    for threshold, y, color in [(0.5, 61, VIOLET), (0.8, 72, RED)]:
-        x = 9 + threshold * 33
-        ax.plot([x, x], [39, y - 3], color=color, linestyle="--", linewidth=2)
-        text(ax, x, y, f"порог {threshold:.1f}".replace(".", ","), size=10, weight="bold", color=color, ha="center")
-    text(ax, 26, 79, "выше порог → меньше тревог,\nно больше возможных FN", size=9.5, color=MUTED, ha="center", va="center")
+        x = 12 + value * 76
+        ax.scatter(x, 48, s=105, facecolor=BLUE, edgecolor="white", linewidth=1.3)
+        text(ax, x, 53, f"{value:.2f}".replace(".", ","), size=9, ha="center")
+    for threshold, y, color in [(0.5, 64, VIOLET), (0.8, 76, RED)]:
+        x = 12 + threshold * 76
+        ax.plot([x, x], [38, y - 3], color=color, linestyle="--", linewidth=2.2)
+        text(ax, x, y, f"порог {threshold:.1f}".replace(".", ","), size=10.5, weight="bold", color=color, ha="center")
+    text(ax, 25, 69, "класс 0", size=11, weight="bold", color=MUTED, ha="center")
+    text(ax, 74, 69, "класс 1", size=11, weight="bold", color=VIOLET, ha="center")
+    card(ax, 15, 87, 70, 8, face=RED_SOFT, edge="#EFA19D")
+    text(ax, 50, 91, "Выше порог → меньше ложных тревог, но больше возможных пропусков.", size=10.5, color=RED, weight="bold", ha="center", va="center")
+    save(fig, "ml-4-9-threshold-calibration.svg")
 
-    card(ax, 52, 22, 44, 61, face=VIOLET_SOFT, edge=VIOLET)
-    pill(ax, 56, 25, "КАЛИБРОВКА", face=VIOLET, width=17)
+
+def calibration_plot():
+    fig, ax = setup(
+        "Калибровка: вероятность сравнивается с частотой",
+        "В группе с прогнозом 0,8 событие должно происходить примерно в 80% случаев.",
+    )
+    card(ax, 9, 20, 82, 65, face=VIOLET_SOFT, edge=VIOLET)
     x0, y0 = 60, 71
-    ax.plot([x0, x0], [38, y0], color=INK, linewidth=1.2)
-    ax.plot([x0, 91], [y0, y0], color=INK, linewidth=1.2)
-    ax.plot([x0, 91], [y0, 40], color=MUTED, linestyle="--", linewidth=1.5)
+    x0, y0 = 23, 73
+    ax.plot([x0, x0], [32, y0], color=INK, linewidth=1.2)
+    ax.plot([x0, 78], [y0, y0], color=INK, linewidth=1.2)
+    ax.plot([x0, 78], [y0, 34], color=MUTED, linestyle="--", linewidth=1.8)
     good = [(0.1, 0.12), (0.3, 0.28), (0.5, 0.52), (0.7, 0.69), (0.9, 0.88)]
     bad = [(0.1, 0.06), (0.3, 0.14), (0.5, 0.32), (0.7, 0.46), (0.9, 0.62)]
     for predicted, observed in good:
-        ax.scatter(x0 + predicted * 31, y0 - observed * 31, s=55, color=GREEN)
+        ax.scatter(x0 + predicted * 55, y0 - observed * 41, s=70, color=GREEN)
     for predicted, observed in bad:
-        ax.scatter(x0 + predicted * 31, y0 - observed * 31, s=55, marker="x", color=RED, linewidth=2)
-    text(ax, 75.5, 75, "предсказанная вероятность", size=9, ha="center")
-    text(ax, 55, 55, "наблюдаемая\nчастота", size=8.5, ha="center", va="center")
-    text(ax, 74, 34, "● хорошо   × плохо", size=9.5, color=INK, ha="center")
+        ax.scatter(x0 + predicted * 55, y0 - observed * 41, s=70, marker="x", color=RED, linewidth=2)
+    text(ax, 50, 78, "предсказанная вероятность", size=10, ha="center")
+    text(ax, 16, 52, "наблюдаемая\nчастота", size=9.5, ha="center", va="center")
+    text(ax, 50, 27, "пунктир: вероятность = частота", size=10, color=MUTED, ha="center")
+    card(ax, 80, 35, 9, 35, face="white", edge=LINE)
+    text(ax, 84.5, 41, "●", size=15, color=GREEN, ha="center")
+    text(ax, 84.5, 47, "хорошо", size=8.8, color=GREEN, weight="bold", ha="center")
+    text(ax, 84.5, 56, "×", size=15, color=RED, ha="center")
+    text(ax, 84.5, 62, "плохо", size=8.8, color=RED, weight="bold", ha="center")
     card(ax, 15, 87, 70, 8, face=GREEN_SOFT, edge="#8BD0AA")
     text(ax, 50, 91, "Прогноз около 0,8 → примерно 80% исходов среди сопоставимых объектов.", size=10.5, color=GREEN, weight="bold", ha="center", va="center")
-    save(fig, "ml-4-9-threshold-calibration.svg")
+    save(fig, "ml-4-9-calibration.svg")
 
 
 def bootstrap():
     fig, ax = setup(
-        "Bootstrap-оценка интервала метрики",
+        "Бутстрэп: практическая оценка интервала метрики",
         "Повторные выборки строятся с возвращением и уважают единицу независимости.",
     )
     stages = [
@@ -705,44 +816,61 @@ def bootstrap():
             arrow(ax, (x + 17.5, 50), (stages[index + 1][0] - 0.5, 50), color=LINE)
     card(ax, 10, 81, 80, 11, face=RED_SOFT, edge="#EFA19D")
     text(ax, 50, 84, "Групповые данные: ресэмплировать пациентов целиком.", size=10.5, weight="bold", color=RED, ha="center")
-    text(ax, 50, 89, "Простой bootstrap строк может разрушить зависимость и дать неверный интервал.", size=9.5, color=RED, ha="center")
+    text(ax, 50, 89, "Простой бутстрэп строк может разрушить зависимость и дать неверный интервал.", size=9.5, color=RED, ha="center")
     save(fig, "ml-4-9-bootstrap.svg")
 
 
 def complexity_curves():
     fig, ax = setup(
-        "Сложность модели: underfit → баланс → overfit",
-        "Train и validation отвечают на разные вопросы.",
+        "Сложность модели и две ошибки",
+        "Сравниваем ошибку на обучении и на проверке.",
     )
-    panels = [
-        (4, "НЕДООБУЧЕНИЕ", BLUE, "обе ошибки высоки"),
-        (36, "ПОДХОДЯЩАЯ", GREEN, "ошибки низки и близки"),
-        (68, "ПЕРЕОБУЧЕНИЕ", RED, "train хорошо, validation хуже"),
-    ]
-    for x, heading, accent, note in panels:
-        card(ax, x, 21, 28, 44, face="white", edge=accent)
-        text(ax, x + 14, 26, heading, size=10, weight="bold", color=accent, ha="center")
-        px = [x + 3 + i * 3 for i in range(8)]
-        py = [48, 43, 47, 36, 41, 31, 37, 29]
-        ax.scatter(px, py, s=36, color="#AEBBC5")
-        if heading == "НЕДООБУЧЕНИЕ":
-            ax.plot([x + 3, x + 24], [43, 37], color=accent, linewidth=2)
-        elif heading == "ПОДХОДЯЩАЯ":
-            ax.plot([x + 3, x + 7, x + 11, x + 15, x + 19, x + 24], [48, 44, 43, 38, 35, 30], color=accent, linewidth=2)
-        else:
-            ax.plot(px, [49, 42, 48, 35, 42, 30, 38, 28], color=accent, linewidth=2.2)
-        text(ax, x + 14, 59, note, size=8.8, color=accent, weight="bold", ha="center")
-    card(ax, 10, 72, 80, 19, face=BLUE_SOFT, edge="#9BCBFA")
-    xs = [17, 28, 39, 50, 61, 72, 83]
-    train = [82, 70, 60, 51, 45, 40, 37]
-    valid = [88, 75, 62, 53, 50, 57, 69]
+    card(ax, 8, 21, 84, 62, face=BLUE_SOFT, edge="#9BCBFA")
+    ax.plot([17, 17], [32, 73], color=INK, linewidth=1.4)
+    ax.plot([17, 84], [73, 73], color=INK, linewidth=1.4)
+    xs = [18, 28, 39, 50, 61, 72, 82]
+    train = [66, 59, 52, 46, 41, 36, 32]
+    valid = [68, 59, 49, 42, 44, 53, 65]
     ax.plot(xs, train, color=BLUE, linewidth=2.3, marker="o")
     ax.plot(xs, valid, color=RED, linewidth=2.3, marker="s")
-    text(ax, 16, 75, "ошибка", size=8.5, color=MUTED)
-    text(ax, 50, 92, "сложность модели", size=9, color=MUTED, ha="center")
-    text(ax, 78, 76, "train", size=9, color=BLUE, weight="bold")
-    text(ax, 78, 81, "validation", size=9, color=RED, weight="bold")
+    ax.axvspan(17, 36, ymin=0.25, ymax=0.75, facecolor=BLUE, alpha=0.06)
+    ax.axvspan(36, 59, ymin=0.25, ymax=0.75, facecolor=GREEN, alpha=0.08)
+    ax.axvspan(59, 84, ymin=0.25, ymax=0.75, facecolor=RED, alpha=0.06)
+    text(ax, 26, 28, "НЕДООБУЧЕНИЕ", size=9.5, color=BLUE, weight="bold", ha="center")
+    text(ax, 48, 28, "ПОДХОДЯЩАЯ СЛОЖНОСТЬ", size=9.5, color=GREEN, weight="bold", ha="center")
+    text(ax, 72, 28, "ПЕРЕОБУЧЕНИЕ", size=9.5, color=RED, weight="bold", ha="center")
+    text(ax, 13, 50, "ошибка", size=9, color=MUTED, ha="center", va="center")
+    text(ax, 50, 78, "сложность модели", size=9.5, color=MUTED, ha="center")
+    text(ax, 66, 37, "обучение", size=9.5, color=BLUE, weight="bold")
+    text(ax, 67, 60, "проверка", size=9.5, color=RED, weight="bold")
+    card(ax, 15, 87, 70, 8, face=AMBER_SOFT, edge="#F2C36F")
+    text(ax, 50, 91, "Минимальная ошибка на обучении не означает лучшую работу на новых данных.", size=10.5, color=AMBER, weight="bold", ha="center", va="center")
     save(fig, "ml-4-10-complexity-curves.svg")
+
+
+def learning_curves():
+    fig, ax = setup(
+        "Кривые обучения: помогает ли больше данных?",
+        "По горизонтали растёт число обучающих объектов.",
+    )
+    panels = [
+        (5, "НЕДООБУЧЕНИЕ", BLUE, [47, 46, 45, 44, 44], [56, 51, 48, 46, 45], "обе метрики остаются плохими"),
+        (52, "ПЕРЕОБУЧЕНИЕ", RED, [30, 32, 34, 35, 36], [70, 62, 56, 51, 48], "разрыв уменьшается, но остаётся"),
+    ]
+    for x, heading, accent, train, valid, note in panels:
+        card(ax, x, 22, 43, 61, face="white", edge=accent)
+        text(ax, x + 21.5, 27, heading, size=11, color=accent, weight="bold", ha="center")
+        ax.plot([x + 7, x + 7], [36, 70], color=INK, linewidth=1.1)
+        ax.plot([x + 7, x + 37], [70, 70], color=INK, linewidth=1.1)
+        xs = [x + 9, x + 15, x + 22, x + 29, x + 36]
+        ax.plot(xs, train, color=BLUE, linewidth=2.2, marker="o")
+        ax.plot(xs, valid, color=RED, linewidth=2.2, marker="s")
+        text(ax, x + 12, 40, "обучение", size=8.7, color=BLUE, weight="bold")
+        text(ax, x + 27, 63, "проверка", size=8.7, color=RED, weight="bold")
+        text(ax, x + 21.5, 76, note, size=8.8, color=accent, weight="bold", ha="center")
+    card(ax, 15, 88, 70, 7, face=GREEN_SOFT, edge="#8BD0AA")
+    text(ax, 50, 91.5, "Большой разрыв часто уменьшается с данными; две плохие близкие кривые требуют другой модели или признаков.", size=9.7, color=GREEN, weight="bold", ha="center", va="center")
+    save(fig, "ml-4-10-learning-curves.svg")
 
 
 def regularization_coefficients():
@@ -811,8 +939,8 @@ def interpretability():
     )
     tools = [
         (4, "КОЭФФИЦИЕНТ", "Как меняется линейный результат при росте признака?", BLUE, "зависит от масштаба\nи корреляций"),
-        (36, "PERMUTATION", "Насколько упадёт выбранная метрика после перемешивания?", GREEN, "зависит от метрики\nи test-данных"),
-        (68, "SHAP", "Как признак сдвинул прогноз относительно выбранного фона?", VIOLET, "зависит от модели,\nфона и зависимостей"),
+        (36, "ПЕРЕМЕШИВАНИЕ", "Насколько упадёт выбранная метрика после перемешивания?", GREEN, "зависит от метрики\nи данных проверки"),
+        (68, "SHAP-ОБЪЯСНЕНИЕ", "Как признак сдвинул прогноз относительно выбранного фона?", VIOLET, "зависит от модели,\nфона и зависимостей"),
     ]
     for x, heading, question, accent, limit in tools:
         card(ax, x, 22, 28, 52, face="white", edge=accent)
@@ -826,7 +954,7 @@ def interpretability():
     arrow(ax, (82, 77), (82, 84), color=RED)
     card(ax, 10, 84, 80, 11, face=RED_SOFT, edge=RED)
     text(ax, 50, 88, "СВЯЗЬ ≠ ПРИЧИННОСТЬ", size=13, weight="bold", color=RED, ha="center")
-    text(ax, 50, 93, "Ни коэффициент, ни permutation importance, ни SHAP не доказывают причинный эффект.", size=9.7, color=RED, ha="center")
+    text(ax, 50, 93, "Ни коэффициент, ни важность перестановкой, ни SHAP не доказывают причинный эффект.", size=9.7, color=RED, ha="center")
     save(fig, "ml-4-11-interpretability.svg")
 
 
@@ -840,18 +968,24 @@ def main():
     confusion_imbalance()
     project_cycle()
     split_strategies()
+    dependency_splits()
     cross_validation()
+    parameters_hyperparameters()
     nested_search()
     pipeline()
     learning_rates()
     batches_dot_product()
+    batch_types()
+    probability_basics()
     threshold_calibration()
+    calibration_plot()
     bootstrap()
     complexity_curves()
+    learning_curves()
     regularization_coefficients()
     subgroup_metrics()
     interpretability()
-    print("Generated 20 revised block 4 SVG visuals.")
+    print("Generated 26 revised block 4 SVG visuals.")
 
 
 if __name__ == "__main__":

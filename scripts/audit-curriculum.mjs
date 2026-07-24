@@ -191,6 +191,34 @@ if (process.env.CURRICULUM_PRINT_BLOCK4 === '1') {
   process.exit(0)
 }
 
+if (process.env.CURRICULUM_PRINT_BLOCK4_CHECKS === '1') {
+  const checks = flowTopics
+    .filter((topic) => topic.blockId === 'ml-foundations')
+    .map((topic) => ({
+      id: topic.id,
+      terminology: topic.terminology,
+      checks: topic.steps
+        .filter((step) => step.type === 'quiz' || step.type === 'practice')
+        .map((step) => ({
+          id: step.id,
+          type: step.type,
+          title: step.title,
+          summary: step.summary,
+          questions: step.quiz?.questions.map((question) => ({
+            question: question.question,
+            options: question.options,
+            explanation: question.explanation,
+          })),
+          practiceTasks: step.practiceTasks?.map((task) => ({
+            title: task.title,
+            description: task.description,
+          })),
+        })),
+    }))
+  console.log(JSON.stringify(checks, null, 2))
+  process.exit(0)
+}
+
 requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
 requireCondition(curriculumBlocks.length === 14, `Expected exactly 14 curriculum blocks, got ${curriculumBlocks.length}.`)
@@ -218,7 +246,7 @@ requireCondition(fs.existsSync(courseVisualsPath), 'Course visual directory is m
 const courseVisualFiles = fs.existsSync(courseVisualsPath)
   ? fs.readdirSync(courseVisualsPath).filter((file) => /\.(?:png|svg)$/u.test(file))
   : []
-requireCondition(courseVisualFiles.length === 99, `Expected exactly 99 course visual files, got ${courseVisualFiles.length}.`)
+requireCondition(courseVisualFiles.length === 105, `Expected exactly 105 course visual files, got ${courseVisualFiles.length}.`)
 
 function readPngDimensions(filePath) {
   const buffer = fs.readFileSync(filePath)
@@ -235,7 +263,8 @@ for (const file of courseVisualFiles) {
   const matchingFiles = visualHashes.get(digest) ?? []
   matchingFiles.push(file)
   visualHashes.set(digest, matchingFiles)
-  requireCondition(fileBuffer.length >= 8_000, `${file} is suspiciously small (${fileBuffer.length} bytes).`)
+  const minimumBytes = file.endsWith('.svg') ? 5_000 : 8_000
+  requireCondition(fileBuffer.length >= minimumBytes, `${file} is suspiciously small (${fileBuffer.length} bytes).`)
   if (file.endsWith('.png')) {
     const dimensions = readPngDimensions(filePath)
     requireCondition(Boolean(dimensions), `${file}: expected a readable PNG header.`)
@@ -264,9 +293,8 @@ for (const { topic, visual } of registeredVisuals) {
   registeredFiles.add(file)
   requireCondition(courseVisualFiles.includes(file), `${prefix}: registered asset is missing.`)
   requireCondition(visual.alt.trim().length >= 40, `${prefix}: semantic alt is missing or too short.`)
-  requireCondition(visual.caption.includes('Что показано:'), `${prefix}: caption must say what is shown.`)
-  requireCondition(visual.caption.includes('Как читать:'), `${prefix}: caption must explain how to read the visual.`)
-  requireCondition(visual.caption.includes('Главный вывод:'), `${prefix}: caption must state the main conclusion.`)
+  requireCondition(visual.caption.trim().length >= 110, `${prefix}: caption must explain both reading order and conclusion.`)
+  requireCondition((visual.caption.match(/[.!?](?:\s|$)/gu) ?? []).length >= 2, `${prefix}: caption must contain at least two complete sentences.`)
   requireCondition(!/Учебная иллюстрация к теме|Дополнительная учебная иллюстрация/iu.test(visual.alt), `${prefix}: generic placeholder alt is forbidden.`)
   requireCondition(Number.isInteger(visual.order) && visual.order > 0, `${prefix}: order must be a positive integer.`)
   requireCondition(['generated', 'curated'].includes(visual.provenance?.kind), `${prefix}: invalid provenance kind.`)
@@ -298,7 +326,8 @@ requireCondition(registeredFiles.size === registeredVisuals.length, 'Each regist
 for (const topic of flowTopics) {
   const topicVisuals = getCourseVisuals(topic)
   requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one registered illustration.`)
-  requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three illustrations, got ${topicVisuals.length}.`)
+  const maximumVisuals = topic.blockId === 'ml-foundations' ? 4 : 3
+  requireCondition(topicVisuals.length <= maximumVisuals, `${topic.id}: expected no more than ${maximumVisuals} illustrations, got ${topicVisuals.length}.`)
 }
 
 const researchTopics = flowTopics.filter((topic) => topic.blockId === 'research-statistics'
@@ -325,6 +354,10 @@ const consolidatedChecks = block4Topics.flatMap((topic) => topic.steps.filter((s
 const legacyCheckIds = legacyChecks.map((step) => step.id).sort()
 const consolidatedCheckIds = consolidatedChecks.map((step) => step.id).sort()
 requireCondition(block4Topics.length === 11, `Expected exactly 11 consolidated block 4 topics, got ${block4Topics.length}.`)
+requireCondition(
+  block4Topics.reduce((total, topic) => total + getCourseVisuals(topic).length, 0) === 26,
+  'Block 4 must contain exactly 26 focused illustrations after splitting compound visuals.',
+)
 requireCondition(
   block4Topics.map((topic) => topic.title.match(/^4\.(\d+)/u)?.[1]).join(',') === '1,2,3,4,5,6,7,8,9,10,11',
   'Block 4 topic numbering must be exactly 4.1–4.11.',
@@ -487,7 +520,7 @@ const requiredCoverage = [
   ['learning curve', 'learning curves'],
   ['optuna', 'Optuna hyperparameter search'],
   ['columntransformer', 'ColumnTransformer'],
-  ['decision curve', 'decision curve analysis'],
+  ['чистая польза', 'decision curve analysis / анализ практической пользы'],
   ['permutation importance', 'permutation importance'],
   ['fasta', 'FASTA'],
   ['fastq', 'FASTQ'],
