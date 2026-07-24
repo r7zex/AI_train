@@ -8,10 +8,10 @@ test('block 4 exposes exactly the revised 4.1–4.11 sequence and preserves deep
     '4.1 Виды задач машинного обучения',
     '4.2 Объекты, признаки и целевая переменная',
     '4.3 Первая модель: линейная регрессия',
-    '4.4 Baseline, метрики и цикл ML-проекта',
+    '4.4 Простой ориентир, метрики и цикл ML-проекта',
     '4.5 Стратегии разделения и кросс-валидация',
     '4.6 Подбор гиперпараметров',
-    '4.7 Подготовка данных и безопасный Pipeline',
+    '4.7 Подготовка данных и безопасный конвейер Pipeline',
     '4.8 Математическая основа и оптимизация',
     '4.9 Вероятности, порог и надёжность прогноза',
     '4.10 Недообучение, переобучение и регуляризация',
@@ -23,22 +23,40 @@ test('block 4 exposes exactly the revised 4.1–4.11 sequence and preserves deep
   await expect(page.getByText('560 интерактивных шагов')).toBeVisible()
 
   await page.goto('/topics/ml-validation-strategies/ml-validation-strategies-splits')
-  await expect(page.getByRole('heading', { name: 'Train, validation и test' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Обучение, выбор и финальная проверка' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Случайное и стратифицированное разделение' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Группы, источники и время' })).toBeVisible()
-  const splitFigure = page.getByRole('figure')
-  await expect(splitFigure.locator('img')).toHaveAttribute('src', '/course-visuals/ml-4-5-split-strategies.svg')
-  await expect(splitFigure.locator('figcaption')).toContainText('Что показано:')
-  await expect(splitFigure.locator('figcaption')).toContainText('Как читать:')
-  await expect(splitFigure.locator('figcaption')).toContainText('Главный вывод:')
+  const splitFigures = page.getByRole('figure')
+  await expect(splitFigures).toHaveCount(2)
+  await expect(splitFigures.nth(0).locator('img')).toHaveAttribute('src', '/course-visuals/ml-4-5-split-strategies.svg')
+  await expect(splitFigures.nth(1).locator('img')).toHaveAttribute('src', '/course-visuals/ml-4-5-group-source-time.svg')
+  await expect(splitFigures.nth(0).locator('figcaption')).toContainText('красные точки')
+  await expect(splitFigures.nth(1).locator('figcaption')).toContainText('связывает строки')
   await page.screenshot({ path: '/tmp/ai-train-block4-revised-viewport.png' })
   await page.screenshot({ path: '/tmp/ai-train-block4-revised-desktop.png', fullPage: true })
 
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('.stepik-sidebar')).toBeHidden()
-  await expect(splitFigure.locator('figcaption')).toBeVisible()
+  await expect(page.getByText('Проведите по схеме влево или вправо, чтобы увидеть её целиком.').first()).toBeVisible()
+  await expect(splitFigures.nth(0).locator('figcaption')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await page.screenshot({ path: '/tmp/ai-train-block4-revised-mobile.png', fullPage: true })
+
+  await page.goto('/topics/ml-validation-strategies/ml-split-strategy-lab-assessment')
+  const glossaryHeading = page.getByRole('heading', { name: 'Английские слова из этого шага' })
+  const quizProgress = page.getByText(/Отвечено: 0 \//)
+  await expect(glossaryHeading).toBeVisible()
+  await expect(page.getByRole('term').filter({ hasText: 'проверочная часть' })).toContainText('(validation)')
+  await expect(page.getByRole('term').filter({ hasText: 'гиперпараметр' })).toContainText('(hyperparameter)')
+  await expect(quizProgress).toBeVisible()
+  await expect(page.getByText('Где выбирают гиперпараметры?')).toBeVisible()
+  expect(await page.evaluate(() => {
+    const heading = [...document.querySelectorAll('h2')]
+      .find((node) => node.textContent === 'Английские слова из этого шага')
+    const progress = [...document.querySelectorAll('span')]
+      .find((node) => node.textContent?.startsWith('Отвечено: 0 /'))
+    return Boolean(heading && progress && (heading.compareDocumentPosition(progress) & Node.DOCUMENT_POSITION_FOLLOWING))
+  })).toBe(true)
 })
 
 test('revised theory covers every required block 4 concept with scoped visuals', async ({ page }) => {
@@ -61,17 +79,17 @@ test('revised theory covers every required block 4 concept with scoped visuals',
     },
     {
       route: '/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model',
-      heading: 'fit на train, predict на test',
+      heading: 'Обучение на train, прогноз на test',
       visual: '/course-visuals/ml-4-3-linear-prediction.svg',
     },
     {
       route: '/topics/ml-foundations-baseline-metrics-cycle/ml-foundations-baseline-metrics-cycle-classification',
-      heading: 'Четыре клетки без перестановки FP и FN',
+      heading: 'Четыре клетки матрицы ошибок',
       visual: '/course-visuals/ml-4-4-confusion-imbalance.svg',
     },
     {
       route: '/topics/ml-validation-strategies/ml-validation-strategies-cv',
-      heading: 'K-fold cross-validation',
+      heading: 'Кросс-валидация по K частям',
       visual: '/course-visuals/ml-4-5-cross-validation.svg',
     },
     {
@@ -91,7 +109,7 @@ test('revised theory covers every required block 4 concept with scoped visuals',
     },
     {
       route: '/topics/ml-probability-reliability/ml-probability-reliability-calibration',
-      heading: 'Bootstrap и практический 95%-интервал',
+      heading: 'Бутстрэп и практический 95%-интервал',
       visual: '/course-visuals/ml-4-9-bootstrap.svg',
     },
     {
@@ -109,7 +127,7 @@ test('revised theory covers every required block 4 concept with scoped visuals',
   for (const check of checks) {
     await page.goto(check.route)
     await expect(page.getByRole('heading', { name: check.heading })).toBeVisible()
-    await expect(page.getByRole('figure').locator('img')).toHaveAttribute('src', check.visual)
+    await expect(page.locator(`img[src="${check.visual}"]`)).toBeVisible()
   }
 
   await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-table')

@@ -32,7 +32,7 @@ test('research lessons expose their individual learning design', async ({ page }
 test('from-zero validation and NLP have distinct learning designs', async ({ page }) => {
   await page.goto('/topics/ml-validation-strategies/ml-validation-strategies-splits')
   await expect(page.getByText(/≈ 125 мин · 19 вопросов · 5 практик/)).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Train, validation и test' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Обучение, выбор и финальная проверка' })).toBeVisible()
 
   await page.goto('/topics/nlp-data-labels-tokenization/nlp-data-labels-tokenization-theory')
   await expect(page.getByText('лаборатория разметки + 2 проверки · ≈ 85 мин · 6 вопросов · 2 практики')).toBeVisible()
@@ -89,13 +89,13 @@ test('Matplotlib is a complete asynchronous module with local Russian definition
   await page.goto('/topics/matplotlib-basics/matplotlib-basics-theory')
   await expect(page.getByText('объяснение → разбор кода → аудит ошибок → тест → практика · ≈ 70 мин · 3 вопроса · 1 практика')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Что именно создаёт Matplotlib' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Термины текущего шага' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Английские слова из этого шага' })).toBeVisible()
   await expect(page.getByText('область графика (Axes)')).toBeVisible()
   await expect(page.getByText('отдельная система координат внутри рисунка Matplotlib')).toBeVisible()
   await page.screenshot({ path: '/tmp/ai-train-matplotlib-desktop.png' })
 
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.getByRole('heading', { name: 'Термины текущего шага' }).scrollIntoViewIfNeeded()
+  await page.getByRole('heading', { name: 'Английские слова из этого шага' }).scrollIntoViewIfNeeded()
   await expect(page.locator('.stepik-sidebar')).toBeHidden()
   await page.screenshot({ path: '/tmp/ai-train-matplotlib-glossary-mobile.png' })
 
@@ -136,21 +136,21 @@ test('topics 4.1-4.3 follow the introductory ML sequence', async ({ page }) => {
 
   await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model')
   await expect(page.getByRole('heading', { name: 'Что такое модель и её параметры' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Сначала разбиение 80/20' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Первый учебный пример: разбиение 80/20' })).toBeVisible()
   await expect(page.locator('pre').filter({ hasText: 'test_size=0.2' })).toBeVisible()
   await expect(page.locator('pre').filter({ hasText: 'random_state=42' })).toBeVisible()
   await expect(page.locator('pre').filter({ hasText: 'shuffle=True' })).toBeVisible()
   await expect(page.getByText(/stratify.*классификации.*не используют/)).toBeVisible()
   const predictionFigure = page.getByRole('figure')
   await expect(predictionFigure.locator('img')).toHaveAttribute('src', '/course-visuals/ml-4-3-linear-prediction.svg')
-  await expect(predictionFigure.locator('figcaption')).toContainText('fit')
+  await expect(predictionFigure.locator('figcaption')).toContainText('обучить модель')
   await expect(page.locator('pre').filter({ hasText: 'model.fit(X_train, y_train)' })).toBeVisible()
   await expect(page.locator('pre').filter({ hasText: 'y_pred = model.predict(X_test)' })).toBeVisible()
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model')
   await expect(page.locator('.stepik-sidebar')).toBeHidden()
-  await expect(page.getByRole('heading', { name: 'fit на train, predict на test' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Обучение на train, прогноз на test' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await expect(page.getByRole('figure').locator('figcaption')).toBeVisible()
   await page.screenshot({ path: '/tmp/ai-train-topic-4-3-mobile.png', fullPage: true })
@@ -174,7 +174,7 @@ test('core ML theory has distinct raster visuals, plain-language explanations, a
   await expect(page.getByRole('region', { name: 'Иллюстрации к теме' }).locator('img')).toHaveCount(2)
 
   await page.goto('/topics/ml-validation-strategies/ml-validation-strategies-splits')
-  await expect(page.getByRole('heading', { name: 'Train, validation и test' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Обучение, выбор и финальная проверка' })).toBeVisible()
   await expect(page.locator('.katex-display')).toHaveCount(0)
 
   await page.goto('/topics/ml-math-optimization/ml-math-optimization-foundations')
@@ -187,18 +187,17 @@ test('block 4 visuals have semantic captions and follow their declared pedagogic
   await page.goto('/topics/ml-validation-strategies/ml-validation-strategies-splits')
 
   const validationFigures = page.getByRole('figure')
-  await expect(validationFigures).toHaveCount(1)
-  await expect(validationFigures.locator('figcaption')).toHaveCount(1)
-  await expect(validationFigures.locator('figcaption').first()).toContainText('Что показано:')
-  await expect(validationFigures.locator('figcaption').first()).toContainText('Как читать:')
-  await expect(validationFigures.locator('figcaption').first()).toContainText('Главный вывод:')
+  await expect(validationFigures).toHaveCount(2)
+  await expect(validationFigures.locator('figcaption')).toHaveCount(2)
+  await expect(validationFigures.locator('figcaption').first()).toContainText('красные точки')
+  await expect(validationFigures.locator('figcaption').nth(1)).toContainText('связывает строки')
 
   const validationDescriptions = await validationFigures.locator('img').evaluateAll((images) => images.map((image) => ({
     alt: image.getAttribute('alt') ?? '',
     caption: image.closest('figure')?.querySelector('figcaption')?.textContent ?? '',
   })))
-  expect(new Set(validationDescriptions.map((item) => item.alt)).size).toBe(1)
-  expect(new Set(validationDescriptions.map((item) => item.caption)).size).toBe(1)
+  expect(new Set(validationDescriptions.map((item) => item.alt)).size).toBe(2)
+  expect(new Set(validationDescriptions.map((item) => item.caption)).size).toBe(2)
   expect(validationDescriptions.every((item) => item.alt.length >= 40)).toBe(true)
   expect(validationDescriptions.every((item) => !item.alt.includes('Учебная иллюстрация к теме'))).toBe(true)
 
@@ -206,7 +205,7 @@ test('block 4 visuals have semantic captions and follow their declared pedagogic
     const headings = [...document.querySelectorAll('h2')]
     const roles = headings.find((heading) => heading.textContent?.includes('Случайное и стратифицированное разделение'))
     const figures = [...document.querySelectorAll('figure')]
-    if (!roles || figures.length !== 1) return false
+    if (!roles || figures.length !== 2) return false
     return Boolean(roles.compareDocumentPosition(figures[0]) & Node.DOCUMENT_POSITION_FOLLOWING)
   })
   expect(placementOrderIsValid).toBe(true)

@@ -207,10 +207,10 @@ L 787.2192 90.684
 " clip-path="url(#p8c755e3773)" style="fill: none; stroke: #d9e3ec; stroke-linecap: square"/>
    </g>
    <g id="text_1">
-    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="47.9808" y="54.13965" transform="rotate(-0 47.9808 54.13965)">Безопасный ColumnTransformer и Pipeline</text>
+    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="47.9808" y="54.13965" transform="rotate(-0 47.9808 54.13965)">Безопасный конвейер подготовки данных</text>
    </g>
    <g id="text_2">
-    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="47.9808" y="74.281625" transform="rotate(-0 47.9808 74.281625)">Обучаемые преобразования оценивают параметры только по train-фолду.</text>
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="47.9808" y="74.281625" transform="rotate(-0 47.9808 74.281625)">ColumnTransformer и Pipeline обучают преобразования только по обучающей части.</text>
    </g>
    <g id="text_3">
     <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="120.2976" y="156.617003" transform="rotate(-0 120.2976 156.617003)">ТАБЛИЦА</text>
@@ -234,16 +234,16 @@ L 787.2192 90.684
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="365.3712" y="197.856313" transform="rotate(-0 365.3712 197.856313)">медиана → масштабирование</text>
    </g>
    <g id="text_10">
-    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #0b70e0" x="365.3712" y="232.241794" transform="rotate(-0 365.3712 232.241794)">fit только по train</text>
+    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #0b70e0" x="365.3712" y="232.5357" transform="rotate(-0 365.3712 232.5357)">обучение только по train</text>
    </g>
    <g id="text_11">
     <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7657e8" x="365.3712" y="307.997606" transform="rotate(-0 365.3712 307.997606)">КАТЕГОРИАЛЬНАЯ ВЕТКА</text>
    </g>
    <g id="text_12">
-    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="365.3712" y="342.392916" transform="rotate(-0 365.3712 342.392916)">частое → one-hot</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="365.3712" y="342.392916" transform="rotate(-0 365.3712 342.392916)">частое → отдельные 0/1</text>
    </g>
    <g id="text_13">
-    <text style="font-weight: 700; font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7657e8" x="365.3712" y="376.940194" transform="rotate(-0 365.3712 376.940194)">unknown → ignore</text>
+    <text style="font-weight: 700; font-size: 8.8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7657e8" x="365.3712" y="377.0756" transform="rotate(-0 365.3712 377.0756)">новая категория → без ошибки</text>
    </g>
    <g id="text_14">
     <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #138a57" x="598.392" y="247.590516" transform="rotate(-0 598.392 247.590516)">ОБЪЕДИНЕНИЕ</text>
@@ -256,10 +256,11 @@ L 787.2192 90.684
     <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #138a57" x="743.0256" y="247.970438" transform="rotate(-0 743.0256 247.970438)">МОДЕЛЬ</text>
    </g>
    <g id="text_17">
-    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="743.0256" y="292.116994" transform="rotate(-0 743.0256 292.116994)">fit / predict</text>
+    <text style="font-size: 8.7px; font-family: 'DejaVu Sans'; fill: #182431" transform="translate(721.764295 282.882094)">обучить /</text>
+    <text style="font-size: 8.7px; font-family: 'DejaVu Sans'; fill: #182431" transform="translate(701.916741 292.624191)">получить прогноз</text>
    </g>
    <g id="text_18">
-    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="417.6" y="452.686528" transform="rotate(-0 417.6 452.686528)">Неправильно: fit_transform(X) → split.  Правильно: split/CV → Pipeline.fit(train).</text>
+    <text style="font-weight: 700; font-size: 10.1px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="417.6" y="452.84763" transform="rotate(-0 417.6 452.84763)">Неправильно: подготовить всю таблицу → разделить.  Правильно: разделить → обучить Pipeline на train.</text>
    </g>
   </g>
  </g>

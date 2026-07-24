@@ -12,6 +12,9 @@ export default function CourseVisualGallery({ visuals }: { visuals: CourseVisual
             key={visual.src}
             className="overflow-hidden rounded-2xl border border-[#d9e6f2] bg-white shadow-[0_18px_48px_-34px_rgba(11,112,224,0.45)]"
           >
+            <p className="border-b border-[#e5edf5] bg-[#f8fbff] px-4 py-2 text-[12px] font-medium text-[#526474] sm:hidden">
+              Проведите по схеме влево или вправо, чтобы увидеть её целиком.
+            </p>
             <div
               className="overflow-x-auto bg-white"
               role="region"
