@@ -1,29 +1,29 @@
 import { expect, test } from '@playwright/test'
 
-test('step 02 keeps topic 4.1 concise and class order consistent in topic 4.2', async ({ page }) => {
-  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-object')
-  await expect(page.getByRole('heading', { name: 'Роль каждого столбца' })).toHaveCount(0)
-  await expect(page.getByRole('figure')).toHaveCount(0)
+test('revised introductory topics introduce notation only after the task taxonomy', async ({ page }) => {
+  await page.goto('/topics/ml-problem-types/ml-problem-types-foundations')
+  await expect(page.getByRole('heading', { name: 'Обучение с учителем: правильные ответы известны' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Обучение без учителя: готовых ответов нет' })).toBeVisible()
+  await expect(page.getByText(/\bX\b/)).toHaveCount(0)
+  await expect(page.getByText(/\by\b/)).toHaveCount(0)
 
-  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-x-y')
-  await expect(page.locator('pre').filter({ hasText: 'y = data.pop("churn_after_30d")' })).toBeVisible()
-  await expect(page.locator('pre').filter({ hasText: 'feature_cols =' })).toHaveCount(0)
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-table')
+  await expect(page.getByRole('heading', { name: 'Матрица признаков X и ответы y' })).toBeVisible()
+  await expect(page.locator('pre').filter({
+    hasText: 'X = df.drop(columns=["ушёл_через_30_дней", "client_id"])',
+  })).toBeVisible()
+  await expect(page.locator('pre').filter({
+    hasText: 'y = df["ушёл_через_30_дней"]',
+  })).toBeVisible()
 
   await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-leakage')
-  await expect(page.getByRole('heading', { name: 'Четыре разных источника утечки' })).toHaveCount(0)
-  await expect(page.getByText(/строки связанной группы H1 попали и в train, и в test/)).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Сначала зафиксировать момент решения' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Прямая утечка: ответ уже спрятан во входе' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Временная утечка: сведения появились позже' })).toBeVisible()
 
   await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model')
-  await expect(page.getByText(/classes_ = \[да, нет\].*\[2\/5, 3\/5\]/)).toBeVisible()
-  await expect(page.getByText(/classes_ = \[нет, да\]/)).toHaveCount(0)
-
-  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-fit')
-  await expect(page.getByText(/classes_ = \[да, нет\].*class_prior_ = \[2\/5, 3\/5\]/)).toBeVisible()
-
-  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-predict')
-  await expect(page.getByText(/не является test-оценкой качества модели/)).toBeVisible()
-  await expect(page.getByText('Не путать с проверкой', { exact: true })).toBeVisible()
-  await expect(page.getByText(/C105 и C106 относятся к одной группе H3/)).toBeVisible()
-  await expect(page.getByText(/нельзя использовать как независимый test-объект/)).toBeVisible()
-  await expect(page.locator('pre').filter({ hasText: "['да' 'нет'] [0.4 0.6]" })).toBeVisible()
+  await expect(page.locator('pre').filter({ hasText: 'model.fit(X_train, y_train)' })).toBeVisible()
+  await expect(page.locator('pre').filter({ hasText: 'model.predict(X_test)' })).toBeVisible()
+  await expect(page.getByText('model.coef_', { exact: true })).toBeVisible()
+  await expect(page.getByText('model.intercept_', { exact: true })).toBeVisible()
 })

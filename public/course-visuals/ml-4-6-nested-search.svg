@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="835.2pt" height="530.64pt" viewBox="0 0 835.2 530.64" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 530.64
+L 835.2 530.64
+L 835.2 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 66.06 113.88564
+L 560.2248 113.88564
+Q 573.08112 113.88564 573.08112 121.869
+L 573.08112 438.7086
+Q 573.08112 446.69196 560.2248 446.69196
+L 66.06 446.69196
+Q 53.20368 446.69196 53.20368 438.7086
+L 53.20368 121.869
+Q 53.20368 113.88564 66.06 113.88564
+z
+" clip-path="url(#p8c755e3773)" style="fill: #eaf4ff; stroke: #0b70e0; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 92.57616 133.84404
+L 236.40624 133.84404
+Q 243.63792 133.84404 243.63792 138.33468
+L 243.63792 159.291
+Q 243.63792 163.78164 236.40624 163.78164
+L 92.57616 163.78164
+Q 85.34448 163.78164 85.34448 159.291
+L 85.34448 138.33468
+Q 85.34448 133.84404 92.57616 133.84404
+z
+" clip-path="url(#p8c755e3773)" style="fill: #0b70e0; stroke: #0b70e0; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 226.764 213.67764
+L 520.0488 213.67764
+Q 532.90512 213.67764 532.90512 221.661
+L 532.90512 254.0934
+Q 532.90512 262.07676 520.0488 262.07676
+L 226.764 262.07676
+Q 213.90768 262.07676 213.90768 254.0934
+L 213.90768 221.661
+Q 213.90768 213.67764 226.764 213.67764
+z
+" clip-path="url(#p8c755e3773)" style="fill: #ffffff; stroke: #9bcbfa; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 226.764 278.54244
+L 520.0488 278.54244
+Q 532.90512 278.54244 532.90512 286.5258
+L 532.90512 318.9582
+Q 532.90512 326.94156 520.0488 326.94156
+L 226.764 326.94156
+Q 213.90768 326.94156 213.90768 318.9582
+L 213.90768 286.5258
+Q 213.90768 278.54244 226.764 278.54244
+z
+" clip-path="url(#p8c755e3773)" style="fill: #ffffff; stroke: #9bcbfa; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 226.764 343.40724
+L 520.0488 343.40724
+Q 532.90512 343.40724 532.90512 351.3906
+L 532.90512 383.823
+Q 532.90512 391.80636 520.0488 391.80636
+L 226.764 391.80636
+Q 213.90768 391.80636 213.90768 383.823
+L 213.90768 351.3906
+Q 213.90768 343.40724 226.764 343.40724
+z
+" clip-path="url(#p8c755e3773)" style="fill: #ffffff; stroke: #9bcbfa; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 572.26583 285.2784
+Q 602.406407 285.2784 630.534523 285.2784
+" clip-path="url(#p8c755e3773)" style="fill: none; stroke: #0b70e0; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 624.934523 282.4784
+L 630.534523 285.2784
+L 624.934523 288.0784
+z
+" clip-path="url(#p8c755e3773)" style="fill: #0b70e0; stroke: #0b70e0; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 644.5944 203.69844
+L 769.14 203.69844
+Q 781.99632 203.69844 781.99632 211.6818
+L 781.99632 353.8854
+Q 781.99632 361.86876 769.14 361.86876
+L 644.5944 361.86876
+Q 631.73808 361.86876 631.73808 353.8854
+L 631.73808 211.6818
+Q 631.73808 203.69844 644.5944 203.69844
+z
+" clip-path="url(#p8c755e3773)" style="fill: #f0ecff; stroke: #7657e8; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 644.5944 383.32404
+L 769.14 383.32404
+Q 781.99632 383.32404 781.99632 391.3074
+L 781.99632 438.7086
+Q 781.99632 446.69196 769.14 446.69196
+L 644.5944 446.69196
+Q 631.73808 446.69196 631.73808 438.7086
+L 631.73808 391.3074
+Q 631.73808 383.32404 644.5944 383.32404
+z
+" clip-path="url(#p8c755e3773)" style="fill: #fff0ef; stroke: #ce3b36; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 138.3768 463.15764
+L 696.8232 463.15764
+Q 709.67952 463.15764 709.67952 471.141
+L 709.67952 488.6046
+Q 709.67952 496.58796 696.8232 496.58796
+L 138.3768 496.58796
+Q 125.52048 496.58796 125.52048 488.6046
+L 125.52048 471.141
+Q 125.52048 463.15764 138.3768 463.15764
+z
+" clip-path="url(#p8c755e3773)" style="fill: #fff4dd; stroke: #f2c36f; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="line2d_1">
+    <path d="M 47.9808 90.684
+L 787.2192 90.684
+" clip-path="url(#p8c755e3773)" style="fill: none; stroke: #d9e3ec; stroke-linecap: square"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="47.9808" y="54.8184" transform="rotate(-0 47.9808 54.8184)">Подбор гиперпараметров без использования test</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="47.9808" y="74.281625" transform="rotate(-0 47.9808 74.281625)">Внутренний цикл выбирает конфигурацию, внешний оценивает процедуру выбора.</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="164.4912" y="152.209121" transform="rotate(-0 164.4912 152.209121)">ВНЕШНИЙ ЦИКЛ</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #0758b4" x="88.1568" y="189.61055" transform="rotate(-0 88.1568 189.61055)">Оценивает всю процедуру подбора</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="242.642478" transform="rotate(-0 96.192 242.642478)">Внешний фолд 1</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #7657e8" x="240.8256" y="231.861872" transform="rotate(-0 240.8256 231.861872)">ВНУТРИ:</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="252.352163" transform="rotate(-0 240.8256 252.352163)">Grid / Random search → лучшая конфигурация</text>
+   </g>
+   <g id="text_8">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="307.507278" transform="rotate(-0 96.192 307.507278)">Внешний фолд 2</text>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #7657e8" x="240.8256" y="296.726672" transform="rotate(-0 240.8256 296.726672)">ВНУТРИ:</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="317.216963" transform="rotate(-0 240.8256 317.216963)">Grid / Random search → лучшая конфигурация</text>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="372.372078" transform="rotate(-0 96.192 372.372078)">Внешний фолд 3</text>
+   </g>
+   <g id="text_12">
+    <text style="font-weight: 700; font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #7657e8" x="240.8256" y="361.591472" transform="rotate(-0 240.8256 361.591472)">ВНУТРИ:</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 9.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="240.8256" y="382.081763" transform="rotate(-0 240.8256 382.081763)">Grid / Random search → лучшая конфигурация</text>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7657e8" x="706.8672" y="237.991238" transform="rotate(-0 706.8672 237.991238)">ВНЕШНЯЯ</text>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7657e8" x="706.8672" y="262.939238" transform="rotate(-0 706.8672 262.939238)">ОЦЕНКА</text>
+   </g>
+   <g id="text_16">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #182431" x="706.8672" y="304.375725" transform="rotate(-0 706.8672 304.375725)">Q₁  Q₂  Q₃</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 8.8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #5d6b78" x="706.8672" y="337.0213" transform="rotate(-0 706.8672 337.0213)">среднее + разброс</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="706.8672" y="414.146925" transform="rotate(-0 706.8672 414.146925)">TEST</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 8.7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="706.8672" y="436.587441" transform="rotate(-0 706.8672 436.587441)">один раз в конце</text>
+   </g>
+   <g id="text_20">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #b96a00" x="417.6" y="482.770144" transform="rotate(-0 417.6 482.770144)">Больше комбинаций ≠ более честная оценка.</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p8c755e3773">
+   <rect x="15.84" y="15.84" width="803.52" height="498.96"/>
+  </clipPath>
+ </defs>
+</svg>
