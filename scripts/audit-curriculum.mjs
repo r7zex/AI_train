@@ -31,10 +31,17 @@ const expectedStepCounts = new Map([
   ['pandas-missing-duplicates', 9],
   ['pandas-groupby', 9],
   ['pandas-types-preparation', 9],
-  ['ml-foundations-data-target', 5],
-  ['ml-foundations-model-fit-predict', 6],
-  ['ml-foundations-train-test-baseline-metrics', 7],
-  ['ml-foundations-project-cycle', 5],
+  ['ml-problem-types', 4],
+  ['ml-foundations-data-target', 4],
+  ['ml-foundations-model-fit-predict', 4],
+  ['ml-foundations-baseline-metrics-cycle', 10],
+  ['ml-validation-strategies', 10],
+  ['ml-hyperparameter-selection', 7],
+  ['ml-safe-preprocessing-pipeline', 8],
+  ['ml-math-optimization', 5],
+  ['ml-probability-reliability', 8],
+  ['ml-generalization-regularization', 4],
+  ['ml-interpretability-error-analysis', 5],
 ])
 
 const expectedQuizCounts = new Map([
@@ -55,10 +62,17 @@ const expectedQuizCounts = new Map([
   ['pandas-missing-duplicates', 2],
   ['pandas-groupby', 2],
   ['pandas-types-preparation', 2],
+  ['ml-problem-types', 1],
   ['ml-foundations-data-target', 1],
   ['ml-foundations-model-fit-predict', 1],
-  ['ml-foundations-train-test-baseline-metrics', 2],
-  ['ml-foundations-project-cycle', 1],
+  ['ml-foundations-baseline-metrics-cycle', 4],
+  ['ml-validation-strategies', 3],
+  ['ml-hyperparameter-selection', 2],
+  ['ml-safe-preprocessing-pipeline', 2],
+  ['ml-math-optimization', 1],
+  ['ml-probability-reliability', 2],
+  ['ml-generalization-regularization', 1],
+  ['ml-interpretability-error-analysis', 1],
 ])
 
 function requireCondition(condition, message) {
@@ -161,10 +175,26 @@ if (process.env.CURRICULUM_PRINT_TERMS === '1') {
   process.exit(0)
 }
 
+if (process.env.CURRICULUM_PRINT_BLOCK4 === '1') {
+  const block4 = flowTopics
+    .filter((topic) => topic.blockId === 'ml-foundations')
+    .map((topic) => ({
+      id: topic.id,
+      title: topic.title,
+      steps: topic.steps.length,
+      quizSteps: topic.steps.filter((step) => step.type === 'quiz').length,
+      practiceSteps: topic.steps.filter((step) => step.type === 'practice').length,
+      quizQuestions: topic.steps.reduce((total, step) => total + (step.quiz?.questions.length ?? 0), 0),
+      practiceTasks: topic.steps.reduce((total, step) => total + (step.practiceTasks?.length ?? 0), 0),
+    }))
+  console.log(JSON.stringify(block4, null, 2))
+  process.exit(0)
+}
+
 requireCondition(Array.isArray(curriculumBlocks), 'curriculumBlocks must be an array.')
 requireCondition(Array.isArray(flowTopics), 'flowTopics must be an array.')
 requireCondition(curriculumBlocks.length === 14, `Expected exactly 14 curriculum blocks, got ${curriculumBlocks.length}.`)
-requireCondition(flowTopics.length === 84, `Expected exactly 84 topics, got ${flowTopics.length}.`)
+requireCondition(flowTopics.length === 77, `Expected exactly 77 topics after consolidating block 4, got ${flowTopics.length}.`)
 
 const blockIds = curriculumBlocks.map((block) => block.id)
 requireCondition(
@@ -179,16 +209,16 @@ requireCondition(
 )
 
 const totalSteps = flowTopics.reduce((sum, topic) => sum + topic.steps.length, 0)
-requireCondition(totalSteps === 618, `Expected 618 total steps, got ${totalSteps}.`)
+requireCondition(totalSteps === 560, `Expected 560 total steps after moving every block 4 check into 11 topics, got ${totalSteps}.`)
 
 const courseVisualsPath = process.env.CURRICULUM_VISUALS_DIR
   ? path.resolve(process.env.CURRICULUM_VISUALS_DIR)
   : path.join(root, 'public/course-visuals')
 requireCondition(fs.existsSync(courseVisualsPath), 'Course visual directory is missing.')
 const courseVisualFiles = fs.existsSync(courseVisualsPath)
-  ? fs.readdirSync(courseVisualsPath).filter((file) => file.endsWith('.png'))
+  ? fs.readdirSync(courseVisualsPath).filter((file) => /\.(?:png|svg)$/u.test(file))
   : []
-requireCondition(courseVisualFiles.length === 99, `Expected exactly 99 course PNG files, got ${courseVisualFiles.length}.`)
+requireCondition(courseVisualFiles.length === 99, `Expected exactly 99 course visual files, got ${courseVisualFiles.length}.`)
 
 function readPngDimensions(filePath) {
   const buffer = fs.readFileSync(filePath)
@@ -205,12 +235,18 @@ for (const file of courseVisualFiles) {
   const matchingFiles = visualHashes.get(digest) ?? []
   matchingFiles.push(file)
   visualHashes.set(digest, matchingFiles)
-  requireCondition(fileBuffer.length >= 10_000, `${file} is suspiciously small (${fileBuffer.length} bytes).`)
-  const dimensions = readPngDimensions(filePath)
-  requireCondition(Boolean(dimensions), `${file}: expected a readable PNG header.`)
-  if (dimensions) {
-    requireCondition(dimensions.width >= 1_000, `${file}: width ${dimensions.width}px is below the 1000px minimum.`)
-    requireCondition(dimensions.height >= 600, `${file}: height ${dimensions.height}px is below the 600px minimum.`)
+  requireCondition(fileBuffer.length >= 8_000, `${file} is suspiciously small (${fileBuffer.length} bytes).`)
+  if (file.endsWith('.png')) {
+    const dimensions = readPngDimensions(filePath)
+    requireCondition(Boolean(dimensions), `${file}: expected a readable PNG header.`)
+    if (dimensions) {
+      requireCondition(dimensions.width >= 1_000, `${file}: width ${dimensions.width}px is below the 1000px minimum.`)
+      requireCondition(dimensions.height >= 600, `${file}: height ${dimensions.height}px is below the 600px minimum.`)
+    }
+  } else {
+    const svg = fileBuffer.toString('utf8')
+    requireCondition(svg.includes('<svg'), `${file}: expected an SVG root element.`)
+    requireCondition(/viewBox="0 0 [0-9.]+ [0-9.]+"/u.test(svg), `${file}: expected a numeric SVG viewBox.`)
   }
 }
 for (const matchingFiles of visualHashes.values()) {
@@ -223,7 +259,7 @@ const registeredFiles = new Set()
 
 for (const { topic, visual } of registeredVisuals) {
   const prefix = `${topic.id}: ${visual.src}`
-  requireCondition(/^\/course-visuals\/[a-z0-9-]+\.png$/.test(visual.src), `${prefix}: invalid public visual src.`)
+  requireCondition(/^\/course-visuals\/[a-z0-9-]+\.(?:png|svg)$/.test(visual.src), `${prefix}: invalid public visual src.`)
   const file = visual.src.replace('/course-visuals/', '')
   registeredFiles.add(file)
   requireCondition(courseVisualFiles.includes(file), `${prefix}: registered asset is missing.`)
@@ -256,28 +292,13 @@ for (const [description, matchingSources] of normalizedDescriptions) {
 }
 
 const unregisteredFiles = courseVisualFiles.filter((file) => !registeredFiles.has(file))
-requireCondition(unregisteredFiles.length === 0, `Course PNG files missing from registry: ${unregisteredFiles.join(', ')}.`)
+requireCondition(unregisteredFiles.length === 0, `Course visual files missing from registry: ${unregisteredFiles.join(', ')}.`)
 requireCondition(registeredFiles.size === registeredVisuals.length, 'Each registered visual src must be unique.')
 
 for (const topic of flowTopics) {
-  const visualPattern = new RegExp(`^${topic.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:-\\d+)?\\.png$`)
-  const topicVisuals = courseVisualFiles.filter((file) => visualPattern.test(file))
-  if (topic.id === 'ml-foundations-data-target') {
-    const structuredTables = topic.steps
-      .flatMap((step) => step.sections ?? [])
-      .map((section) => section.table)
-      .filter(Boolean)
-    const mainTable = structuredTables[0]
-    requireCondition(topicVisuals.length === 0, `${topic.id}: concise table-only design must not register PNG illustrations.`)
-    requireCondition(structuredTables.length === 1, `${topic.id}: expected exactly one structured data table.`)
-    requireCondition(mainTable?.headers?.length === 6, `${topic.id}: structured data table must contain six columns.`)
-    requireCondition(mainTable?.rows?.length === 6, `${topic.id}: structured data table must contain six rows.`)
-  } else {
-    requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one PNG illustration.`)
-  }
-  requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three PNG illustrations, got ${topicVisuals.length}.`)
-  const topicRegistryFiles = getCourseVisuals(topic).map((visual) => visual.src.replace('/course-visuals/', '')).sort()
-  requireCondition(topicRegistryFiles.join(',') === topicVisuals.sort().join(','), `${topic.id}: PNG files and visual registry entries do not match.`)
+  const topicVisuals = getCourseVisuals(topic)
+  requireCondition(topicVisuals.length >= 1, `${topic.id}: expected at least one registered illustration.`)
+  requireCondition(topicVisuals.length <= 3, `${topic.id}: expected no more than three illustrations, got ${topicVisuals.length}.`)
 }
 
 const researchTopics = flowTopics.filter((topic) => topic.blockId === 'research-statistics'
@@ -291,14 +312,41 @@ requireCondition(researchTopics.length === 32, `Expected 32 research/bioinformat
 requireCondition(new Set(researchTopics.map((topic) => topic.steps.length)).size >= 4, 'Research topics must use at least four different lesson lengths.')
 requireCondition(new Set(researchTopics.map((topic) => topic.learningDesign?.format)).size >= 10, 'Research topics must use varied learning formats, not one repeated template.')
 
-const mlMasteryTopics = flowTopics.filter((topic) => topic.id.startsWith('ml-') && topic.order >= 10)
+const block4Topics = flowTopics.filter((topic) => topic.blockId === 'ml-foundations')
 const nlpTopics = flowTopics.filter((topic) => topic.blockId === 'biomedical-nlp')
 const capstoneTopics = flowTopics.filter((topic) => topic.blockId === 'article-capstone')
-requireCondition(mlMasteryTopics.length === 9, `Expected 9 from-zero ML mastery topics, got ${mlMasteryTopics.length}.`)
+const legacyBlock4Topics = [
+  ...loadTsModule(path.join(root, 'src/data/curriculum/ml_foundations/index.ts')).mlFoundationsTopics,
+  ...loadTsModule(path.join(root, 'src/data/curriculum/ml_extended.ts')).mlAdvancedFoundationsTopics,
+  ...loadTsModule(path.join(root, 'src/data/curriculum/ml_mastery.ts')).mlMasteryTopics,
+]
+const legacyChecks = legacyBlock4Topics.flatMap((topic) => topic.steps.filter((step) => step.type === 'quiz' || step.type === 'practice'))
+const consolidatedChecks = block4Topics.flatMap((topic) => topic.steps.filter((step) => step.type === 'quiz' || step.type === 'practice'))
+const legacyCheckIds = legacyChecks.map((step) => step.id).sort()
+const consolidatedCheckIds = consolidatedChecks.map((step) => step.id).sort()
+requireCondition(block4Topics.length === 11, `Expected exactly 11 consolidated block 4 topics, got ${block4Topics.length}.`)
+requireCondition(
+  block4Topics.map((topic) => topic.title.match(/^4\.(\d+)/u)?.[1]).join(',') === '1,2,3,4,5,6,7,8,9,10,11',
+  'Block 4 topic numbering must be exactly 4.1–4.11.',
+)
+requireCondition(
+  consolidatedCheckIds.join(',') === legacyCheckIds.join(','),
+  'Every legacy block 4 quiz and practice step must be preserved exactly once.',
+)
+requireCondition(
+  consolidatedChecks.reduce((total, step) => total + (step.quiz?.questions.length ?? 0), 0)
+    === legacyChecks.reduce((total, step) => total + (step.quiz?.questions.length ?? 0), 0),
+  'Consolidating block 4 must not reduce the quiz question count.',
+)
+requireCondition(
+  consolidatedChecks.reduce((total, step) => total + (step.practiceTasks?.length ?? 0), 0)
+    === legacyChecks.reduce((total, step) => total + (step.practiceTasks?.length ?? 0), 0),
+  'Consolidating block 4 must not reduce the practice task count.',
+)
 requireCondition(nlpTopics.length === 8, `Expected 8 dedicated NLP topics, got ${nlpTopics.length}.`)
 requireCondition(capstoneTopics.length === 8, `Expected 8 article capstone topics, got ${capstoneTopics.length}.`)
 requireCondition(new Set(nlpTopics.map((topic) => topic.learningDesign?.practiceTasks)).size >= 3, 'NLP lessons must vary practice intensity by topic.')
-requireCondition(new Set(mlMasteryTopics.map((topic) => topic.learningDesign?.quizQuestions)).size >= 3, 'ML mastery lessons must vary assessment depth by topic.')
+requireCondition(new Set(block4Topics.map((topic) => topic.learningDesign?.quizQuestions)).size >= 3, 'Block 4 lessons must vary assessment depth by topic.')
 
 for (const topic of flowTopics) {
   const prefix = `${topic.id}:`
@@ -306,7 +354,7 @@ for (const topic of flowTopics) {
   if (expectedCount != null) {
     requireCondition(topic.steps.length === expectedCount, `${prefix} expected ${expectedCount} steps, got ${topic.steps.length}.`)
   } else {
-    requireCondition(topic.steps.length >= 5, `${prefix} expected at least 5 steps, got ${topic.steps.length}.`)
+    requireCondition(topic.steps.length >= 4, `${prefix} expected at least 4 steps, got ${topic.steps.length}.`)
   }
   requireCondition(blockIds.includes(topic.blockId), `${prefix} unexpected blockId ${topic.blockId}.`)
   requireCondition(!['intro-ai-ml', 'python-for-ai', 'data-prep'].includes(topic.blockId), `${prefix} old block id must not be displayed.`)
@@ -373,7 +421,7 @@ for (const phrase of forbiddenBoilerplate) {
   requireCondition(!curriculumText.includes(phrase), `Repeated filler text must not appear: "${phrase}".`)
 }
 
-for (const topicId of ['ml-problem-types', 'validation-split']) {
+for (const topicId of ['ml-problem-types']) {
   const topic = flowTopics.find((item) => item.id === topicId)
   const formulaCards = topic?.steps.flatMap((step) => step.formulaCards ?? []) ?? []
   requireCondition(formulaCards.length === 0, `${topicId}: beginner theory must explain the idea before introducing formulas.`)

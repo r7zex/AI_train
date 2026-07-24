@@ -1,8 +1,8 @@
-"""Generate deterministic PNG illustrations used by the AI Train curriculum.
+"""Generate deterministic illustrations used by the AI Train curriculum.
 
-The script intentionally writes raster assets: course pages consume the saved
-PNG files and do not reconstruct diagrams in React. ML plots are produced from
-real scikit-learn models fitted on deterministic synthetic datasets.
+Most course pages consume PNG files produced here. The revised block 4 uses
+responsive SVG diagrams from generate-block4-revised-visuals.py, which this
+entry point also runs.
 """
 
 from __future__ import annotations
@@ -10,6 +10,7 @@ from __future__ import annotations
 import io
 import math
 import os
+import runpy
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/ai-train-matplotlib")
@@ -74,23 +75,6 @@ TOPICS = [
     ("matplotlib-distributions", "Как выглядит распределение"),
     ("matplotlib-layout-export", "Несколько графиков на одном рисунке"),
     ("eda-correlation", "Связи между признаками"),
-    ("ml-foundations-model-fit-predict", "Как модель учится и делает прогноз"),
-    ("ml-foundations-train-test-baseline-metrics", "Честная проверка модели"),
-    ("ml-foundations-project-cycle", "Цикл ML-проекта"),
-    ("ml-problem-types", "Три вида задач машинного обучения"),
-    ("validation-split", "Обучающая, проверочная и тестовая части"),
-    ("cross-validation-search", "Кросс-валидация"),
-    ("metrics-confusion-matrix", "Матрица ошибок"),
-    ("class-imbalance-pipeline", "Дисбаланс классов и Pipeline"),
-    ("ml-math-vectors-gradients", "Вектор, матрица и градиент"),
-    ("ml-probability-loss-bayes", "Вероятность и функция потерь"),
-    ("ml-overfit-learning-curves", "Недообучение и переобучение"),
-    ("ml-split-strategy-lab", "Разбиение с учётом групп и времени"),
-    ("ml-cross-validation-oof", "Внефолдовые прогнозы"),
-    ("ml-hyperparameter-nested-search", "Вложенный подбор параметров"),
-    ("ml-preprocessing-feature-selection", "Преобразование и отбор признаков"),
-    ("ml-uncertainty-calibration-utility", "Калибровка вероятностей"),
-    ("ml-interpretability-error-fairness", "Анализ ошибок по группам"),
     ("linear-regression", "Линейная регрессия и остатки"),
     ("regularization-l1-l2", "Как регуляризация меняет коэффициенты"),
     ("logistic-regression", "Логистическая регрессия"),
@@ -135,8 +119,6 @@ TOPICS = [
 
 EXTRA_TOPICS = {
     "matplotlib-basics", "matplotlib-lines-scatter", "matplotlib-distributions", "matplotlib-layout-export", "eda-correlation",
-    "ml-foundations-model-fit-predict",
-    "ml-problem-types", "validation-split", "cross-validation-search", "metrics-confusion-matrix",
     "linear-regression", "regularization-l1-l2", "logistic-regression", "decision-trees",
     "bagging-random-forest", "gradient-boosting", "support-vector-machines", "kmeans-clustering",
 }
@@ -994,29 +976,13 @@ def main():
         generate(topic_id,title)
     expected = len(TOPICS) + len(EXTRA_TOPICS)
     actual = len(list(OUT.glob("*.png")))
-    required_assets = [
-        OUT / "ml-foundations-model-fit-predict.png",
-        OUT / "ml-foundations-model-fit-predict-2.png",
-        OUT / "ml-foundations-train-test-baseline-metrics.png",
-        OUT / "ml-foundations-project-cycle.png",
-    ]
-    for asset in required_assets:
-        if not asset.is_file():
-            raise RuntimeError(f"Required generated asset is missing: {asset}")
-        image = plt.imread(asset)
-        height, width = image.shape[:2]
-        if asset.stat().st_size < 10_000 or width < 1_000 or height < 600:
-            raise RuntimeError(
-                f"Generated asset failed validation: {asset} "
-                f"({width}x{height}, {asset.stat().st_size} bytes)"
-            )
-        print(
-            f"Validated {asset.relative_to(ROOT)}: {width}x{height}, "
-            f"source=scripts/generate-course-visuals.py"
-        )
     if actual != expected:
         raise RuntimeError(f"Generated {actual} PNG files; expected exactly {expected}.")
-    print(f"Generated and validated {actual} PNG files; expected exactly {expected}.")
+    runpy.run_path(ROOT / "scripts" / "generate-block4-revised-visuals.py", run_name="__main__")
+    svg_actual = len(list(OUT.glob("ml-4-*.svg")))
+    if svg_actual != 20:
+        raise RuntimeError(f"Generated {svg_actual} revised block 4 SVG files; expected exactly 20.")
+    print(f"Generated and validated {actual} PNG files and {svg_actual} revised block 4 SVG files.")
 
 
 if __name__ == "__main__":

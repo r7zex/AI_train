@@ -18,7 +18,7 @@ test('syllabus exposes the complete ML and bioinformatics path', async ({ page }
   await expect(page.getByText('Белки, последовательности и deep learning', { exact: true })).toBeVisible()
   await expect(page.getByText('NLP для биомедицины и научных текстов', { exact: true })).toBeVisible()
   await expect(page.getByText('От протокола до статьи', { exact: true })).toBeVisible()
-  await expect(page.getByText('14 модулей · 84 урока · 618 интерактивных шагов')).toBeVisible()
+  await expect(page.getByText('14 модулей · 77 уроков · 560 интерактивных шагов')).toBeVisible()
 })
 
 test('research lessons expose their individual learning design', async ({ page }) => {
@@ -30,9 +30,9 @@ test('research lessons expose their individual learning design', async ({ page }
 })
 
 test('from-zero validation and NLP have distinct learning designs', async ({ page }) => {
-  await page.goto('/topics/ml-split-strategy-lab/ml-split-strategy-lab-theory')
-  await expect(page.getByText('пять предметных split-кейсов + 2 аудита · ≈ 105 мин · 9 вопросов · 2 практики')).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Train, validation, evaluation и единица разбиения' })).toBeVisible()
+  await page.goto('/topics/ml-validation-strategies/ml-validation-strategies-splits')
+  await expect(page.getByText(/≈ 125 мин · 19 вопросов · 5 практик/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Train, validation и test' })).toBeVisible()
 
   await page.goto('/topics/nlp-data-labels-tokenization/nlp-data-labels-tokenization-theory')
   await expect(page.getByText('лаборатория разметки + 2 проверки · ≈ 85 мин · 6 вопросов · 2 практики')).toBeVisible()
@@ -42,7 +42,7 @@ test('from-zero validation and NLP have distinct learning designs', async ({ pag
 test('research lesson remains readable on desktop and mobile', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/topics')
-  await expect(page.getByText('618 интерактивных шагов')).toBeVisible()
+  await expect(page.getByText('560 интерактивных шагов')).toBeVisible()
   await page.screenshot({ path: '/tmp/ai-train-topics-desktop.png' })
 
   await page.goto('/topics/biomedical-leakage-pipeline/biomedical-leakage-pipeline-theory')
@@ -69,8 +69,13 @@ test('leaving a step automatically records completion', async ({ page }) => {
 
 test('quiz gives immediate Stepik-like feedback and can be retried', async ({ page }) => {
   await page.goto('/topics/matplotlib-basics/matplotlib-basics-quiz')
-  for (let question = 0; question < 3; question += 1) {
-    await page.getByRole('radio').first().check()
+  const correctAnswers = [
+    /область графика/,
+    /явно указать изменяемую область графика/,
+    /несколько серий, различаемых цветом или линией/,
+  ]
+  for (let question = 0; question < correctAnswers.length; question += 1) {
+    await page.getByRole('radio', { name: correctAnswers[question] }).check()
     await page.locator('button:not([disabled])').filter({ hasText: 'Отправить' }).click()
     await expect(page.locator('p').filter({ hasText: 'Верно' })).toBeVisible()
     await page.getByRole('button', { name: question === 2 ? 'Завершить тест' : 'Следующий вопрос' }).click()
@@ -102,79 +107,50 @@ test('Matplotlib is a complete asynchronous module with local Russian definition
 test('topics 4.1-4.3 follow the introductory ML sequence', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
 
-  await page.goto('/topics/ml-problem-types/ml-problem-types-theory')
-  await expect(page.getByRole('heading', { name: 'Закономерность вместо списка ручных правил' })).toBeVisible()
+  await page.goto('/topics/ml-problem-types/ml-problem-types-foundations')
+  await expect(page.getByRole('heading', { name: 'Что машинное обучение делает с данными' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Обучение с учителем: правильные ответы известны' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Обучение без учителя: правильных ответов нет' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Обучение без учителя: готовых ответов нет' })).toBeVisible()
   await expect(page.getByText(/признаки X/)).toHaveCount(0)
   await expect(page.getByText(/целевая переменная y/)).toHaveCount(0)
+  await expect(page.getByRole('figure')).toHaveCount(1)
+  await expect(page.getByRole('figure').locator('img')).toHaveAttribute('src', '/course-visuals/ml-4-1-task-map.svg')
 
-  await page.goto('/topics/ml-problem-types/ml-problem-types-task-kinds')
+  await page.goto('/topics/ml-problem-types/ml-problem-types-three-tasks')
   await expect(page.getByRole('heading', { name: 'Классификация: предсказать категорию' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Регрессия: предсказать число' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Кластеризация: найти группы без готовых меток' })).toBeVisible()
-  await expect(page.getByRole('figure')).toHaveCount(1)
-  await expect(page.getByRole('figure').locator('img')).toHaveAttribute('src', '/course-visuals/ml-problem-types.png')
-
-  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-object')
-  await expect(page.getByRole('heading', { name: 'Один объект в каждой строке' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Признаки и целевая переменная' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Идентификаторы и служебные столбцы — не признаки' })).toBeVisible()
-  await expect(page.getByText('C101', { exact: true })).toBeVisible()
-  await expect(page.getByText('C106', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Кластеризация: найти группы' })).toBeVisible()
   await expect(page.getByRole('figure')).toHaveCount(0)
+
+  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-table')
+  await expect(page.getByRole('heading', { name: 'Набор данных как таблица' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Объект, строка и столбец' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Признак, цель и разметка' })).toBeVisible()
+  await expect(page.getByRole('figure')).toHaveCount(1)
   await page.screenshot({ path: '/tmp/ai-train-topic-4-2-desktop.png', fullPage: true })
 
-  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-x-y')
-  await expect(page.getByRole('heading', { name: 'Разделение словами и кодом' })).toBeVisible()
-  await expect(page.locator('pre').filter({ hasText: 'X = df.drop(columns=["target"])' })).toBeVisible()
-  await expect(page.locator('pre').filter({ hasText: 'y = df["target"]' })).toBeVisible()
-  await expect(page.getByText('X: (6, 3) y: (6,)', { exact: false })).toBeVisible()
-  await expect(page.getByText(/basic.*базовый.*pro.*расширенный/)).toBeVisible()
-
   await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-leakage')
-  await expect(page.getByRole('heading', { name: 'Целевая переменная не входит в признаки' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Не включать информацию из будущего' })).toBeVisible()
-  await expect(page.getByText(/Попадание будущих сведений называется утечкой данных/)).toBeVisible()
-  await expect(page.getByRole('figure')).toHaveCount(0)
-
-  await page.goto('/topics/ml-foundations-data-target/ml-foundations-data-target-quiz')
-  await expect(page.getByText(/Для клиента C106 требуется предсказать/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Прямая утечка: ответ уже спрятан во входе' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Временная утечка: сведения появились позже' })).toBeVisible()
+  await expect(page.getByRole('figure')).toHaveCount(1)
 
   await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model')
-  await expect(page.getByRole('heading', { name: 'Первая модель: линейная регрессия' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Числовой прогноз для нового x' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Один вызов train_test_split: 80% на обучение, 20% на тест' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Что такое модель и её параметры' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Сначала разбиение 80/20' })).toBeVisible()
   await expect(page.locator('pre').filter({ hasText: 'test_size=0.2' })).toBeVisible()
   await expect(page.locator('pre').filter({ hasText: 'random_state=42' })).toBeVisible()
   await expect(page.locator('pre').filter({ hasText: 'shuffle=True' })).toBeVisible()
-  await expect(page.getByText(/stratify.*классификации.*не используется/)).toBeVisible()
+  await expect(page.getByText(/stratify.*классификации.*не используют/)).toBeVisible()
   const predictionFigure = page.getByRole('figure')
-  await expect(predictionFigure.locator('img')).toHaveAttribute('src', '/course-visuals/ml-foundations-model-fit-predict.png')
-  await expect(predictionFigure.locator('figcaption')).toContainText('обученная прямая')
-
-  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-fit')
-  await expect(page.getByRole('heading', { name: 'Обучающая выборка: X_train и y_train' })).toBeVisible()
+  await expect(predictionFigure.locator('img')).toHaveAttribute('src', '/course-visuals/ml-4-3-linear-prediction.svg')
+  await expect(predictionFigure.locator('figcaption')).toContainText('fit')
   await expect(page.locator('pre').filter({ hasText: 'model.fit(X_train, y_train)' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'coef_ и intercept_: что найдено после fit' })).toBeVisible()
-  await expect(page.getByText(/fit_intercept=True.*coef_.*intercept_/).last()).toBeVisible()
-
-  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-predict')
-  await expect(page.getByRole('heading', { name: 'Тестовая выборка: X_test и y_test' })).toBeVisible()
   await expect(page.locator('pre').filter({ hasText: 'y_pred = model.predict(X_test)' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Те же признаки, названия и порядок' })).toBeVisible()
-  await expect(page.getByText(/Одинаковые набор, названия, порядок/)).toBeVisible()
-
-  await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-compare')
-  await expect(page.getByRole('heading', { name: 'Почему считают две оценки' })).toBeVisible()
-  await expect(page.getByText(/0\.24 на обучении и 0\.32 на тесте/)).toBeVisible()
-  await expect(page.getByText(/split → fit\(X_train, y_train\) → predict\(X_test\)/)).toBeVisible()
-  await expect(page.getByText(/Не переобучайте модель на тестовой части/)).toBeVisible()
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/topics/ml-foundations-model-fit-predict/ml-foundations-model-fit-predict-model')
   await expect(page.locator('.stepik-sidebar')).toBeHidden()
-  await expect(page.getByRole('heading', { name: 'Числовой прогноз для нового x' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'fit на train, predict на test' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await expect(page.getByRole('figure').locator('figcaption')).toBeVisible()
   await page.screenshot({ path: '/tmp/ai-train-topic-4-3-mobile.png', fullPage: true })
@@ -197,23 +173,22 @@ test('core ML theory has distinct raster visuals, plain-language explanations, a
   await expect(page.getByRole('heading', { name: 'Gini смешанного узла' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Иллюстрации к теме' }).locator('img')).toHaveCount(2)
 
-  await page.goto('/topics/validation-split/validation-split-theory')
-  await expect(page.getByRole('heading', { name: 'У каждой части данных своя работа' })).toBeVisible()
+  await page.goto('/topics/ml-validation-strategies/ml-validation-strategies-splits')
+  await expect(page.getByRole('heading', { name: 'Train, validation и test' })).toBeVisible()
   await expect(page.locator('.katex-display')).toHaveCount(0)
-  await expect(page.getByText('Holdout-оценка')).toHaveCount(0)
 
-  await page.goto('/topics/ml-math-vectors-gradients/ml-math-vectors-gradients-formula')
-  await expect(page.getByRole('heading', { name: 'Длина вектора [3, 4]' })).toBeVisible()
-  await expect(page.getByText('Длина вектора; лежит в основе расстояний и L2-регуляризации.')).toHaveCount(0)
+  await page.goto('/topics/ml-math-optimization/ml-math-optimization-foundations')
+  await expect(page.getByRole('heading', { name: 'Вектор объекта и матрица признаков' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Градиент и шаг параметров' })).toBeVisible()
 })
 
 test('block 4 visuals have semantic captions and follow their declared pedagogical placement', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto('/topics/validation-split/validation-split-theory')
+  await page.goto('/topics/ml-validation-strategies/ml-validation-strategies-splits')
 
   const validationFigures = page.getByRole('figure')
-  await expect(validationFigures).toHaveCount(2)
-  await expect(validationFigures.locator('figcaption')).toHaveCount(2)
+  await expect(validationFigures).toHaveCount(1)
+  await expect(validationFigures.locator('figcaption')).toHaveCount(1)
   await expect(validationFigures.locator('figcaption').first()).toContainText('Что показано:')
   await expect(validationFigures.locator('figcaption').first()).toContainText('Как читать:')
   await expect(validationFigures.locator('figcaption').first()).toContainText('Главный вывод:')
@@ -222,27 +197,24 @@ test('block 4 visuals have semantic captions and follow their declared pedagogic
     alt: image.getAttribute('alt') ?? '',
     caption: image.closest('figure')?.querySelector('figcaption')?.textContent ?? '',
   })))
-  expect(new Set(validationDescriptions.map((item) => item.alt)).size).toBe(2)
-  expect(new Set(validationDescriptions.map((item) => item.caption)).size).toBe(2)
+  expect(new Set(validationDescriptions.map((item) => item.alt)).size).toBe(1)
+  expect(new Set(validationDescriptions.map((item) => item.caption)).size).toBe(1)
   expect(validationDescriptions.every((item) => item.alt.length >= 40)).toBe(true)
   expect(validationDescriptions.every((item) => !item.alt.includes('Учебная иллюстрация к теме'))).toBe(true)
 
   const placementOrderIsValid = await page.evaluate(() => {
     const headings = [...document.querySelectorAll('h2')]
-    const roles = headings.find((heading) => heading.textContent?.includes('У каждой части данных своя работа'))
-    const hundred = headings.find((heading) => heading.textContent?.includes('Пример со 100 объектами'))
+    const roles = headings.find((heading) => heading.textContent?.includes('Случайное и стратифицированное разделение'))
     const figures = [...document.querySelectorAll('figure')]
-    if (!roles || !hundred || figures.length !== 2) return false
+    if (!roles || figures.length !== 1) return false
     return Boolean(roles.compareDocumentPosition(figures[0]) & Node.DOCUMENT_POSITION_FOLLOWING)
-      && Boolean(figures[0].compareDocumentPosition(hundred) & Node.DOCUMENT_POSITION_FOLLOWING)
-      && Boolean(hundred.compareDocumentPosition(figures[1]) & Node.DOCUMENT_POSITION_FOLLOWING)
   })
   expect(placementOrderIsValid).toBe(true)
   await page.screenshot({ path: '/tmp/ai-train-block4-visual-placement-desktop.png', fullPage: true })
 
-  await page.goto('/topics/ml-problem-types/ml-problem-types-task-kinds')
+  await page.goto('/topics/ml-problem-types/ml-problem-types-foundations')
   await expect(page.getByRole('figure')).toHaveCount(1)
-  await expect(page.getByRole('figure').locator('img')).toHaveAttribute('src', '/course-visuals/ml-problem-types.png')
+  await expect(page.getByRole('figure').locator('img')).toHaveAttribute('src', '/course-visuals/ml-4-1-task-map.svg')
 
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.getByRole('figure').locator('figcaption')).toBeVisible()

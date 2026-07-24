@@ -1,12 +1,10 @@
 import type { FlowTopic } from './aiCurriculumTypes'
 import { numpyTopics } from './curriculum/numpy/index'
 import { pandasTopics } from './curriculum/pandas'
-import { mlFoundationsTopics } from './curriculum/ml_foundations'
-import { mlMasteryTopics } from './curriculum/ml_mastery'
+import { revisedMlFoundationsTopics } from './curriculum/ml_revised'
 import { nlpTopics } from './curriculum/nlp'
 import {
   linearModelTopics,
-  mlAdvancedFoundationsTopics,
   svmClusteringTopics,
   treeEnsembleTopics,
 } from './curriculum/ml_extended'
@@ -144,19 +142,12 @@ const pandasCourseTopics = pandasTopics.map((topic, index) => {
   return withBlock(topic, 'pandas и подготовка данных', '02', title, index + 1)
 })
 
-const mlCourseTopics = mlFoundationsTopics.map((topic, index) => {
-  const title = replaceModuleNumber(topic.title, 4, index + 1)
-  return withBlock(topic, 'Основы машинного обучения', '04', title, index + 1)
-})
-
 export const flowTopics: FlowTopic[] = [
   ...pythonStartTopics,
   ...numpyCourseTopics,
   ...pandasCourseTopics,
   ...visualizationTopics,
-  ...mlCourseTopics,
-  ...mlAdvancedFoundationsTopics,
-  ...mlMasteryTopics,
+  ...revisedMlFoundationsTopics,
   ...linearModelTopics,
   ...treeEnsembleTopics,
   ...svmClusteringTopics,

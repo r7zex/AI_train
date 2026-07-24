@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="835.2pt" height="530.64pt" viewBox="0 0 835.2 530.64" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 530.64
+L 835.2 530.64
+L 835.2 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 128.3328 231.88968
+C 131.955432 231.88968 135.430178 232.783431 137.991765 234.374094
+C 140.553353 235.964757 141.99264 238.122462 141.99264 240.372
+C 141.99264 242.621538 140.553353 244.779243 137.991765 246.369906
+C 135.430178 247.960569 131.955432 248.85432 128.3328 248.85432
+C 124.710168 248.85432 121.235422 247.960569 118.673835 246.369906
+C 116.112247 244.779243 114.67296 242.621538 114.67296 240.372
+C 114.67296 238.122462 116.112247 235.964757 118.673835 234.374094
+C 121.235422 232.783431 124.710168 231.88968 128.3328 231.88968
+z
+" clip-path="url(#p8c755e3773)" style="fill: #138a57; stroke: #ffffff; stroke-width: 1.5; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 305.1072 231.88968
+C 308.729832 231.88968 312.204578 232.783431 314.766165 234.374094
+C 317.327753 235.964757 318.76704 238.122462 318.76704 240.372
+C 318.76704 242.621538 317.327753 244.779243 314.766165 246.369906
+C 312.204578 247.960569 308.729832 248.85432 305.1072 248.85432
+C 301.484568 248.85432 298.009822 247.960569 295.448235 246.369906
+C 292.886647 244.779243 291.44736 242.621538 291.44736 240.372
+C 291.44736 238.122462 292.886647 235.964757 295.448235 234.374094
+C 298.009822 232.783431 301.484568 231.88968 305.1072 231.88968
+z
+" clip-path="url(#p8c755e3773)" style="fill: #0b70e0; stroke: #ffffff; stroke-width: 1.5; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 441.7056 231.88968
+C 445.328232 231.88968 448.802978 232.783431 451.364565 234.374094
+C 453.926153 235.964757 455.36544 238.122462 455.36544 240.372
+C 455.36544 242.621538 453.926153 244.779243 451.364565 246.369906
+C 448.802978 247.960569 445.328232 248.85432 441.7056 248.85432
+C 438.082968 248.85432 434.608222 247.960569 432.046635 246.369906
+C 429.485047 244.779243 428.04576 242.621538 428.04576 240.372
+C 428.04576 238.122462 429.485047 235.964757 432.046635 234.374094
+C 434.608222 232.783431 438.082968 231.88968 441.7056 231.88968
+z
+" clip-path="url(#p8c755e3773)" style="fill: #7657e8; stroke: #ffffff; stroke-width: 1.5; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 626.5152 231.88968
+C 630.137832 231.88968 633.612578 232.783431 636.174165 234.374094
+C 638.735753 235.964757 640.17504 238.122462 640.17504 240.372
+C 640.17504 242.621538 638.735753 244.779243 636.174165 246.369906
+C 633.612578 247.960569 630.137832 248.85432 626.5152 248.85432
+C 622.892568 248.85432 619.417822 247.960569 616.856235 246.369906
+C 614.294647 244.779243 612.85536 242.621538 612.85536 240.372
+C 612.85536 238.122462 614.294647 235.964757 616.856235 234.374094
+C 619.417822 232.783431 622.892568 231.88968 626.5152 231.88968
+z
+" clip-path="url(#p8c755e3773)" style="fill: #ce3b36; stroke: #ffffff; stroke-width: 1.5; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 323.048834 186.201462
+Q 373.407507 205.445223 421.886299 223.970618
+" clip-path="url(#p8c755e3773)" style="fill: none; stroke: #0b70e0; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 417.654712 219.356111
+L 421.886299 223.970618
+L 415.655742 224.587183
+z
+" clip-path="url(#p8c755e3773)" style="fill: #0b70e0; stroke: #0b70e0; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 82.1304 113.88564
+L 359.3448 113.88564
+Q 372.20112 113.88564 372.20112 121.869
+L 372.20112 174.2598
+Q 372.20112 182.24316 359.3448 182.24316
+L 82.1304 182.24316
+Q 69.27408 182.24316 69.27408 174.2598
+L 69.27408 121.869
+Q 69.27408 113.88564 82.1304 113.88564
+z
+" clip-path="url(#p8c755e3773)" style="fill: #e8f7ef; stroke: #8bd0aa; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 475.8552 113.88564
+L 753.0696 113.88564
+Q 765.92592 113.88564 765.92592 121.869
+L 765.92592 174.2598
+Q 765.92592 182.24316 753.0696 182.24316
+L 475.8552 182.24316
+Q 462.99888 182.24316 462.99888 174.2598
+L 462.99888 121.869
+Q 462.99888 113.88564 475.8552 113.88564
+z
+" clip-path="url(#p8c755e3773)" style="fill: #fff0ef; stroke: #efa19d; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 66.06 308.48004
+L 391.4856 308.48004
+Q 404.34192 308.48004 404.34192 316.4634
+L 404.34192 438.7086
+Q 404.34192 446.69196 391.4856 446.69196
+L 66.06 446.69196
+Q 53.20368 446.69196 53.20368 438.7086
+L 53.20368 316.4634
+Q 53.20368 308.48004 66.06 308.48004
+z
+" clip-path="url(#p8c755e3773)" style="fill: #fff0ef; stroke: #efa19d; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 84.54096 323.44884
+L 228.37104 323.44884
+Q 235.60272 323.44884 235.60272 327.93948
+L 235.60272 348.8958
+Q 235.60272 353.38644 228.37104 353.38644
+L 84.54096 353.38644
+Q 77.30928 353.38644 77.30928 348.8958
+L 77.30928 327.93948
+Q 77.30928 323.44884 84.54096 323.44884
+z
+" clip-path="url(#p8c755e3773)" style="fill: #ce3b36; stroke: #ce3b36; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 443.7144 308.48004
+L 769.14 308.48004
+Q 781.99632 308.48004 781.99632 316.4634
+L 781.99632 438.7086
+Q 781.99632 446.69196 769.14 446.69196
+L 443.7144 446.69196
+Q 430.85808 446.69196 430.85808 438.7086
+L 430.85808 316.4634
+Q 430.85808 308.48004 443.7144 308.48004
+z
+" clip-path="url(#p8c755e3773)" style="fill: #fff4dd; stroke: #f2c36f; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 462.19536 323.44884
+L 630.13104 323.44884
+Q 637.36272 323.44884 637.36272 327.93948
+L 637.36272 348.8958
+Q 637.36272 353.38644 630.13104 353.38644
+L 462.19536 353.38644
+Q 454.96368 353.38644 454.96368 348.8958
+L 454.96368 327.93948
+Q 454.96368 323.44884 462.19536 323.44884
+z
+" clip-path="url(#p8c755e3773)" style="fill: #b96a00; stroke: #b96a00; stroke-width: 1.1; stroke-linejoin: miter"/>
+   </g>
+   <g id="line2d_1">
+    <path d="M 47.9808 90.684
+L 787.2192 90.684
+" clip-path="url(#p8c755e3773)" style="fill: none; stroke: #d9e3ec; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_2">
+    <path d="M 88.1568 240.372
+L 747.0432 240.372
+" clip-path="url(#p8c755e3773)" style="fill: none; stroke: #182431; stroke-width: 2; stroke-linecap: square"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="47.9808" y="53.84715" transform="rotate(-0 47.9808 53.84715)">Момент прогноза и утечка данных</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="47.9808" y="74.094281" transform="rotate(-0 47.9808 74.094281)">Допустим только тот признак, который существовал к моменту решения.</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #138a57" x="128.3328" y="267.928838" transform="rotate(-0 128.3328 267.928838)">регистрация</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #0b70e0" x="305.1072" y="267.928838" transform="rotate(-0 305.1072 267.928838)">данные сегодня</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #7657e8" x="441.7056" y="267.928838" transform="rotate(-0 441.7056 267.928838)">ПРОГНОЗ</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="626.5152" y="267.928838" transform="rotate(-0 626.5152 267.928838)">исход</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #138a57" x="96.192" y="138.959081" transform="rotate(-0 96.192 138.959081)">МОЖНО В X</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="158.483325" transform="rotate(-0 96.192 158.483325)">Возраст, тариф, обращения — если они уже</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="96.192" y="174.525806" transform="rotate(-0 96.192 174.525806)">известны в момент решения.</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #ce3b36" x="489.9168" y="138.959081" transform="rotate(-0 489.9168 138.959081)">НЕЛЬЗЯ В X</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="489.9168" y="158.309606" transform="rotate(-0 489.9168 158.309606)">Финальный статус, дата закрытия, сумма</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="489.9168" y="174.525806" transform="rotate(-0 489.9168 174.525806)">возврата — они появляются после прогноза.</text>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="156.456" y="341.232203" transform="rotate(-0 156.456 341.232203)">ПРЯМАЯ УТЕЧКА</text>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="80.1216" y="378.459881" transform="rotate(-0 80.1216 378.459881)">Признак прямо или почти прямо содержит</text>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="80.1216" y="394.676081" transform="rotate(-0 80.1216 394.676081)">ответ.</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="80.1216" y="427.76635" transform="rotate(-0 80.1216 427.76635)">Пример: сумма возврата → «будет возврат?»</text>
+   </g>
+   <g id="text_17">
+    <text style="font-weight: 700; font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="546.1632" y="341.232203" transform="rotate(-0 546.1632 341.232203)">ВРЕМЕННАЯ УТЕЧКА</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #182431" x="457.776" y="378.459881" transform="rotate(-0 457.776 378.459881)">Признак появился позже момента прогноза.</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #5d6b78" x="457.776" y="427.596038" transform="rotate(-0 457.776 427.596038)">Пример: финальный статус заказа → «отменят?»</text>
+   </g>
+   <g id="text_20">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ce3b36" x="417.6" y="489.3828" transform="rotate(-0 417.6 489.3828)">Высокая метрика с будущими данными — не успех модели.</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p8c755e3773">
+   <rect x="15.84" y="15.84" width="803.52" height="498.96"/>
+  </clipPath>
+ </defs>
+</svg>

@@ -1,31 +1,33 @@
 import type { CourseVisual } from '../data/courseVisuals'
 
-const visualAssetOverrides: Record<string, string> = {
-  '/course-visuals/ml-problem-types.png': '/course-visuals/ml-problem-types.svg',
-}
-
 export default function CourseVisualGallery({ visuals }: { visuals: CourseVisual[] }) {
   if (!visuals.length) return null
 
   return (
     <section className="space-y-7" aria-label="Иллюстрации к теме">
       {visuals.map((visual) => {
-        const resolvedSrc = visualAssetOverrides[visual.src] ?? visual.src
-        const captionId = `course-visual-caption-${resolvedSrc.replace(/[^a-z0-9]+/gi, '-')}`
+        const captionId = `course-visual-caption-${visual.src.replace(/[^a-z0-9]+/gi, '-')}`
         return (
           <figure
-            key={resolvedSrc}
-            className="overflow-hidden border border-[#dfe4e7] bg-white shadow-[0_8px_28px_-26px_rgba(24,38,50,0.8)]"
+            key={visual.src}
+            className="overflow-hidden rounded-2xl border border-[#d9e6f2] bg-white shadow-[0_18px_48px_-34px_rgba(11,112,224,0.45)]"
           >
-            <img
-              src={resolvedSrc}
-              alt={visual.alt}
-              aria-describedby={captionId}
-              loading="lazy"
-              decoding="async"
-              className="block h-auto w-full bg-white object-contain"
-            />
-            <figcaption id={captionId} className="border-t border-[#e4e8eb] bg-[#f8faf9] px-4 py-3 text-[13px] leading-5 text-[#49545c]">
+            <div
+              className="overflow-x-auto bg-white"
+              role="region"
+              aria-label="Прокручиваемая иллюстрация"
+              tabIndex={0}
+            >
+              <img
+                src={visual.src}
+                alt={visual.alt}
+                aria-describedby={captionId}
+                loading="lazy"
+                decoding="async"
+                className="block h-auto w-full min-w-[680px] bg-white object-contain sm:min-w-0"
+              />
+            </div>
+            <figcaption id={captionId} className="border-t border-[#dbe9f6] bg-[#f4f9ff] px-4 py-3 text-[13px] leading-5 text-[#435466] sm:px-5 sm:py-4">
               {visual.caption}
             </figcaption>
           </figure>
